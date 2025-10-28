@@ -1,0 +1,42 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+linked_*.ds
+*.flutter-plugins
+*.flutter-plugins-dependencies
+generated_plugin_registrant.dart
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+
+# Android related
+android/.gradle/
+android/local.properties
+android/key.properties
+
+# iOS related
+ios/Pods/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Windows related
+windows/GeneratedPluginRegistrant.*
+windows/flutter/ephemeral/
+
+# macOS related
+macos/Flutter/ephemeral/
+macos/Pods/
+
+# Linux related
+linux/flutter/ephemeral/
+
+# Misc
+*.log
+*.tmp
+*.swp
+*.lock
