@@ -40,3 +40,18 @@ linux/flutter/ephemeral/
 *.tmp
 *.swp
 *.lock
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Flutter / Dart
+.dart_tool/
+build/
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
