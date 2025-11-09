@@ -5,6 +5,8 @@ void main() {
 }
 
 class MyPracticeApp extends StatelessWidget {
+  const MyPracticeApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
