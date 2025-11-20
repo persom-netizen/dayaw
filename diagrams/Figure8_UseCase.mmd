@@ -1,0 +1,40 @@
+```mermaid
+%% Figure 8 — Use‑Case Diagram (Mermaid UML)
+%% Actors: User, Admin
+%% Use cases: Signup/Login, Ask Si Juan, View Chat History, Create/Delete Thread, Get/Generate Salita, View/Add Alaala, View/Upload/Download Galeriya images, Take Sulatin lesson, Admin manage Sulatin lessons
+
+%% Mermaid UML style
+%% To render: paste this into a Mermaid renderer (GitHub, mermaid.live, or your editor that supports mermaid)
+
+%% Use case diagram
+%% Note: Mermaid's usecase syntax is limited; we express as an actor-usecase grouping.
+
+%% Actors
+actor User as U
+actor Admin as A
+
+%% Use cases for User
+U --> (Signup / Login)
+U --> (Ask "Si Juan" — Filipino AI)
+U --> (View Chat History)
+U --> (Create Chat Thread)
+U --> (Delete Chat)
+U --> (View Today's Salita)
+U --> (View Salita History)
+U --> (Take Sulatin lesson — trace strokes)
+U --> (View Galeriya)
+U --> (Download Image from Galeriya)
+U --> (View Alaala / Trivia)
+
+%% Use cases for Admin (includes User capabilities)
+A --> (Signup / Login)
+A --> (Ask "Si Juan" — Filipino AI)
+A --> (Create Chat Thread)
+A --> (Manage Salita entries)  %% create/edit/delete words, trigger generation
+A --> (Manage Alaala entries)
+A --> (Manage Sulatin lessons)  %% upload / edit / remove lessons
+A --> (Moderate Galeriya uploads)
+
+%% Shared relationships / notes
+(Note over U,A: Admin has all user privileges + management rights)
+```

@@ -1,144 +1,264 @@
-// ...existing code...
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_service.dart';
 
 class AlaalaPage extends StatefulWidget {
-  const AlaalaPage({super.key});
+  final String username;
+  const AlaalaPage({super.key, required this.username});
 
   @override
   State<AlaalaPage> createState() => _AlaalaPageState();
 }
 
 class _AlaalaPageState extends State<AlaalaPage> {
-  Map<String, dynamic>? trivia;
-  bool loading = true;
-  String? errorMessage; // <-- added
+  bool _isLoading = false;
+  Map<String, dynamic>? _todayTrivia;
+  List<dynamic> _allTrivias = [];
+  bool _showAll = false;
 
   @override
   void initState() {
     super.initState();
-    loadTrivia();
+    _loadTodayTrivia();
   }
 
-  Future<void> loadTrivia() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastTime = prefs.getString('lastTriviaTime');
-    final cachedTrivia = prefs.getString('cachedTrivia');
-    final now = DateTime.now();
+  Future<void> _loadTodayTrivia() async {
+    if (!mounted) return;
 
-    if (lastTime != null &&
-        now.difference(DateTime.parse(lastTime)).inHours < 24 &&
-        cachedTrivia != null) {
-      try {
-        setState(() {
-          trivia = jsonDecode(cachedTrivia);
-          loading = false;
-          errorMessage = null;
-        });
-        return;
-      } catch (e) {
-        // fall through to fetch if cached JSON is corrupted
-      }
-    }
-
-    await fetchTrivia();
-  }
-
-  Future<void> fetchTrivia() async {
-    setState(() {
-      loading = true;
-      errorMessage = null;
-    });
-
+    setState(() => _isLoading = true);
     try {
-      // NOTE: keep 10.0.2.2 for emulator. For a real device use PC LAN IP, e.g. http://192.168.x.y:5000
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:5000/api/trivia'),
-      );
+      final trivia = await ApiService.getAlaalToday();
 
-      if (response.statusCode == 200) {
-        try {
-          final Map<String, dynamic> data = jsonDecode(response.body);
-          final prefs = await SharedPreferences.getInstance();
-          prefs.setString('cachedTrivia', response.body);
-          prefs.setString('lastTriviaTime', DateTime.now().toString());
+      if (!mounted) return;
 
-          setState(() {
-            trivia = data;
-            loading = false;
-            errorMessage = null;
-          });
-        } catch (e) {
-          setState(() {
-            loading = false;
-            errorMessage = 'Invalid JSON from server';
-          });
-        }
-      } else {
-        setState(() {
-          loading = false;
-          errorMessage = 'Server returned ${response.statusCode}';
-        });
+      if (trivia['success'] == true) {
+        setState(() => _todayTrivia = trivia);
       }
     } catch (e) {
-      setState(() {
-        loading = false;
-        errorMessage = 'Network error: $e';
-      });
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading trivia: $e')));
+    } finally {
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _loadAllTrivias() async {
+    if (!mounted) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final result = await ApiService.getAllAlaal(limit: 100);
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        setState(() => _allTrivias = result['trivias'] ?? []);
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading trivias: $e')));
+    } finally {
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _toggleShowAll() {
+    if (!_showAll) {
+      _loadAllTrivias();
+    }
+    setState(() => _showAll = !_showAll);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Always return a Scaffold so page chrome is consistent
     return Scaffold(
-      appBar: AppBar(title: const Text("Alaala (Trivia)")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Builder(
-          builder: (_) {
-            if (loading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (errorMessage != null) {
-              return Center(
-                child: Text(errorMessage!, textAlign: TextAlign.center),
-              );
-            }
-            if (trivia == null) {
-              return const Center(child: Text("Walang trivia ngayon."));
-            }
-            return ListView(
-              children: [
-                Text(
-                  trivia!['salita'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text("Depinisyon: ${trivia!['depinisyon'] ?? '—'}"),
-                const SizedBox(height: 8),
-                Text("Bigkas: ${trivia!['bigkas'] ?? '—'}"),
-                const SizedBox(height: 8),
-                Text("Etimolohiya: ${trivia!['etimolohiya'] ?? '—'}"),
-                const SizedBox(height: 8),
-                Text("Gamit: ${trivia!['gamit'] ?? '—'}"),
-                const SizedBox(height: 8),
-                Text("Konteksto: ${trivia!['kontekstong_kultural'] ?? '—'}"),
-              ],
-            );
-          },
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _showAll
+          ? _buildAllTriviasView()
+          : _buildTodayView(),
+    );
+  }
+
+  Widget _buildTodayView() {
+    if (_todayTrivia == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lightbulb_outline, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            const Text(
+              'Walang Alaala ngayong araw',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadTodayTrivia,
+              child: const Text('Mag-retry'),
+            ),
+          ],
         ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Center(
+            child: Text(
+              'Alam mo ba?',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[600],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Trivia Card
+          Card(
+            elevation: 8,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    _todayTrivia?['alammoba'] ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    _todayTrivia?['deskription'] ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Action Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _loadTodayTrivia,
+                icon: const Icon(Icons.refresh),
+                label: const Text('I-refresh'),
+              ),
+              ElevatedButton.icon(
+                onPressed: _toggleShowAll,
+                icon: const Icon(Icons.history),
+                label: const Text('Lahat'),
+              ),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchTrivia,
-        child: const Icon(Icons.refresh),
+    );
+  }
+
+  Widget _buildAllTriviasView() {
+    return Column(
+      children: [
+        // Header
+        Container(
+          color: Colors.blue[600],
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Lahat ng Alaala',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                onPressed: _toggleShowAll,
+                icon: const Icon(Icons.close, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+
+        // Trivias List
+        Expanded(
+          child: _allTrivias.isEmpty
+              ? const Center(child: Text('Walang Alaala'))
+              : ListView.builder(
+                  itemCount: _allTrivias.length,
+                  itemBuilder: (context, index) {
+                    final trivia = _allTrivias[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(child: Text('${index + 1}')),
+                        title: Text(
+                          trivia['alammoba'] ?? 'N/A',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          trivia['deskription'] ?? 'N/A',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => _showTriviaDetails(trivia),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  void _showTriviaDetails(Map<String, dynamic> trivia) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(trivia['alammoba'] ?? 'N/A'),
+        content: SingleChildScrollView(
+          child: Text(trivia['deskription'] ?? 'N/A'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Isara'),
+          ),
+        ],
       ),
     );
   }
 }
-// ...existing code...

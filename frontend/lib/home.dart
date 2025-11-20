@@ -1,8 +1,9 @@
-// frontend/lib/pages/home.dart
+import 'salita.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
+import 'ai.dart';
+import 'alaala.dart';
 import 'services/api_service.dart';
-import 'pages/ai.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -13,11 +14,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
   bool _isLoading = false;
   String _dbStatus = '';
   List<dynamic> _users = [];
   String _openAIResponse = '';
-  int _currentIndex = 0;
+
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      _buildHomePage(),
+      AiPage(username: widget.username),
+      AlaalaPage(username: widget.username),
+      SalitaPage(username: widget.username),
+      _buildGaleriyaPage(),
+      _buildSulatinPage(),
+    ];
+  }
 
   Future<void> _testDbConnection() async {
     setState(() => _isLoading = true);
@@ -75,7 +91,10 @@ class _HomePageState extends State<HomePage> {
     if (result != null && result.isNotEmpty) {
       setState(() => _isLoading = true);
       try {
-        final response = await ApiService.askOpenAI(result);
+        final response = await ApiService.askOpenAI(
+          result,
+          username: widget.username,
+        );
         setState(() => _openAIResponse = response['answer'] ?? 'No response');
       } catch (e) {
         setState(() => _openAIResponse = 'Error: $e');
@@ -85,40 +104,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final pages = [
-      _buildBahayPage(), // Index 0
-      _buildAlaalaPage(), // Index 1
-      _buildSalitaPage(), // Index 2
-      _buildGaleriyaPage(), // Index 3
-      _buildSulatinPage(), // Index 4
-    ];
-
-    return Scaffold(
-      appBar: AppBar(title: Text("Welcome, ${widget.username}")),
-      body: pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bahay'),
-          BottomNavigationBarItem(icon: Icon(Icons.memory), label: 'Alaala'),
-          BottomNavigationBarItem(icon: Icon(Icons.abc), label: 'Salita'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            label: 'Galeriya',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Sulatin'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBahayPage() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
+  Widget _buildHomePage() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -128,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     Text(
-                      "Hello, ${widget.username}!",
+                      "Magandang Araw, ${widget.username}!",
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -141,17 +130,6 @@ class _HomePageState extends State<HomePage> {
                         MaterialPageRoute(builder: (_) => const MainPage()),
                       ),
                       child: const Text("Logout"),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AIPage(username: widget.username),
-                        ),
-                      ),
-                      icon: const Icon(Icons.chat),
-                      label: const Text("Chat with AI"),
                     ),
                   ],
                 ),
@@ -188,6 +166,27 @@ class _HomePageState extends State<HomePage> {
                     if (_users.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Text("Users loaded: ${_users.length}"),
+                      ...(_users
+                          .take(3)
+                          .map(
+                            (user) => ListTile(
+                              title: Text(user['username']),
+                              subtitle: Text(user['email']),
+                            ),
+                          )),
+                    ],
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _askOpenAI,
+                      child: const Text("Ask OpenAI"),
+                    ),
+                    if (_openAIResponse.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      const Text(
+                        "OpenAI Response:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(_openAIResponse),
                     ],
                     if (_isLoading) ...[
                       const SizedBox(height: 10),
@@ -203,19 +202,68 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAlaalaPage() {
-    return const Center(child: Text('Alaala (Trivia) Page - Coming Soon'));
-  }
-
-  Widget _buildSalitaPage() {
-    return const Center(child: Text('Salita (Daily Words) Page - Coming Soon'));
-  }
-
   Widget _buildGaleriyaPage() {
-    return const Center(child: Text('Galeriya (Gallery) Page - Coming Soon'));
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.photo_library, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          const Text('Galeriya (Gallery)', style: TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Text('Coming soon...', style: TextStyle(color: Colors.grey[600])),
+        ],
+      ),
+    );
   }
 
   Widget _buildSulatinPage() {
-    return const Center(child: Text('Sulatin (Writing) Page - Coming Soon'));
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.edit, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          const Text('Sulatin (Writing)', style: TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Text('Coming soon...', style: TextStyle(color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  void _onNavBarTapped(int index) {
+    setState(() => _selectedIndex = index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("DAYAW"),
+        centerTitle: true,
+        backgroundColor: Colors.blue[600],
+        automaticallyImplyLeading: false, // ✅ REMOVES BACK ARROW
+      ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTapped,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bahay'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'AI'),
+          BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Alaala'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.auto_stories),
+            label: 'Salita',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.photo_library),
+            label: 'Galeriya',
+          ),
+        ],
+      ),
+    );
   }
 }

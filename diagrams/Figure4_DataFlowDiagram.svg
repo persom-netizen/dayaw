@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Figure 4: Data Flow Diagram (simplified) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <style>
+    .box { fill:#f4f7fb; stroke:#2b6cb0; stroke-width:1.6; rx:8; ry:8; }
+    .cyl { fill:#fff; stroke:#2b6cb0; stroke-width:1.6; }
+    .txt { font-family: Arial, Helvetica, sans-serif; font-size:13px; fill:#0b1220; }
+    .title { font-weight:700; font-size:16px; fill:#073763; }
+    .arrow { stroke:#333; stroke-width:1.4; marker-end: url(#arr); fill:none; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="18" y="24" class="title">Figure 4 — Data Flow Diagram (Dayaw)</text>
+
+  <!-- External actors -->
+  <g>
+    <rect x="20" y="50" width="160" height="56" class="box"/>
+    <text x="40" y="82" class="txt">User (Registered / Anonymous)</text>
+
+    <rect x="20" y="130" width="160" height="56" class="box"/>
+    <text x="60" y="162" class="txt">Admin</text>
+
+    <rect x="980" y="50" width="180" height="56" class="box"/>
+    <text x="1000" y="82" class="txt">OpenAI API (Si Juan)</text>
+  </g>
+
+  <!-- Processes -->
+  <g>
+    <rect x="240" y="50" width="220" height="56" class="box"/>
+    <text x="270" y="82" class="txt">Auth (signup / login)</text>
+
+    <rect x="240" y="130" width="220" height="56" class="box"/>
+    <text x="270" y="162" class="txt">Chat / Si Juan (/api/ask)</text>
+
+    <rect x="240" y="210" width="220" height="56" class="box"/>
+    <text x="270" y="242" class="txt">Chat Threads & History</text>
+
+    <rect x="240" y="290" width="220" height="56" class="box"/>
+    <text x="270" y="322" class="txt">Salita (Word of the Day)</text>
+
+    <rect x="240" y="370" width="220" height="56" class="box"/>
+    <text x="270" y="402" class="txt">Alaala (Trivia)</text>
+
+    <rect x="240" y="450" width="220" height="56" class="box"/>
+    <text x="270" y="482" class="txt">Galeriya & Sulatin (frontend)</text>
+  </g>
+
+  <!-- Data store (cylinder shapes) -->
+  <g>
+    <!-- DB cylinder -->
+    <ellipse cx="760" cy="120" rx="100" ry="20" class="cyl"/>
+    <rect x="660" y="120" width="200" height="160" class="cyl"/>
+    <ellipse cx="760" cy="280" rx="100" ry="20" class="cyl"/>
+    <text x="700" y="130" class="txt">MySQL Database (dayaw)</text>
+
+    <!-- list stores -->
+    <text x="690" y="160" class="txt">Tables: users, sign_up, login,</text>
+    <text x="690" y="178" class="txt">chat_history, chat_threads, salita, alaala</text>
+  </g>
+
+  <!-- Flows (arrows) -->
+  <!-- User -> Auth -->
+  <path class="arrow" d="M180 78 L240 78" />
+  <text x="210" y="68" class="txt">signup/login</text>
+
+  <!-- Admin -> Auth -->
+  <path class="arrow" d="M180 160 L240 160" />
+  <text x="210" y="150" class="txt">admin login</text>
+
+  <!-- User -> Chat -->
+  <path class="arrow" d="M180 200 L240 200" />
+  <text x="210" y="190" class="txt">ask question</text>
+
+  <!-- Chat -> OpenAI -->
+  <path class="arrow" d="M460 160 L980 160" />
+  <text x="720" y="150" class="txt">ask_openai()</text>
+
+  <!-- OpenAI -> Chat -->
+  <path class="arrow" d="M980 180 L460 180" />
+  <text x="720" y="198" class="txt">reply (Filipino)</text>
+
+  <!-- Chat -> DB -->
+  <path class="arrow" d="M460 200 L660 200 L660 220 L660 240 L760 240" />
+  <text x="570" y="210" class="txt">save chat_history</text>
+
+  <!-- Threads -> DB -->
+  <path class="arrow" d="M460 260 L760 260" />
+  <text x="590" y="250" class="txt">chat_threads</text>
+
+  <!-- Salita -> DB -->
+  <path class="arrow" d="M460 340 L760 340" />
+  <text x="590" y="330" class="txt">read / write salita</text>
+
+  <!-- Alaala -> DB -->
+  <path class="arrow" d="M460 420 L760 420" />
+  <text x="590" y="410" class="txt">read / write alaala</text>
+
+  <!-- Galeriya/Sulatin -> DB or external storage (note) -->
+  <path class="arrow" d="M460 500 L760 500" />
+  <text x="590" y="490" class="txt">images / lesson metadata (planned)</text>
+
+  <!-- DB -> User (get salita/today) -->
+  <path class="arrow" d="M760 120 L460 120 L460 100 L460 100" />
+  <path class="arrow" d="M460 100 L240 100 L200 100" />
+  <text x="430" y="92" class="txt">get Salita / Alaala / threads</text>
+</svg>

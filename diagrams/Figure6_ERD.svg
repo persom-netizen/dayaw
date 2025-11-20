@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Figure 6: Entity Relationship Diagram (ERD) - recommended/normalized view -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800">
+  <style>
+    .tbl { fill:#fff; stroke:#0b3a6b; stroke-width:1.6; rx:6; ry:6; }
+    .header { fill:#e6f0ff; stroke:#0b3a6b; stroke-width:1.6; rx:6; ry:6; }
+    .col { font-family: Arial, Helvetica, sans-serif; font-size:12px; fill:#07263b; }
+    .title { font-weight:700; font-size:16px; fill:#0b3a6b; }
+    .rel { stroke:#333; stroke-width:1.2; marker-end:url(#arr); fill:none; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+    </marker>
+  </defs>
+
+  <text x="18" y="28" class="title">Figure 6 — Entity Relationship Diagram (normalized 3NF view)</text>
+
+  <!-- users table -->
+  <g transform="translate(40,60)">
+    <rect x="0" y="0" width="300" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">users</tspan></text>
+    <rect x="0" y="40" width="300" height="140" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">username VARCHAR(50) NOT NULL</text>
+    <text x="12" y="102" class="col">email VARCHAR(100) UNIQUE NOT NULL</text>
+    <text x="12" y="122" class="col">password_hash VARCHAR(255) NOT NULL</text>
+    <text x="12" y="142" class="col">created_at DATETIME</text>
+  </g>
+
+  <!-- chat_threads -->
+  <g transform="translate(380,60)">
+    <rect x="0" y="0" width="320" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">chat_threads</tspan></text>
+    <rect x="0" y="40" width="320" height="120" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">user_id INT FK → users(id)</text>
+    <text x="12" y="102" class="col">title VARCHAR(255)</text>
+    <text x="12" y="122" class="col">created_at DATETIME</text>
+    <text x="12" y="142" class="col">updated_at DATETIME</text>
+  </g>
+
+  <!-- chat_history -->
+  <g transform="translate(740,60)">
+    <rect x="0" y="0" width="360" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">chat_history</tspan></text>
+    <rect x="0" y="40" width="360" height="160" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">user_id INT FK → users(id)</text>
+    <text x="12" y="102" class="col">thread_id INT NULL FK → chat_threads(id)</text>
+    <text x="12" y="122" class="col">user_message TEXT</text>
+    <text x="12" y="142" class="col">ai_response TEXT</text>
+    <text x="12" y="162" class="col">created_at DATETIME</text>
+  </g>
+
+  <!-- salita -->
+  <g transform="translate(40,260)">
+    <rect x="0" y="0" width="360" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">salita</tspan></text>
+    <rect x="0" y="40" width="360" height="200" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">salita VARCHAR(255)</text>
+    <text x="12" y="102" class="col">depinisyon TEXT</text>
+    <text x="12" y="122" class="col">bigkas VARCHAR(255)</text>
+    <text x="12" y="142" class="col">etimolohiya TEXT</text>
+    <text x="12" y="162" class="col">gamit TEXT</text>
+    <text x="12" y="182" class="col">kontekstong_kultural TEXT</text>
+    <text x="12" y="202" class="col">source VARCHAR(50)</text>
+    <text x="12" y="222" class="col">created_at DATETIME</text>
+    <text x="12" y="242" class="col">is_active BOOLEAN</text>
+    <text x="12" y="262" class="col">created_by INT FK → users(id) NULL</text>
+  </g>
+
+  <!-- alaala -->
+  <g transform="translate(440,320)">
+    <rect x="0" y="0" width="360" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">alaala (trivia)</tspan></text>
+    <rect x="0" y="40" width="360" height="160" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">salita VARCHAR(255)</text>
+    <text x="12" y="102" class="col">depinisyon TEXT</text>
+    <text x="12" y="122" class="col">bigkas VARCHAR(255)</text>
+    <text x="12" y="142" class="col">etimolohiya TEXT</text>
+    <text x="12" y="162" class="col">gamit TEXT</text>
+    <text x="12" y="182" class="col">kontekstong_kultural TEXT</text>
+    <text x="12" y="202" class="col">petsa DATETIME</text>
+    <text x="12" y="222" class="col">created_by INT FK → users(id) NULL</text>
+  </g>
+
+  <!-- galeriya (recommended) -->
+  <g transform="translate(840,320)">
+    <rect x="0" y="0" width="360" height="40" class="header"/>
+    <text x="12" y="26" class="col"><tspan font-weight="700">gallery_images (recommended)</tspan></text>
+    <rect x="0" y="40" width="360" height="140" class="tbl"/>
+    <text x="12" y="62" class="col">id PK</text>
+    <text x="12" y="82" class="col">user_id INT FK → users(id)</text>
+    <text x="12" y="102" class="col">file_path VARCHAR(255)</text>
+    <text x="12" y="122" class="col">caption TEXT</text>
+    <text x="12" y="142" class="col">created_at DATETIME</text>
+  </g>
+
+  <!-- Relationships (arrows) -->
+  <!-- users -> chat_threads -->
+  <path class="rel" d="M340 120 L380 120" />
+  <text x="360" y="112" class="col">1..* owns</text>
+
+  <!-- users -> chat_history -->
+  <path class="rel" d="M340 160 L740 160" />
+  <text x="540" y="152" class="col">1..* owns</text>
+
+  <!-- chat_threads -> chat_history -->
+  <path class="rel" d="M700 150 L660 150 L660 200" />
+  <text x="680" y="174" class="col">0..* messages</text>
+
+  <!-- users -> salita (created_by) -->
+  <path class="rel" d="M200 220 L200 320" />
+
+  <!-- users -> alaala -->
+  <path class="rel" d="M340 260 L440 340" />
+
+  <!-- users -> gallery_images -->
+  <path class="rel" d="M340 260 L840 360" />
+</svg>

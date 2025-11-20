@@ -3,11 +3,11 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import text
+from datetime import datetime
 import hashlib
 import sys
 import os
 import random
-from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from openai_client import ask_openai
 
@@ -43,34 +43,41 @@ class Login(db.Model):
 
 
 class Alaala(db.Model):
+    """Filipino Trivia - 24-hour rotation"""
     __tablename__ = "alaala"
     id = db.Column(db.Integer, primary_key=True)
-    salita = db.Column(db.String(255), nullable=False)
-    depinisyon = db.Column(db.Text, nullable=False)
-    bigkas = db.Column(db.String(255))
-    etimolohiya = db.Column(db.Text)
-    gamit = db.Column(db.Text)
-    kontekstong_kultural = db.Column(db.Text)
-    petsa = db.Column(db.DateTime)
+    alammoba = db.Column(db.String(255), nullable=False)  # Title
+    deskription = db.Column(db.Text, nullable=False)  # Description
 
 
-# ✅ NEW: Chat Models
-class ChatSession(db.Model):
-    __tablename__ = "chat_sessions"
+class Salita(db.Model):
+    """Word of the Day - 24-hour rotation"""
+    __tablename__ = "salita"
+    id = db.Column(db.Integer, primary_key=True)
+    salita = db.Column(db.String(255), nullable=False)  # The word
+    depinisyon = db.Column(db.Text, nullable=False)  # Definition
+    bigkas = db.Column(db.String(255))  # Pronunciation
+    etimolohiya = db.Column(db.Text)  # Etymology
+    gamit = db.Column(db.Text)  # Usage example
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class ChatHistory(db.Model):
+    __tablename__ = "chat_history"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False)
-    title = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_message = db.Column(db.Text, nullable=False)
+    ai_response = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
-class ChatMessage(db.Model):
-    __tablename__ = "chat_messages"
+class ChatThread(db.Model):
+    __tablename__ = "chat_threads"
     id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(db.Integer, db.ForeignKey('chat_sessions.id'), nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    username = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 # ===================================================
@@ -80,12 +87,35 @@ class ChatMessage(db.Model):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+def get_trivia_index_for_today():
+    """Calculate which trivia to show based on current date (24-hour rotation)"""
+    total_items = Alaala.query.count()
+    if total_items == 0:
+        return None
+    
+    today = datetime.now().date()
+    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    trivia_index = days_since_epoch % total_items
+    return trivia_index
+
+def get_salita_index_for_today():
+    """Calculate which Salita to show based on current date (24-hour rotation)"""
+    total_items = Salita.query.count()
+    if total_items == 0:
+        return None
+    
+    today = datetime.now().date()
+    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    salita_index = days_since_epoch % total_items
+    return salita_index
 
 # ===================================================
 # ROUTES
 # ===================================================
 
-# ✅ AUTH ROUTES
+# ----------------------
+# AUTH ROUTES
+# ----------------------
 @app.route("/api/signup", methods=["POST"])
 def signup():
     try:
@@ -106,13 +136,7 @@ def signup():
             return jsonify({"success": False, "message": "Email already registered!"}), 400
 
         hashed_password = hash_password(password)
-
-        new_user = SignUp(
-            username=username,
-            email=email,
-            password=hashed_password,
-            confirm_password=hashed_password
-        )
+        new_user = SignUp(username=username, email=email, password=hashed_password, confirm_password=hashed_password)
         db.session.add(new_user)
         db.session.add(Login(username=username, email=email, password=hashed_password))
         db.session.commit()
@@ -145,7 +169,9 @@ def login():
         return jsonify({"success": False, "message": f"Login failed: {str(e)}"}), 500
 
 
-# ✅ SYSTEM / DEBUG ROUTES
+# ----------------------
+# SYSTEM ROUTES
+# ----------------------
 @app.route("/api/db-ping", methods=["GET"])
 def db_ping():
     try:
@@ -155,179 +181,184 @@ def db_ping():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-# ✅ ALAALA (TRIVIA) ROUTES
-@app.route("/api/trivia", methods=["GET"])
-def get_random_trivia():
-    try:
-        trivia_list = Alaala.query.all()
-        if not trivia_list:
-            return jsonify({"message": "Walang trivia sa database."}), 404
-
-        trivia = random.choice(trivia_list)
-
-        return jsonify({
-            "id": trivia.id,
-            "salita": trivia.salita,
-            "depinisyon": trivia.depinisyon,
-            "bigkas": trivia.bigkas,
-            "etimolohiya": trivia.etimolohiya,
-            "gamit": trivia.gamit,
-            "kontekstong_kultural": trivia.kontekstong_kultural,
-            "petsa": trivia.petsa.isoformat() if trivia.petsa else None
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/trivia", methods=["POST"])
-def add_trivia():
+# ----------------------
+# CHAT ROUTES
+# ----------------------
+@app.route("/api/ask", methods=["POST"])
+def ask_openai_endpoint():
+    """Send a question to OpenAI and save conversation history."""
     try:
         data = request.get_json() or {}
-        trivia = Alaala(
-            salita=data.get("salita"),
-            depinisyon=data.get("depinisyon"),
-            bigkas=data.get("bigkas"),
-            etimolohiya=data.get("etimolohiya"),
-            gamit=data.get("gamit"),
-            kontekstong_kultural=data.get("kontekstong_kultural")
-        )
-        db.session.add(trivia)
+        question = data.get("question")
+        username = data.get("username", "anonymous")
+
+        if not question:
+            return jsonify({"error": "Question is required"}), 400
+
+        answer = ask_openai(question)
+        chat_entry = ChatHistory(username=username, user_message=question, ai_response=answer, created_at=datetime.utcnow())
+        db.session.add(chat_entry)
         db.session.commit()
-        return jsonify({"success": True, "message": "Trivia added!", "id": trivia.id}), 201
+
+        return jsonify({
+            "success": True,
+            "question": question,
+            "answer": answer,
+            "chat_id": chat_entry.id,
+            "timestamp": chat_entry.created_at.isoformat()
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 
-# ✅ CHAT ROUTES (NEW)
-@app.route("/api/chat/sessions", methods=["GET"])
-def get_chat_sessions():
-    """Get all chat sessions for a user."""
+@app.route("/api/chat-history", methods=["GET"])
+def get_chat_history():
+    """Retrieve chat history for a user."""
     try:
-        username = request.args.get("username")
-        if not username:
-            return jsonify({"error": "Username required"}), 400
-
-        sessions = ChatSession.query.filter_by(username=username).order_by(ChatSession.updated_at.desc()).all()
-        
-        return jsonify({
-            "success": True,
-            "sessions": [{
-                "id": s.id,
-                "title": s.title or f"Chat {s.id}",
-                "created_at": s.created_at.isoformat(),
-                "updated_at": s.updated_at.isoformat()
-            } for s in sessions]
-        }), 200
+        username = request.args.get("username", "anonymous")
+        limit = request.args.get("limit", 50, type=int)
+        chats = ChatHistory.query.filter_by(username=username).order_by(ChatHistory.created_at.desc()).limit(limit).all()
+        chat_list = [{"id": chat.id, "user_message": chat.user_message, "ai_response": chat.ai_response, "created_at": chat.created_at.isoformat()} for chat in chats]
+        return jsonify({"success": True, "username": username, "count": len(chat_list), "chats": chat_list}), 200
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/chat/sessions", methods=["POST"])
-def create_chat_session():
-    """Create a new chat session."""
+@app.route("/api/chat-history/<int:chat_id>", methods=["DELETE"])
+def delete_chat(chat_id):
+    """Delete a specific chat message."""
+    try:
+        chat = ChatHistory.query.get(chat_id)
+        if not chat:
+            return jsonify({"error": "Chat not found"}), 404
+        db.session.delete(chat)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Chat deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/chat-threads", methods=["POST"])
+def create_chat_thread():
+    """Create a new chat thread (conversation)."""
     try:
         data = request.get_json() or {}
-        username = data.get("username")
-        
-        if not username:
-            return jsonify({"error": "Username required"}), 400
-
-        new_session = ChatSession(username=username, title="New Chat")
-        db.session.add(new_session)
+        username = data.get("username", "anonymous")
+        title = data.get("title", "New Chat")
+        thread = ChatThread(username=username, title=title, created_at=datetime.utcnow())
+        db.session.add(thread)
         db.session.commit()
-
-        return jsonify({
-            "success": True,
-            "session_id": new_session.id,
-            "message": "Chat session created"
-        }), 201
+        return jsonify({"success": True, "thread_id": thread.id, "title": thread.title, "created_at": thread.created_at.isoformat()}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/chat/sessions/<int:session_id>", methods=["DELETE"])
-def delete_chat_session(session_id):
-    """Delete a chat session and all its messages."""
+@app.route("/api/chat-threads", methods=["GET"])
+def get_chat_threads():
+    """Get all chat threads for a user."""
     try:
-        session = ChatSession.query.get(session_id)
-        if not session:
-            return jsonify({"success": False, "error": "Session not found"}), 404
+        username = request.args.get("username", "anonymous")
+        threads = ChatThread.query.filter_by(username=username).order_by(ChatThread.updated_at.desc()).all()
+        thread_list = [{"id": thread.id, "title": thread.title, "created_at": thread.created_at.isoformat(), "updated_at": thread.updated_at.isoformat()} for thread in threads]
+        return jsonify({"success": True, "threads": thread_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        # Delete all messages in this session
-        ChatMessage.query.filter_by(session_id=session_id).delete()
-        db.session.delete(session)
+
+@app.route("/api/chat-threads/<int:thread_id>", methods=["DELETE"])
+def delete_chat_thread(thread_id):
+    """Delete a chat thread and its associated messages."""
+    try:
+        thread = ChatThread.query.get(thread_id)
+        if not thread:
+            return jsonify({"error": "Thread not found"}), 404
+        db.session.delete(thread)
         db.session.commit()
-
-        return jsonify({"success": True, "message": "Chat session deleted"}), 200
+        return jsonify({"success": True, "message": "Thread deleted"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/chat/messages/<int:session_id>", methods=["GET"])
-def get_chat_messages(session_id):
-    """Get all messages for a chat session."""
+# ===========================
+# ALAALA (24-HOUR TRIVIA)
+# ===========================
+
+@app.route("/api/alaala/today", methods=["GET"])
+def get_alaala_today():
+    """Get today's Alaala (trivia) - rotates every 24 hours."""
     try:
-        messages = ChatMessage.query.filter_by(session_id=session_id).order_by(ChatMessage.created_at.asc()).all()
+        trivia_index = get_trivia_index_for_today()
+        if trivia_index is None:
+            return jsonify({"success": False, "message": "Walang Alaala sa database."}), 404
+        
+        trivia = Alaala.query.offset(trivia_index).first()
+        if not trivia:
+            return jsonify({"success": False, "message": "Walang Alaala available."}), 404
+        
+        return jsonify({"success": True, "id": trivia.id, "alammoba": trivia.alammoba, "deskription": trivia.deskription}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/alaala/all", methods=["GET"])
+def get_all_alaala():
+    """Get all Alaala for browsing."""
+    try:
+        limit = request.args.get("limit", 100, type=int)
+        trivias = Alaala.query.limit(limit).all()
+        if not trivias:
+            return jsonify({"success": False, "message": "Walang Alaala sa database."}), 404
+        trivia_list = [{"id": trivia.id, "alammoba": trivia.alammoba, "deskription": trivia.deskription} for trivia in trivias]
+        return jsonify({"success": True, "count": len(trivia_list), "trivias": trivia_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===========================
+# SALITA (WORD OF THE DAY)
+# ===========================
+
+@app.route("/api/salita/today", methods=["GET"])
+def get_salita_today():
+    """Get today's Salita (Word of the Day) - rotates every 24 hours."""
+    try:
+        salita_index = get_salita_index_for_today()
+        if salita_index is None:
+            return jsonify({"success": False, "message": "Walang Salita sa database."}), 404
+        
+        salita = Salita.query.offset(salita_index).first()
+        if not salita:
+            return jsonify({"success": False, "message": "Walang Salita available."}), 404
         
         return jsonify({
             "success": True,
-            "messages": [{
-                "id": m.id,
-                "role": m.role,
-                "content": m.content,
-                "created_at": m.created_at.isoformat()
-            } for m in messages]
+            "id": salita.id,
+            "salita": salita.salita,
+            "depinisyon": salita.depinisyon,
+            "bigkas": salita.bigkas,
+            "etimolohiya": salita.etimolohiya,
+            "gamit": salita.gamit
         }), 200
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/chat/send", methods=["POST"])
-def send_chat_message():
-    """Send a message and get AI response."""
+@app.route("/api/salita/all", methods=["GET"])
+def get_all_salita():
+    """Get all Salita for browsing."""
     try:
-        data = request.get_json() or {}
-        session_id = data.get("session_id")
-        user_message = data.get("message")
-        
-        if not session_id or not user_message:
-            return jsonify({"success": False, "error": "Session ID and message required"}), 400
-
-        # Verify session exists
-        session = ChatSession.query.get(session_id)
-        if not session:
-            return jsonify({"success": False, "error": "Session not found"}), 404
-
-        # Save user message
-        user_msg = ChatMessage(session_id=session_id, role="user", content=user_message)
-        db.session.add(user_msg)
-        db.session.commit()
-
-        # Get AI response (in Filipino)
-        ai_prompt = f"You are a helpful assistant. Respond in Filipino language. User message: {user_message}"
-        ai_response = ask_openai(ai_prompt)
-
-        # Save AI response
-        ai_msg = ChatMessage(session_id=session_id, role="assistant", content=ai_response)
-        db.session.add(ai_msg)
-        
-        # Update session's updated_at timestamp
-        session.updated_at = datetime.utcnow()
-        db.session.commit()
-
-        return jsonify({
-            "success": True,
-            "user_message": user_message,
-            "ai_response": ai_response,
-            "user_message_id": user_msg.id,
-            "ai_message_id": ai_msg.id
-        }), 200
+        limit = request.args.get("limit", 100, type=int)
+        salitas = Salita.query.limit(limit).all()
+        if not salitas:
+            return jsonify({"success": False, "message": "Walang Salita sa database."}), 404
+        salita_list = [{"id": s.id, "salita": s.salita, "depinisyon": s.depinisyon, "bigkas": s.bigkas, "etimolohiya": s.etimolohiya, "gamit": s.gamit} for s in salitas]
+        return jsonify({"success": True, "count": len(salita_list), "salitas": salita_list}), 200
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 # ===================================================
