@@ -12,8 +12,6 @@ class AlaalaPage extends StatefulWidget {
 class _AlaalaPageState extends State<AlaalaPage> {
   bool _isLoading = false;
   Map<String, dynamic>? _todayTrivia;
-  List<dynamic> _allTrivias = [];
-  bool _showAll = false;
 
   @override
   void initState() {
@@ -23,59 +21,22 @@ class _AlaalaPageState extends State<AlaalaPage> {
 
   Future<void> _loadTodayTrivia() async {
     if (!mounted) return;
-
     setState(() => _isLoading = true);
     try {
       final trivia = await ApiService.getAlaalToday();
-
       if (!mounted) return;
-
       if (trivia['success'] == true) {
         setState(() => _todayTrivia = trivia);
       }
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading trivia: $e')));
     } finally {
       if (!mounted) return;
-
       setState(() => _isLoading = false);
     }
-  }
-
-  Future<void> _loadAllTrivias() async {
-    if (!mounted) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final result = await ApiService.getAllAlaal(limit: 100);
-
-      if (!mounted) return;
-
-      if (result['success'] == true) {
-        setState(() => _allTrivias = result['trivias'] ?? []);
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading trivias: $e')));
-    } finally {
-      if (!mounted) return;
-
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _toggleShowAll() {
-    if (!_showAll) {
-      _loadAllTrivias();
-    }
-    setState(() => _showAll = !_showAll);
   }
 
   @override
@@ -83,8 +44,6 @@ class _AlaalaPageState extends State<AlaalaPage> {
     return Scaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _showAll
-          ? _buildAllTriviasView()
           : _buildTodayView(),
     );
   }
@@ -129,133 +88,53 @@ class _AlaalaPageState extends State<AlaalaPage> {
           ),
           const SizedBox(height: 20),
 
-          // Trivia Card
+          // Trivia Card (with gradient)
           Card(
             elevation: 8,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.blue[50]!, Colors.blue[100]!],
+                ),
+              ),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
+                  // Title (Large and Bold)
                   Text(
                     _todayTrivia?['alammoba'] ?? 'N/A',
                     style: const TextStyle(
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // Divider
+                  Container(height: 2, color: Colors.blue[300]),
+                  const SizedBox(height: 20),
 
                   // Description
                   Text(
                     _todayTrivia?['deskription'] ?? 'N/A',
                     style: const TextStyle(
                       fontSize: 16,
-                      height: 1.6,
+                      height: 1.8,
                       color: Colors.black87,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-
-          // Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton.icon(
-                onPressed: _loadTodayTrivia,
-                icon: const Icon(Icons.refresh),
-                label: const Text('I-refresh'),
-              ),
-              ElevatedButton.icon(
-                onPressed: _toggleShowAll,
-                icon: const Icon(Icons.history),
-                label: const Text('Lahat'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAllTriviasView() {
-    return Column(
-      children: [
-        // Header
-        Container(
-          color: Colors.blue[600],
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Lahat ng Alaala',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                onPressed: _toggleShowAll,
-                icon: const Icon(Icons.close, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-
-        // Trivias List
-        Expanded(
-          child: _allTrivias.isEmpty
-              ? const Center(child: Text('Walang Alaala'))
-              : ListView.builder(
-                  itemCount: _allTrivias.length,
-                  itemBuilder: (context, index) {
-                    final trivia = _allTrivias[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(child: Text('${index + 1}')),
-                        title: Text(
-                          trivia['alammoba'] ?? 'N/A',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          trivia['deskription'] ?? 'N/A',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: () => _showTriviaDetails(trivia),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  void _showTriviaDetails(Map<String, dynamic> trivia) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(trivia['alammoba'] ?? 'N/A'),
-        content: SingleChildScrollView(
-          child: Text(trivia['deskription'] ?? 'N/A'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Isara'),
           ),
         ],
       ),
