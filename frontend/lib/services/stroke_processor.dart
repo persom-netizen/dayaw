@@ -24,7 +24,7 @@ class Stroke {
 
   Stroke(this.points);
 
-  Map<String, dynamic> toJson() => points.map((p) => p.toJson()).toList();
+  List<Map<String, dynamic>> toJson() => points.map((p) => p.toJson()).toList();
 
   double get length {
     if (points.length < 2) return 0;
@@ -44,7 +44,7 @@ class Stroke {
 class StrokeProcessor {
   /// Convert list of strokes to JSON format for API
   static List<List<Map<String, dynamic>>> strokesToJson(List<Stroke> strokes) {
-    return strokes.map((stroke) => stroke.toJson() as List<Map<String, dynamic>>).toList();
+    return strokes.map((stroke) => stroke.toJson()).toList();
   }
 
   /// Normalize strokes to fit within a canvas size
