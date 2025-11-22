@@ -24,14 +24,14 @@ class _TracingScreenState extends State<TracingScreen> {
   static const double _confidenceThreshold = 0.6;
   
   // Character name mappings
-  static const Map<String, Map<String, String>> _characterNames = {
-    'A': {'tagalog': 'A', 'english': 'A', 'strokes': '3'},
-    'E': {'tagalog': 'E', 'english': 'E', 'strokes': '4'},
-    'I': {'tagalog': 'I', 'english': 'I', 'strokes': '3'},
-    'O': {'tagalog': 'O', 'english': 'O', 'strokes': '1'},
-    'U': {'tagalog': 'U', 'english': 'U', 'strokes': '1'},
-    '.': {'tagalog': 'Tuldok', 'english': 'Period', 'strokes': '1'},
-    ',': {'tagalog': 'Kuwit', 'english': 'Comma', 'strokes': '1'},
+  static const Map<String, Map<String, dynamic>> _characterNames = {
+    'A': {'tagalog': 'A', 'english': 'A', 'strokes': 3},
+    'E': {'tagalog': 'E', 'english': 'E', 'strokes': 4},
+    'I': {'tagalog': 'I', 'english': 'I', 'strokes': 3},
+    'O': {'tagalog': 'O', 'english': 'O', 'strokes': 1},
+    'U': {'tagalog': 'U', 'english': 'U', 'strokes': 1},
+    '.': {'tagalog': 'Tuldok', 'english': 'Period', 'strokes': 1},
+    ',': {'tagalog': 'Kuwit', 'english': 'Comma', 'strokes': 1},
   };
   
   List<Stroke> _strokes = [];
@@ -259,44 +259,40 @@ class _TracingScreenState extends State<TracingScreen> {
         ),
         actions: [
           if (_isCorrect != true)
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _clearCanvas();
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Subukan Muli'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(color: Colors.grey[600]!, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                _clearCanvas();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Subukan Muli'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                side: BorderSide(color: Colors.grey[600]!, width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
           if (_isCorrect != true) const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-                if (_isCorrect == true) {
-                  Navigator.pop(context, {
-                    'completed': true,
-                    'score': _confidence,
-                  });
-                }
-              },
-              icon: Icon(_isCorrect == true ? Icons.arrow_forward : Icons.close),
-              label: Text(_isCorrect == true ? 'Ipagpatuloy' : 'OK'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isCorrect == true ? Colors.green[600] : Colors.grey[600],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              if (_isCorrect == true) {
+                Navigator.pop(context, {
+                  'completed': true,
+                  'score': _confidence,
+                });
+              }
+            },
+            icon: Icon(_isCorrect == true ? Icons.arrow_forward : Icons.close),
+            label: Text(_isCorrect == true ? 'Ipagpatuloy' : 'OK'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isCorrect == true ? Colors.green[600] : Colors.grey[600],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
           ),
@@ -334,7 +330,7 @@ class _TracingScreenState extends State<TracingScreen> {
     final characterInfo = _characterNames[widget.expectedCharacter];
     final tagalogName = characterInfo?['tagalog'] ?? widget.expectedCharacter;
     final englishName = characterInfo?['english'] ?? widget.expectedCharacter;
-    final strokeCount = characterInfo?['strokes'] ?? '?';
+    final strokeCount = characterInfo?['strokes']?.toString() ?? '?';
     
     return Scaffold(
       appBar: AppBar(
@@ -409,7 +405,7 @@ class _TracingScreenState extends State<TracingScreen> {
                     child: Column(
                       children: [
                         Text(
-                          'Ito ang character na iyong i-trace:',
+                          'Ito ang titik na iyong i-trace:',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withOpacity(0.9),
