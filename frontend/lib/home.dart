@@ -4,6 +4,7 @@ import 'main.dart';
 import 'ai.dart';
 import 'alaala.dart';
 import 'services/api_service.dart';
+import 'screens/sulatin/sulatin_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -28,10 +29,9 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       _buildHomePage(),
       AiPage(username: widget.username),
-      AlaalaPage(username: widget.username),
       SalitaPage(username: widget.username),
-      _buildGaleriyaPage(),
-      _buildSulatinPage(),
+      AlaalaPage(username: widget.username),
+      const SulatinScreen(),
     ];
   }
 
@@ -202,36 +202,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGaleriyaPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.photo_library, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text('Galeriya (Gallery)', style: TextStyle(fontSize: 18)),
-          const SizedBox(height: 8),
-          Text('Coming soon...', style: TextStyle(color: Colors.grey[600])),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSulatinPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.edit, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text('Sulatin (Writing)', style: TextStyle(fontSize: 18)),
-          const SizedBox(height: 8),
-          Text('Coming soon...', style: TextStyle(color: Colors.grey[600])),
-        ],
-      ),
-    );
-  }
-
   void _onNavBarTapped(int index) {
     setState(() => _selectedIndex = index);
   }
@@ -252,16 +222,13 @@ class _HomePageState extends State<HomePage> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Bahay'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'AI'),
-          BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Alaala'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Juan'),
           BottomNavigationBarItem(
             icon: Icon(Icons.auto_stories),
             label: 'Salita',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            label: 'Galeriya',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Alaala'),
+          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Sulatin'),
         ],
       ),
     );
