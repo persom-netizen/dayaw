@@ -105,16 +105,21 @@ class StrokePainter extends CustomPainter {
       guidelinePaint,
     );
 
-    // Draw diagonal guidelines
+    // Draw diagonal guidelines with lighter color
+    final diagonalPaint = Paint()
+      ..color = Colors.grey.withOpacity(0.2)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+    
     canvas.drawLine(
       const Offset(0, 0),
       Offset(size.width, size.height),
-      guidelinePaint..color = Colors.grey.withOpacity(0.2),
+      diagonalPaint,
     );
     canvas.drawLine(
       Offset(size.width, 0),
       Offset(0, size.height),
-      guidelinePaint,
+      diagonalPaint,
     );
   }
 

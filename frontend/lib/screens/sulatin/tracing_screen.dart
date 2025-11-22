@@ -21,6 +21,8 @@ class TracingScreen extends StatefulWidget {
 }
 
 class _TracingScreenState extends State<TracingScreen> {
+  static const double _confidenceThreshold = 0.6;
+  
   List<Stroke> _strokes = [];
   bool _isLoading = false;
   String? _predictionResult;
@@ -88,7 +90,7 @@ class _TracingScreenState extends State<TracingScreen> {
           _predictionResult = predictedLabel;
           _confidence = confidence;
           _isCorrect = (predictedLabel == widget.expectedCharacter) && 
-                       (confidence >= 0.6);
+                       (confidence >= _confidenceThreshold);
           _isLoading = false;
         });
 

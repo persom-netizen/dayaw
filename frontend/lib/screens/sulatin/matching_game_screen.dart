@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -79,7 +79,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
     }
 
     // Shuffle cards
-    cards.shuffle(Random());
+    cards.shuffle(math.Random());
     _cards = cards;
 
     // Initialize flip controllers
@@ -395,7 +395,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
       child: AnimatedBuilder(
         animation: _flipControllers[index]!,
         builder: (context, child) {
-          final angle = _flipControllers[index]!.value * pi;
+          final angle = _flipControllers[index]!.value * math.pi;
           final transform = Matrix4.identity()
             ..setEntry(3, 2, 0.001)
             ..rotateY(angle);
@@ -403,10 +403,10 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: angle < pi / 2
+            child: angle < math.pi / 2
                 ? _buildCardBack(isMatched)
                 : Transform(
-                    transform: Matrix4.identity()..rotateY(pi),
+                    transform: Matrix4.identity()..rotateY(math.pi),
                     alignment: Alignment.center,
                     child: _buildCardFront(card, isMatched),
                   ),

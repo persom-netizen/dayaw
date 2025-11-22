@@ -180,10 +180,13 @@ class StrokeProcessor {
       totalPoints += stroke.points.length;
     }
 
+    // Safe division - we've already checked strokes is not empty
+    final avgLength = strokes.isNotEmpty ? totalLength / strokes.length : 0.0;
+
     return {
       'totalLength': totalLength,
       'strokeCount': strokes.length,
-      'avgStrokeLength': totalLength / strokes.length,
+      'avgStrokeLength': avgLength,
       'totalPoints': totalPoints,
     };
   }

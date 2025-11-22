@@ -96,14 +96,18 @@ class SulatinApiClient {
         };
       }
     } on http.ClientException catch (e) {
+      // Log technical details for debugging
+      print('Network error in predict: $e');
       return {
         'success': false,
-        'error': 'Network error: $e',
+        'error': 'Hindi makakonekta sa server. Pakisubukan muli.',
       };
     } catch (e) {
+      // Log technical details for debugging
+      print('Error making prediction: $e');
       return {
         'success': false,
-        'error': 'Error making prediction: $e',
+        'error': 'May naganap na error. Pakisubukan muli.',
       };
     }
   }

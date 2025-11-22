@@ -22,6 +22,8 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  static const int _pointsPerCorrectAnswer = 20;
+  
   int? _selectedOptionIndex;
   bool _hasAnswered = false;
   int _score = 0;
@@ -117,7 +119,7 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _hasAnswered = true;
       if (isCorrect) {
-        _score += 20;
+        _score += _pointsPerCorrectAnswer;
       }
     });
 
@@ -186,7 +188,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _showFinalScore() {
     final totalQuestions = _quizQuestions.length;
-    final maxScore = totalQuestions * 20;
+    final maxScore = totalQuestions * _pointsPerCorrectAnswer;
     final percentage = (_score / maxScore * 100).round();
 
     String message;
@@ -257,7 +259,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tama: ${_score ~/ 20} sa $totalQuestions',
+                    'Tama: ${_score ~/ _pointsPerCorrectAnswer} sa $totalQuestions',
                     style: const TextStyle(fontSize: 14),
                   ),
                 ],
