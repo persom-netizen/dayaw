@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/sulatin_models.dart';
 import '../../widgets/sulatin_widgets.dart';
+import 'tracing_screen.dart';
+import 'matching_game_screen.dart';
+import 'quiz_screen.dart';
 
 class LessonDetailScreen extends StatefulWidget {
   final Lesson lesson;
@@ -93,6 +96,116 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildMultipleChoiceLesson() {
+    // Check if this is a quiz-type lesson (Lesson 5 in Kabanata 1)
+    if (widget.lesson.id == 5 || widget.lesson.title.contains('Pagsusulit')) {
+      // Navigate to full quiz screen
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.quiz,
+                    size: 64,
+                    color: Colors.green[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.lesson.title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Subukin ang iyong kaalaman sa Baybayin!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuizScreen(
+                    lessonId: widget.lesson.id,
+                    lessonTitle: widget.lesson.title,
+                    question: widget.lesson.content,
+                    options: widget.lesson.options,
+                    correctAnswerIndex: widget.lesson.correctAnswerIndex,
+                  ),
+                ),
+              );
+              if (result != null && result['completed'] == true) {
+                // Lesson completed
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[600],
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Magsimula ng Pagsusulit',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              side: BorderSide(color: Colors.blue[600]!, width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Bumalik',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[600],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Single question multiple choice (simple inline quiz)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -218,11 +331,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Ang card matching game ay darating sa susunod na update.',
+                    'Itugma ang mga katinig sa kanilang tamang kombinasyon sa patinig.',
                     style: TextStyle(
                       fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black54,
+                      color: Colors.black87,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -233,20 +345,53 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchingGameScreen(
+                  lessonId: widget.lesson.id,
+                  lessonTitle: widget.lesson.title,
+                ),
+              ),
+            );
+            if (result != null && result['completed'] == true) {
+              // Lesson completed
+              Navigator.pop(context);
+            }
+          },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[600],
+            backgroundColor: Colors.orange[600],
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
           child: const Text(
-            'Bumalik',
+            'Magsimula ng Laro',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: () => Navigator.pop(context),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            side: BorderSide(color: Colors.blue[600]!, width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Text(
+            'Bumalik',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[600],
             ),
           ),
         ),
@@ -255,6 +400,19 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildTracingLesson() {
+    // Extract expected character from lesson content or title
+    String expectedCharacter = 'A'; // Default
+    final content = widget.lesson.content.toLowerCase();
+    
+    // Try to extract vowels (A, E, I, O, U) or punctuation
+    if (content.contains('a')) expectedCharacter = 'A';
+    if (content.contains('e')) expectedCharacter = 'E';
+    if (content.contains('i')) expectedCharacter = 'I';
+    if (content.contains('o')) expectedCharacter = 'O';
+    if (content.contains('u')) expectedCharacter = 'U';
+    if (content.contains('.') || content.contains('tuldok')) expectedCharacter = '.';
+    if (content.contains(',') || content.contains('kuwit')) expectedCharacter = ',';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -291,37 +449,27 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Ang handwriting practice feature ay darating sa susunod na update.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content:
-                    Text('Ang tracing feature ay darating sa susunod na update'),
-                duration: Duration(seconds: 2),
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TracingScreen(
+                  lessonId: widget.lesson.id,
+                  expectedCharacter: expectedCharacter,
+                  lessonTitle: widget.lesson.title,
+                ),
               ),
             );
+            if (result != null && result['completed'] == true) {
+              // Lesson completed
+              Navigator.pop(context);
+            }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.purple[600],
