@@ -57,11 +57,15 @@ def main(args):
     model = build_small_cnn(input_shape=(128,128,1), num_classes=len(classes))
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     model.fit(train_ds, validation_data=val_ds, epochs=args.epochs)
-    model.save(args.output)
-    with open(args.output + "_classes.txt", "w", encoding="utf-8") as f:
+    
+    # Ensure output has .keras extension
+    output_path = args.output if args.output.endswith('.keras') else args.output + '.keras'
+    model.save(output_path)
+    
+    with open(output_path + ".classes.txt", "w", encoding="utf-8") as f:
         for c in classes:
             f.write(c + "\n")
-    print("Saved model to", args.output)
+    print("Saved model to", output_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

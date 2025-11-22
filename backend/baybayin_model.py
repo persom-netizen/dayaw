@@ -1,7 +1,7 @@
 """
 backend/baybayin_model.py
 
-- Loads a saved TensorFlow Keras model (SavedModel or .h5).
+- Loads a saved TensorFlow Keras model (SavedModel or .h5 or .keras).
 - Provides preprocess helpers to convert data-URI or stroke JSON to model input.
 - Exposes predict_image(data_uri) and predict_from_strokes(strokes) helpers.
 """
@@ -17,20 +17,48 @@ import tensorflow as tf
 import cv2
 
 # Model path (set via env var or default)
-MODEL_PATH = os.environ.get("BAYBAYIN_MODEL_PATH", "baybayin_model")
-CLASSES_FILE = MODEL_PATH + "_classes.txt"
+# Try .keras first (modern TensorFlow format), then fall back to legacy names
+def _find_model_path():
+    candidates = [
+        os.environ.get("BAYBAYIN_MODEL_PATH"),  # explicit env var
+        "baybayin_model.keras",  # new format
+        "baybayin_model",  # legacy format (SavedModel directory)
+    ]
+    for path in candidates:
+        if path and os.path.exists(path):
+            return path
+    # if none found, return the env var or default to .keras
+    return os.environ.get("BAYBAYIN_MODEL_PATH", "baybayin_model.keras")
+
+MODEL_PATH = _find_model_path()
+CLASSES_FILE = None
+
+def _find_classes_file():
+    """Find the classes file, trying both .keras.classes.txt and _classes.txt formats."""
+    candidates = [
+        MODEL_PATH + ".classes.txt",  # new format (matches train_baybayin.py output)
+        MODEL_PATH.replace(".keras", "") + "_classes.txt",  # legacy format
+        "baybayin_model.keras.classes.txt",
+        "baybayin_model_classes.txt",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return candidates[0]  # default to new format
 
 # Lazy-loaded objects
 _model = None
 _classes = None
 
 def load_model():
-    global _model, _classes
+    global _model, _classes, MODEL_PATH, CLASSES_FILE
     if _model is None:
         if not os.path.exists(MODEL_PATH):
             raise FileNotFoundError(f"Model path not found: {MODEL_PATH}")
         _model = tf.keras.models.load_model(MODEL_PATH)
     if _classes is None:
+        if CLASSES_FILE is None:
+            CLASSES_FILE = _find_classes_file()
         if os.path.exists(CLASSES_FILE):
             with open(CLASSES_FILE, "r", encoding="utf-8") as f:
                 _classes = [l.strip() for l in f.readlines() if l.strip()]
