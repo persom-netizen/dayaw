@@ -8,8 +8,12 @@ import hashlib
 import sys
 import os
 import random
+
+# ensure backend folder on sys.path so local modules can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from openai_client import ask_openai
+
+# Use Gemini client (Google Generative AI)
+from gemini_client import ask_gemini
 
 app = Flask(__name__)
 app.secret_key = "raindayaw"
@@ -182,11 +186,11 @@ def db_ping():
 
 
 # ----------------------
-# CHAT ROUTES
+# CHAT ROUTES (now using Gemini)
 # ----------------------
 @app.route("/api/ask", methods=["POST"])
-def ask_openai_endpoint():
-    """Send a question to OpenAI and save conversation history."""
+def ask_gemini_endpoint():
+    """Send a question to Gemini (Google Generative AI) and save conversation history."""
     try:
         data = request.get_json() or {}
         question = data.get("question")
@@ -195,8 +199,16 @@ def ask_openai_endpoint():
         if not question:
             return jsonify({"error": "Question is required"}), 400
 
-        answer = ask_openai(question)
-        chat_entry = ChatHistory(username=username, user_message=question, ai_response=answer, created_at=datetime.utcnow())
+        # call Gemini wrapper
+        answer = ask_gemini(question)
+
+        # Save to chat history
+        chat_entry = ChatHistory(
+            username=username,
+            user_message=question,
+            ai_response=answer,
+            created_at=datetime.utcnow()
+        )
         db.session.add(chat_entry)
         db.session.commit()
 
@@ -210,6 +222,24 @@ def ask_openai_endpoint():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+
+# add near other routes (paste anywhere above the RUN section)
+
+@app.route("/api/gemini-status", methods=["GET"])
+def gemini_status():
+    """
+    Returns simple diagnostics about the Gemini client and environment.
+    Useful to check whether GOOGLE_API_KEY is seen by the Flask process.
+    """
+    from gemini_client import _configure_client  # runtime import to use inner helper
+    configured, reason = _configure_client()
+    return jsonify({
+        "gemini_sdk_installed": True if 'google' in globals() or configured else (False),
+        "configured": configured,
+        "reason": reason,
+        "GOOGLE_API_KEY_present": bool(os.getenv("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+    }), 200
 
 
 @app.route("/api/chat-history", methods=["GET"])
@@ -360,9 +390,73 @@ def get_all_salita():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===================================================
+# REGISTER BLUEPRINTS (SULATIN)
+# ===================================================
+from sulatin_routes import sulatin_bp
+app.register_blueprint(sulatin_bp)
 
 # ===================================================
-# RUN
+# RUN / DB INIT HANDLER
 # ===================================================
+import argparse
+from sqlalchemy import text as sa_text
+
+def create_sulatin_tables_via_sql():
+    """
+    Create sulatin tables directly via raw SQL (avoids importing sulatin_routes
+    during db init and prevents circular import issues).
+    """
+    # SQL for sulatin_samples and sulatin_attempts (MySQL syntax)
+    sulatin_samples_sql = """
+    CREATE TABLE IF NOT EXISTS sulatin_samples (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        label VARCHAR(100) NOT NULL,
+        source VARCHAR(50) DEFAULT 'user',
+        stroke_json JSON NULL,
+        image_path VARCHAR(255) NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+    sulatin_attempts_sql = """
+    CREATE TABLE IF NOT EXISTS sulatin_attempts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(80),
+        expected VARCHAR(100),
+        predicted VARCHAR(100),
+        confidence VARCHAR(50),
+        correct TINYINT(1) DEFAULT 0,
+        stroke_json JSON NULL,
+        image_path VARCHAR(255) NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+    conn = db.engine.connect()
+    try:
+        conn.execute(sa_text(sulatin_samples_sql))
+        conn.execute(sa_text(sulatin_attempts_sql))
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--init-db", action="store_true", help="Create DB tables (app models + sulatin tables) and exit")
+    # parse only known args here so it doesn't interfere with Flask's own args
+    args, _ = parser.parse_known_args()
+
+    if args.init_db or os.environ.get("INIT_DB") == "1":
+        # Create tables for models defined in this module (SignUp, Login, etc.)
+        with app.app_context():
+            print("Creating tables for models defined in app.py...")
+            db.create_all()
+            print("Creating sulatin tables (if not present)...")
+            try:
+                create_sulatin_tables_via_sql()
+            except Exception as e:
+                print("Warning: creating sulatin tables via SQL failed:", e)
+            print("DB tables created. Exiting (init-db).")
+        # Exit so the process does not continue to run the server
+        sys.exit(0)
+
+    # Normal run: start the Flask server
     app.run(host="0.0.0.0", port=5000, debug=True)
