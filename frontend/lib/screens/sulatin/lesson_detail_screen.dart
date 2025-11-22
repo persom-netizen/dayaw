@@ -131,7 +131,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           onPressed: _selectedOptionIndex != null
               ? () {
                   // Show result
-                  final isCorrect = _selectedOptionIndex == 0; // First option is correct
+                  final isCorrect = _selectedOptionIndex == widget.lesson.correctAnswerIndex;
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(

@@ -4,6 +4,7 @@ class Lesson {
   final String content;
   final String type; // text, multiple_choice, matching, tracing
   final List<String>? options;
+  final int? correctAnswerIndex; // For multiple choice questions
   final bool isLocked;
 
   Lesson({
@@ -12,6 +13,7 @@ class Lesson {
     required this.content,
     required this.type,
     this.options,
+    this.correctAnswerIndex,
     this.isLocked = false,
   });
 }
@@ -77,6 +79,7 @@ class SulatinCurriculum {
               'Sa isang lugar sa Pilipinas',
               'Wala sa nabanggit',
             ],
+            correctAnswerIndex: 0,
           ),
         ],
       ),
