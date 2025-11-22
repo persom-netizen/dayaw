@@ -70,16 +70,19 @@ class SulatinApiClient {
 
   /// Make predictions on strokes
   static Future<Map<String, dynamic>> predict({
-    required List<Map<String, dynamic>> strokes,
+    required List<List<Map<String, dynamic>>> strokes,
+    Duration timeout = const Duration(seconds: 30),
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/sulatin/predict'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'strokes': strokes,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/sulatin/predict'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'strokes': strokes,
+            }),
+          )
+          .timeout(timeout);
 
       if (response.statusCode == 200) {
         return {
@@ -92,10 +95,19 @@ class SulatinApiClient {
           'error': 'Failed to predict: ${response.statusCode}',
         };
       }
-    } catch (e) {
+    } on http.ClientException catch (e) {
+      // Log technical details for debugging
+      print('Network error in predict: $e');
       return {
         'success': false,
-        'error': 'Error making prediction: $e',
+        'error': 'Hindi makakonekta sa server. Pakisubukan muli.',
+      };
+    } catch (e) {
+      // Log technical details for debugging
+      print('Error making prediction: $e');
+      return {
+        'success': false,
+        'error': 'May naganap na error. Pakisubukan muli.',
       };
     }
   }
