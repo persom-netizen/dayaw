@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../services/stroke_processor.dart';
 
 /// Custom painter for drawing strokes on canvas
@@ -187,6 +188,7 @@ class DrawingCanvas extends StatefulWidget {
 class _DrawingCanvasState extends State<DrawingCanvas> {
   late List<Stroke> _strokes;
   Stroke? _currentStroke;
+  bool _isUsingPointerEvents = false;
 
   @override
   void initState() {
@@ -195,6 +197,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   }
 
   void _onPanStart(DragStartDetails details) {
+    // Skip if already using pointer events
+    if (_isUsingPointerEvents) return;
+    
     setState(() {
       _currentStroke = Stroke([
         StrokePoint(
@@ -206,6 +211,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
+    // Skip if already using pointer events
+    if (_isUsingPointerEvents) return;
+    
     setState(() {
       _currentStroke?.points.add(
         StrokePoint(
@@ -217,6 +225,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   }
 
   void _onPanEnd(DragEndDetails details) {
+    // Skip if already using pointer events
+    if (_isUsingPointerEvents) return;
+    
     if (_currentStroke != null && _currentStroke!.points.isNotEmpty) {
       setState(() {
         _strokes.add(_currentStroke!);
@@ -226,24 +237,85 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
     }
   }
 
+  void _onPointerDown(PointerDownEvent event) {
+    // Mark that we're using pointer events to prevent duplicate handling
+    _isUsingPointerEvents = true;
+    
+    setState(() {
+      _currentStroke = Stroke([
+        StrokePoint(
+          x: event.localPosition.dx,
+          y: event.localPosition.dy,
+        ),
+      ]);
+    });
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    // Only add points if we have a current stroke
+    if (_currentStroke == null) return;
+    
+    setState(() {
+      _currentStroke!.points.add(
+        StrokePoint(
+          x: event.localPosition.dx,
+          y: event.localPosition.dy,
+        ),
+      );
+    });
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_currentStroke != null && _currentStroke!.points.isNotEmpty) {
+      setState(() {
+        _strokes.add(_currentStroke!);
+        _currentStroke = null;
+      });
+      widget.onStrokesChanged(_strokes);
+    }
+    
+    // Reset flag after a short delay to allow next stroke to work
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        _isUsingPointerEvents = false;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanStart: _onPanStart,
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      child: CustomPaint(
-        painter: StrokePainter(
-          strokes: _strokes,
-          currentStroke: _currentStroke,
-          strokeColor: widget.strokeColor,
-          strokeWidth: widget.strokeWidth,
-          showGuidelines: widget.showGuidelines,
-          referenceCharacter: widget.referenceCharacter,
-        ),
-        child: Container(
-          height: widget.height,
-          color: Colors.white,
+    return Listener(
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      child: GestureDetector(
+        onPanStart: _onPanStart,
+        onPanUpdate: _onPanUpdate,
+        onPanEnd: _onPanEnd,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Ensure canvas has explicit dimensions for web compatibility
+            final width = constraints.maxWidth.isFinite 
+                ? constraints.maxWidth 
+                : MediaQuery.of(context).size.width;
+            final height = widget.height ?? 300;
+            
+            return CustomPaint(
+              painter: StrokePainter(
+                strokes: _strokes,
+                currentStroke: _currentStroke,
+                strokeColor: widget.strokeColor,
+                strokeWidth: widget.strokeWidth,
+                showGuidelines: widget.showGuidelines,
+                referenceCharacter: widget.referenceCharacter,
+              ),
+              child: Container(
+                width: width,
+                height: height,
+                color: Colors.white,
+              ),
+            );
+          },
         ),
       ),
     );
