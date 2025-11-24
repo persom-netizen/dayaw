@@ -18,14 +18,18 @@ This implementation adds complete, production-ready tracing and card matching fe
 - ✅ Accuracy scoring with 60% confidence threshold
 - ✅ "Tama!" or "Mali, subukan ulit" feedback
 - ✅ Haptic feedback (heavy for correct, vibrate for incorrect)
-- ✅ Support for vowels (A, E, I, O, U) and punctuation (., ,)
+- ✅ Support for vowels (A, E, I, O, U) - traces each character sequentially
+- ✅ **UPDATED**: Improved pointer event handling for better web and mobile support
+- ✅ **UPDATED**: Sequential character tracing - each vowel traced separately
+- ✅ **UPDATED**: Title shows only current character (e.g., "A" not "A, E, I, O, U")
 
 **User Flow**:
-1. User sees expected character to trace
+1. User sees expected character to trace (e.g., "A")
 2. Draws character on canvas
 3. Submits for prediction
 4. Gets immediate feedback with accuracy
-5. Option to retry or continue
+5. Option to retry or continue to next character
+6. After completing all vowels (A, E, I, O, U), lesson is complete
 
 ### 2. Matching Game Screen (`matching_game_screen.dart`)
 **Purpose**: Interactive card matching game for Kabanata 2
@@ -98,8 +102,10 @@ This implementation adds complete, production-ready tracing and card matching fe
   - Reference character display
   - Completed strokes
   - Current stroke being drawn
-- ✅ `DrawingCanvas`: StatefulWidget with gesture handling
-  - Pan start/update/end events
+- ✅ `DrawingCanvas`: StatefulWidget with improved pointer event handling
+  - **UPDATED**: Uses Listener widget for better cross-platform support
+  - **UPDATED**: Direct pointer events (onPointerDown, onPointerMove, onPointerUp, onPointerCancel)
+  - **UPDATED**: Improved touch response with HitTestBehavior.opaque
   - Stroke collection
   - Callback on changes
 
@@ -115,7 +121,9 @@ This implementation adds complete, production-ready tracing and card matching fe
 - ✅ Routes to `TracingScreen` for tracing lessons
 - ✅ Routes to `MatchingGameScreen` for matching lessons
 - ✅ Routes to `QuizScreen` for quiz lessons
-- ✅ Extracts expected character for tracing
+- ✅ **UPDATED**: Detects vowels lesson and creates sequential tracing sessions
+- ✅ **UPDATED**: Loops through A, E, I, O, U - one character at a time
+- ✅ **UPDATED**: Removed support for period (.) and comma (,) characters
 - ✅ Handles completion results from screens
 
 ## 🎨 Design Features
@@ -362,6 +370,20 @@ For issues or questions:
 3. Test with backend locally
 4. Check console logs for technical errors
 
+## 🔄 Recent Updates (November 2024)
+
+### Tracing Screen Improvements
+1. **Sequential Character Tracing**: Vowels lesson now traces A, E, I, O, U individually instead of all at once
+2. **Fixed Title Display**: Title shows only current character (e.g., "A") instead of "A, E, I, O, U"
+3. **Removed Punctuation**: Period (.) and comma (,) removed from tracing - focus on vowels only
+4. **Better Touch Handling**: Improved DrawingCanvas with Listener widget for superior cross-platform support
+
+### Technical Improvements
+- Replaced GestureDetector with Listener widget for more reliable pointer events
+- Added onPointerCancel handler for better event cleanup
+- Improved null safety in pointer move handler
+- Better touch response with HitTestBehavior.opaque
+
 ## ✨ Conclusion
 
 This implementation delivers a complete, production-ready solution for Baybayin learning through:
@@ -371,5 +393,7 @@ This implementation delivers a complete, production-ready solution for Baybayin 
 - ✅ Beautiful, user-friendly interface
 - ✅ Robust error handling
 - ✅ Full documentation
+- ✅ **NEW**: Enhanced sequential character tracing
+- ✅ **NEW**: Improved cross-platform pointer event handling
 
 **Status**: Ready for integration testing and user acceptance testing! 🎉
