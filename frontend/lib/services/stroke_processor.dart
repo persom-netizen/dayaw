@@ -190,4 +190,80 @@ class StrokeProcessor {
       'totalPoints': totalPoints,
     };
   }
+
+  /// Calculate accuracy score from 1-100 based on stroke characteristics
+  /// More lenient scoring that considers coverage, smoothness, and basic shape matching
+  static int calculateAccuracyScore(List<Stroke> strokes, {
+    int expectedStrokeCount = 1,
+    double minTotalLength = 50.0,
+    double maxTotalLength = 500.0,
+  }) {
+    if (strokes.isEmpty) return 0;
+
+    int score = 50; // Start with base score
+
+    // 1. Stroke count similarity (±20 points)
+    final strokeCountDiff = (strokes.length - expectedStrokeCount).abs();
+    if (strokeCountDiff == 0) {
+      score += 20; // Perfect match
+    } else if (strokeCountDiff == 1) {
+      score += 10; // Close
+    } else if (strokeCountDiff <= 2) {
+      score += 5; // Acceptable
+    } else {
+      score -= 10; // Too many or too few strokes
+    }
+
+    // 2. Total length assessment (±15 points)
+    double totalLength = 0;
+    for (var stroke in strokes) {
+      totalLength += stroke.length;
+    }
+    
+    if (totalLength >= minTotalLength && totalLength <= maxTotalLength) {
+      score += 15; // Good length
+    } else if (totalLength > maxTotalLength * 1.5) {
+      score -= 10; // Way too long
+    } else if (totalLength < minTotalLength * 0.5) {
+      score -= 15; // Way too short
+    }
+
+    // 3. Stroke smoothness (±10 points)
+    // Check if strokes have reasonable point density
+    for (var stroke in strokes) {
+      if (stroke.points.length >= 5 && stroke.length > 30) {
+        score += 3; // Smooth stroke
+      } else if (stroke.points.length < 2) {
+        score -= 5; // Too short/jerky
+      }
+    }
+
+    // 4. Coverage bonus (±5 points)
+    // Reward having sufficient points
+    int totalPoints = 0;
+    for (var stroke in strokes) {
+      totalPoints += stroke.points.length;
+    }
+    if (totalPoints >= 20) {
+      score += 5; // Good coverage
+    }
+
+    // Clamp score to 1-100 range
+    return score.clamp(1, 100);
+  }
+
+  /// Get Filipino feedback message based on accuracy score
+  static String getFeedbackMessage(int score) {
+    if (score >= 90) {
+      return "Ika'y napakagaling! Ipagpatuloy mo pa!";
+    } else if (score >= 71) {
+      return "Hmm! Masyado mo namang ginagalingan, ngunit konting sanay pa.";
+    } else if (score >= 41) {
+      return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
+    } else if (score >= 21) {
+      return "Ayos! Ngunit, kailangan mo pa ng kaunting pag sasanay.";
+    } else {
+      return "Ok lang yan! Matuturo kapa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
+    }
+  }
 }
