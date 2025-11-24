@@ -103,7 +103,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'pamagat (opsyonal)',
+                    labelText: 'Pamagat (opsyonal)',
                     border: OutlineInputBorder(),
                     hintText: 'Maglagay ng pamagat',
                   ),
@@ -115,7 +115,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _contentController,
                   decoration: const InputDecoration(
-                    labelText: 'ano ang iyong nais isulat?',
+                    labelText: 'Ano ang iyong nais isulat?',
                     border: OutlineInputBorder(),
                     hintText: 'Ibahagi ang iyong saloobin...',
                   ),
@@ -134,7 +134,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _imageUrlController,
                   decoration: InputDecoration(
-                    labelText: 'nais mag dagdag ng larawan (opsyonal)',
+                    labelText: 'Nais magdagdag ng larawan (opsyonal)',
                     border: const OutlineInputBorder(),
                     hintText: 'Ilagay ang URL ng larawan',
                     suffixIcon: IconButton(
@@ -166,7 +166,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           ),
                         )
                       : const Text(
-                          'ilaganap',
+                          'Ilaganap',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
