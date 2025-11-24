@@ -322,8 +322,8 @@ class _TracingScreenState extends State<TracingScreen> {
                 child: DrawingCanvas(
                   onStrokesChanged: _onStrokesChanged,
                   initialStrokes: _strokes,
-                  strokeColor: Colors.purple[600]!,
-                  strokeWidth: 6.0,
+                  strokeColor: Colors.black,
+                  strokeWidth: 12.0,
                   showGuidelines: true,
                   referenceCharacter: _baybayinCharacter,
                   height: 350,
