@@ -77,8 +77,6 @@ class StrokePainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
-
-
   @override
   bool shouldRepaint(covariant StrokePainter oldDelegate) {
     return strokes != oldDelegate.strokes ||
@@ -125,7 +123,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
     super.didUpdateWidget(oldWidget);
     // Update internal strokes when initialStrokes changes (e.g., when cleared)
     if (widget.initialStrokes != oldWidget.initialStrokes) {
-      _strokes = List.from(widget.initialStrokes);
+      setState(() {
+        _strokes = List.from(widget.initialStrokes);
+      });
     }
   }
 
