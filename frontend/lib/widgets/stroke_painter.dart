@@ -232,7 +232,10 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   @override
   Widget build(BuildContext context) {
     // Use Listener for better pointer event handling across web and mobile
-    // This provides more direct access to pointer events and works well on both platforms
+    // Listener provides direct access to pointer events and works consistently across:
+    // - Web: Handles mouse, touch, and stylus input reliably
+    // - Mobile: Better touch tracking with precise pointer coordinates
+    // - Improved over GestureDetector which can miss rapid pointer movements
     return Listener(
       onPointerDown: (event) => _handlePointerDown(event.localPosition),
       onPointerMove: (event) => _handlePointerMove(event.localPosition),
