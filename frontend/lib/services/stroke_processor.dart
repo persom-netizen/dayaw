@@ -261,9 +261,9 @@ class StrokeProcessor {
     } else if (score >= 41) {
       return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
     } else if (score >= 21) {
-      return "Ayos! Ngunit, kailangan mo pa ng kaunting pag sasanay.";
+      return "Ayos! Ngunit, kailangan mo pa ng kaunting pagsasanay.";
     } else {
-      return "Ok lang yan! Matuturo kapa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
+      return "Ok lang yan! Matuturo ka pa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
     }
   }
 }
