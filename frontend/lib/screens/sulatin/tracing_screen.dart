@@ -20,6 +20,10 @@ class TracingScreen extends StatefulWidget {
 }
 
 class _TracingScreenState extends State<TracingScreen> {
+  // Scoring and validation constants
+  static const int _pointsPerSuccess = 20;
+  static const int _minPointsRequired = 10;
+  
   List<Stroke> _strokes = [];
   int _score = 0;
   int _attempts = 0;
@@ -27,7 +31,9 @@ class _TracingScreenState extends State<TracingScreen> {
 
   // Baybayin vowel mappings - only vowels
   // Note: In Baybayin script, E and I share the same character (ᜁ),
-  // and O and U share the same character (ᜂ). This is correct and standard.
+  // and O and U share the same character (ᜂ). This is intentional and
+  // reflects the authentic Baybayin writing system where these vowel pairs
+  // are not distinguished in written form.
   static const Map<String, String> _characterNames = {
     'A': 'ᜀ', // U+1700 TAGALOG LETTER A
     'E': 'ᜁ', // U+1701 TAGALOG LETTER I (also represents E)
@@ -76,8 +82,8 @@ class _TracingScreenState extends State<TracingScreen> {
       for (var stroke in _strokes) {
         totalPoints += stroke.points.length;
       }
-      // Require at least 10 total points across all strokes for a meaningful drawing
-      hasValidStrokes = totalPoints >= 10;
+      // Require minimum points across all strokes for a meaningful drawing
+      hasValidStrokes = totalPoints >= _minPointsRequired;
     }
 
     setState(() {
@@ -85,7 +91,7 @@ class _TracingScreenState extends State<TracingScreen> {
     });
 
     if (hasValidStrokes) {
-      _score += 20;
+      _score += _pointsPerSuccess;
       HapticFeedback.heavyImpact();
       _showSuccessDialog();
     } else {
@@ -104,8 +110,6 @@ class _TracingScreenState extends State<TracingScreen> {
   }
 
   void _showSuccessDialog() {
-    const int pointsEarned = 20; // Points for this attempt
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -143,7 +147,7 @@ class _TracingScreenState extends State<TracingScreen> {
                   const Icon(Icons.star, color: Colors.amber, size: 48),
                   const SizedBox(height: 8),
                   Text(
-                    '+$pointsEarned puntos',
+                    '+$_pointsPerSuccess puntos',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
