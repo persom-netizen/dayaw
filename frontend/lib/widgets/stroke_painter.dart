@@ -9,6 +9,7 @@ class StrokePainter extends CustomPainter {
   final double strokeWidth;
   final bool showGuidelines;
   final String? referenceCharacter;
+  final bool showTracingGuide;
 
   StrokePainter({
     required this.strokes,
@@ -17,6 +18,7 @@ class StrokePainter extends CustomPainter {
     this.strokeWidth = 4.0,
     this.showGuidelines = true,
     this.referenceCharacter,
+    this.showTracingGuide = true,
   });
 
   @override
@@ -27,7 +29,7 @@ class StrokePainter extends CustomPainter {
     }
 
     // Draw reference character if provided
-    if (referenceCharacter != null && referenceCharacter!.isNotEmpty) {
+    if (referenceCharacter != null && referenceCharacter!.isNotEmpty && showTracingGuide) {
       _drawReferenceCharacter(canvas, size);
     }
 
@@ -124,28 +126,48 @@ class StrokePainter extends CustomPainter {
   }
 
   void _drawReferenceCharacter(Canvas canvas, Size size) {
-    // Draw the reference character in light gray behind the drawing area
-    final textPainter = TextPainter(
+    // Draw the reference character as a tracing guide
+    // First draw a lighter filled version for context
+    final backgroundTextPainter = TextPainter(
       text: TextSpan(
         text: referenceCharacter,
         style: TextStyle(
           fontSize: size.width * 0.6,
-          color: Colors.grey.withOpacity(0.2),
+          color: Colors.grey.withOpacity(0.15),
           fontWeight: FontWeight.bold,
         ),
       ),
       textDirection: TextDirection.ltr,
     );
 
-    textPainter.layout();
+    backgroundTextPainter.layout();
 
     // Center the character
     final offset = Offset(
-      (size.width - textPainter.width) / 2,
-      (size.height - textPainter.height) / 2,
+      (size.width - backgroundTextPainter.width) / 2,
+      (size.height - backgroundTextPainter.height) / 2,
     );
 
-    textPainter.paint(canvas, offset);
+    backgroundTextPainter.paint(canvas, offset);
+    
+    // Draw the outline/stroke version for tracing
+    final outlineTextPainter = TextPainter(
+      text: TextSpan(
+        text: referenceCharacter,
+        style: TextStyle(
+          fontSize: size.width * 0.6,
+          fontWeight: FontWeight.bold,
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.0
+            ..color = Colors.deepPurple.withOpacity(0.4),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+
+    outlineTextPainter.layout();
+    outlineTextPainter.paint(canvas, offset);
   }
 
   @override
@@ -155,7 +177,8 @@ class StrokePainter extends CustomPainter {
         strokeColor != oldDelegate.strokeColor ||
         strokeWidth != oldDelegate.strokeWidth ||
         showGuidelines != oldDelegate.showGuidelines ||
-        referenceCharacter != oldDelegate.referenceCharacter;
+        referenceCharacter != oldDelegate.referenceCharacter ||
+        showTracingGuide != oldDelegate.showTracingGuide;
   }
 }
 
@@ -168,6 +191,7 @@ class DrawingCanvas extends StatefulWidget {
   final bool showGuidelines;
   final String? referenceCharacter;
   final double? height;
+  final bool showTracingGuide;
 
   const DrawingCanvas({
     super.key,
@@ -178,6 +202,7 @@ class DrawingCanvas extends StatefulWidget {
     this.showGuidelines = true,
     this.referenceCharacter,
     this.height,
+    this.showTracingGuide = true,
   });
 
   @override
@@ -253,6 +278,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
             strokeWidth: widget.strokeWidth,
             showGuidelines: widget.showGuidelines,
             referenceCharacter: widget.referenceCharacter,
+            showTracingGuide: widget.showTracingGuide,
           ),
           child: Container(),
         ),
