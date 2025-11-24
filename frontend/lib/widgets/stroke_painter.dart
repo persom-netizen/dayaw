@@ -273,6 +273,8 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
         height: widget.height,
         color: Colors.white,
         child: CustomPaint(
+          // Use foregroundPainter instead of painter to ensure strokes render
+          // on top of the white background, not behind it
           foregroundPainter: StrokePainter(
             strokes: _strokes,
             currentStroke: _currentStroke,
