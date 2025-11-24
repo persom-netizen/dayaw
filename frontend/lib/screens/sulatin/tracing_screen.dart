@@ -23,6 +23,12 @@ class TracingScreen extends StatefulWidget {
 class _TracingScreenState extends State<TracingScreen> {
   static const double _confidenceThreshold = 0.6;
   
+  // Score calculation constants
+  static const int _minCorrectScore = 60;
+  static const int _maxScore = 100;
+  static const int _confidenceBoostForCorrect = 40;
+  static const int _maxWrongScore = 40;
+  
   // Character name mappings
   static const Map<String, Map<String, String>> _characterNames = {
     'A': {'tagalog': 'A', 'english': 'A', 'strokes': '3'},
@@ -44,7 +50,7 @@ class _TracingScreenState extends State<TracingScreen> {
     if (score >= 90) {
       return "Ika'y napakagaling! Ipagpatuloy mo pa!";
     } else if (score >= 71) {
-      return "Hmm! Masyado mo namang ginagaling, ngunit konting sanay pa.";
+      return "Hmm! Masyado mo namang ginaling, ngunit konting sanay pa.";
     } else if (score >= 41) {
       return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
     } else if (score >= 21) {
@@ -133,18 +139,21 @@ class _TracingScreenState extends State<TracingScreen> {
         int calculatedScore;
         if (predictedLabel == widget.expectedCharacter) {
           // Correct character: score based on confidence (60-100)
-          calculatedScore = (40 + (confidence * 60)).round().clamp(1, 100);
+          calculatedScore = (_minCorrectScore + (confidence * _confidenceBoostForCorrect))
+              .round()
+              .clamp(1, _maxScore);
         } else {
           // Wrong character: low score based on confidence (1-40)
-          calculatedScore = (confidence * 40).round().clamp(1, 40);
+          calculatedScore = (confidence * _maxWrongScore).round().clamp(1, _maxWrongScore);
         }
 
         setState(() {
           _predictionResult = predictedLabel;
           _confidence = confidence;
           _score = calculatedScore;
+          // Consider correct if character matches AND score is passing (>= 60)
           _isCorrect = (predictedLabel == widget.expectedCharacter) && 
-                       (confidence >= _confidenceThreshold);
+                       (calculatedScore >= _minCorrectScore);
           _isLoading = false;
         });
 

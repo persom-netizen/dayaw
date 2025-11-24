@@ -3,6 +3,8 @@ import '../services/stroke_processor.dart';
 
 /// Custom painter for drawing strokes on canvas
 class StrokePainter extends CustomPainter {
+  static const double _guidelineStrokeWidth = 3.0;
+  
   final List<Stroke> strokes;
   final Stroke? currentStroke;
   final Color strokeColor;
@@ -159,7 +161,7 @@ class StrokePainter extends CustomPainter {
           fontWeight: FontWeight.bold,
           foreground: Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 3.0
+            ..strokeWidth = _guidelineStrokeWidth
             ..color = Colors.deepPurple.withOpacity(0.4),
         ),
       ),
