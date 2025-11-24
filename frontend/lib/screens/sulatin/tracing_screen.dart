@@ -27,7 +27,6 @@ class _TracingScreenState extends State<TracingScreen> {
   int _score = 0;
   int _attempts = 0;
   bool _isSubmitting = false;
-  bool _showGuideStrokes = true;
   int _lastAccuracyScore = 0;
   String _lastFeedback = '';
 
@@ -237,6 +236,7 @@ class _TracingScreenState extends State<TracingScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
+              _clearCanvas(); // Clear canvas before returning
               Navigator.pop(context, {
                 'completed': true,
                 'score': _score,
@@ -345,54 +345,25 @@ class _TracingScreenState extends State<TracingScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Instructions and guide toggle
+            // Instructions
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.purple[50],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Column(
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.purple[600]),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Gumuhit gamit ang iyong daliri o mouse sa ibaba',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
+                  Icon(Icons.info_outline, color: Colors.purple[600]),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Gumuhit gamit ang iyong daliri o mouse sa ibaba',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(Icons.visibility, color: Colors.purple[600], size: 20),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Ipakita ang gabay',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: _showGuideStrokes,
-                        onChanged: (value) {
-                          setState(() {
-                            _showGuideStrokes = value;
-                          });
-                        },
-                        activeColor: Colors.purple[600],
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -412,9 +383,6 @@ class _TracingScreenState extends State<TracingScreen> {
                   initialStrokes: _strokes,
                   strokeColor: Colors.black,
                   strokeWidth: 12.0,
-                  showGuidelines: true,
-                  referenceCharacter: _baybayinCharacter,
-                  showGuideStrokes: _showGuideStrokes,
                   height: 350,
                 ),
               ),
