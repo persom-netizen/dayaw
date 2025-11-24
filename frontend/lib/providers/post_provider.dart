@@ -18,57 +18,74 @@ class PostProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      print("[INFO] Loading posts...");
       _posts = await PostService.getPosts();
       _posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      print("[SUCCESS] Posts loaded: ${_posts.length}");
     } catch (e) {
       _error = e.toString();
+      print("[ERROR] Error loading posts: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> createPost({
-    required String username,
-    String? title,
-    required String content,
-    String? imageUrl,
-    XFile? imageFile,
-  }) async {
+  /// Upload image to backend
+  Future<String> uploadImage(XFile imageFile) async {
     try {
-      String? uploadedImageUrl;
-
-      // If image file is selected, upload it
-      if (imageFile != null) {
-        uploadedImageUrl = await PostService.uploadImage(imageFile);
-      } else if (imageUrl != null && imageUrl.isNotEmpty) {
-        uploadedImageUrl = imageUrl;
-      }
-
-      final newPost = await PostService.createPost(
-        username: username,
-        title: title,
-        content: content,
-        imageUrl: uploadedImageUrl,
-      );
-
-      _posts.insert(0, newPost);
-      notifyListeners();
+      print("[INFO] PostProvider: Uploading image...");
+      final imageUrl = await PostService.uploadImage(imageFile);
+      print("[SUCCESS] PostProvider: Image uploaded successfully");
+      return imageUrl;
     } catch (e) {
+      print("[ERROR] PostProvider: Error uploading image: $e");
       _error = e.toString();
       notifyListeners();
       rethrow;
     }
   }
 
-  Future<void> deletePost(int postId) async {
+  /// Create post
+  Future<void> createPost({
+    required String username,
+    String? title,
+    required String content,
+    String? imageUrl,
+  }) async {
     try {
-      await PostService.deletePost(postId);
-      _posts.removeWhere((post) => post.id == postId);
+      print("[INFO] PostProvider: Creating post...");
+      final newPost = await PostService.createPost(
+        username: username,
+        title: title,
+        content: content,
+        imageUrl: imageUrl,
+      );
+      _posts.insert(0, newPost);
+      _error = null;
       notifyListeners();
+      print("[SUCCESS] PostProvider: Post created successfully");
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+      print("[ERROR] PostProvider: Error creating post: $e");
+      rethrow;
+    }
+  }
+
+  /// Delete post
+  Future<void> deletePost(int postId) async {
+    try {
+      print("[INFO] PostProvider: Deleting post: $postId");
+      await PostService.deletePost(postId);
+      _posts.removeWhere((post) => post.id == postId);
+      _error = null;
+      notifyListeners();
+      print("[SUCCESS] PostProvider: Post deleted successfully");
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      print("[ERROR] PostProvider: Error deleting post: $e");
       rethrow;
     }
   }

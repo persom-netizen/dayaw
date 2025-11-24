@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _imageUrlController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isUploadingImage = false;
   XFile? _selectedImage;
 
   @override
@@ -28,23 +30,28 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
     try {
+      final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
         setState(() => _selectedImage = image);
+        print("[INFO] Image selected: ${image.name}");
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Napili: ${image.name}'),
+            content: Text('✅ Napili: ${image.name}'),
             duration: const Duration(seconds: 2),
           ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      print("[ERROR] Error picking image: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('❌ Error picking image: $e')));
+      }
     }
   }
 
@@ -56,33 +63,63 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      String? uploadedImageUrl;
+
+      // Upload image if selected
+      if (_selectedImage != null) {
+        print("[INFO] Starting image upload...");
+        setState(() => _isUploadingImage = true);
+
+        uploadedImageUrl = await Provider.of<PostProvider>(
+          context,
+          listen: false,
+        ).uploadImage(_selectedImage!);
+
+        setState(() => _isUploadingImage = false);
+        print("[SUCCESS] Image uploaded: $uploadedImageUrl");
+      } else if (_imageUrlController.text.trim().isNotEmpty) {
+        uploadedImageUrl = _imageUrlController.text.trim();
+        print("[INFO] Using provided image URL: $uploadedImageUrl");
+      }
+
+      // Create post
+      print("[INFO] Creating post...");
       await Provider.of<PostProvider>(context, listen: false).createPost(
         username: widget.username,
         title: _titleController.text.trim().isEmpty
             ? null
             : _titleController.text.trim(),
         content: _contentController.text.trim(),
-        imageUrl: _imageUrlController.text.trim().isEmpty
-            ? null
-            : _imageUrlController.text.trim(),
-        imageFile: _selectedImage, // Pass the selected image file
+        imageUrl: uploadedImageUrl,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✅ Matagumpay na nailagay ang post!')),
+          const SnackBar(
+            content: Text('✅ Matagumpay na nailagay ang post!'),
+            duration: Duration(seconds: 2),
+          ),
         );
-        Navigator.pop(context);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) Navigator.pop(context);
+        });
       }
     } catch (e) {
+      print("[ERROR] Error creating post: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ May error sa paglikha ng post: $e')),
+          SnackBar(
+            content: Text('❌ May error: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     } finally {
       if (mounted) {
-        setState(() => _isSubmitting = false);
+        setState(() {
+          _isSubmitting = false;
+          _isUploadingImage = false;
+        });
       }
     }
   }
@@ -120,13 +157,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Ano ang iyong nais isulat?',
                     border: OutlineInputBorder(),
-                    hintText: 'Ibahagi ang iyong saloobin...',
+                    hintText: 'Ibahagi ang iyong saloohin...',
                   ),
-                  maxLines: 10,
+                  maxLines: 8,
                   maxLength: 10000,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Hindi maaaring walang laman';
+                      return 'Hindi maaaring walang laman ang content';
                     }
                     return null;
                   },
@@ -137,37 +174,39 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _imageUrlController,
                   decoration: const InputDecoration(
-                    labelText: 'O maglagay ng image URL',
+                    labelText: 'O maglagay ng image URL (opsyonal)',
                     border: OutlineInputBorder(),
                     hintText: 'https://example.com/image.jpg',
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Selected image display
+                // Selected image preview
                 if (_selectedImage != null)
                   Card(
+                    elevation: 4,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
-                          Image.network(
-                            _selectedImage!.path,
-                            height: 200,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/placeholder.png',
-                                height: 200,
-                              );
-                            },
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(_selectedImage!.path),
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                           const SizedBox(height: 8),
-                          Text(_selectedImage!.name),
+                          Text(
+                            _selectedImage!.name,
+                            style: const TextStyle(fontSize: 12),
+                          ),
                           TextButton(
                             onPressed: () =>
                                 setState(() => _selectedImage = null),
-                            child: const Text('Tanggalin'),
+                            child: const Text('🗑️ Tanggalin ang larawan'),
                           ),
                         ],
                       ),
@@ -177,9 +216,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
                 // Image picker button
                 ElevatedButton.icon(
-                  onPressed: _pickImage,
+                  onPressed: _isUploadingImage ? null : _pickImage,
                   icon: const Icon(Icons.image),
-                  label: const Text('Nais mag dagdag ng larawan'),
+                  label: Text(
+                    _isUploadingImage
+                        ? 'Nag-uupload...'
+                        : 'Nais mag dagdag ng larawan',
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
                     foregroundColor: Colors.black,
@@ -190,7 +233,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
                 // Submit button
                 ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submitPost,
+                  onPressed: _isSubmitting || _isUploadingImage
+                      ? null
+                      : _submitPost,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -204,9 +249,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             valueColor: AlwaysStoppedAnimation(Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Ilaganap',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                      : Text(
+                          _isUploadingImage ? 'Nag-uupload...' : 'Ilaganap',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ],
