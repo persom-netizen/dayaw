@@ -400,18 +400,26 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildTracingLesson() {
-    // Extract expected character from lesson content or title
+    // Extract expected character from lesson title using pattern matching
     String expectedCharacter = 'A'; // Default
-    final content = widget.lesson.content.toLowerCase();
+    final title = widget.lesson.title.toUpperCase();
     
-    // Try to extract vowels (A, E, I, O, U) or punctuation
-    if (content.contains('a')) expectedCharacter = 'A';
-    if (content.contains('e')) expectedCharacter = 'E';
-    if (content.contains('i')) expectedCharacter = 'I';
-    if (content.contains('o')) expectedCharacter = 'O';
-    if (content.contains('u')) expectedCharacter = 'U';
-    if (content.contains('.') || content.contains('tuldok')) expectedCharacter = '.';
-    if (content.contains(',') || content.contains('kuwit')) expectedCharacter = ',';
+    // Extract character after "PATINIG:" using regex
+    final vowelPattern = RegExp(r'PATINIG:\s*([AEIOU])');
+    final match = vowelPattern.firstMatch(title);
+    
+    if (match != null) {
+      expectedCharacter = match.group(1)!;
+    } else {
+      // Fallback: check content for quoted character
+      final content = widget.lesson.content.toLowerCase();
+      final contentPattern = RegExp(r'"([aeiou])"');
+      final contentMatch = contentPattern.firstMatch(content);
+      
+      if (contentMatch != null) {
+        expectedCharacter = contentMatch.group(1)!.toUpperCase();
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
