@@ -93,6 +93,8 @@ class _TracingScreenState extends State<TracingScreen> {
   }
 
   void _showSuccessDialog() {
+    const int pointsEarned = 20; // Points for this attempt
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -130,11 +132,19 @@ class _TracingScreenState extends State<TracingScreen> {
                   const Icon(Icons.star, color: Colors.amber, size: 48),
                   const SizedBox(height: 8),
                   Text(
-                    '+$_score puntos',
+                    '+$pointsEarned puntos',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.green[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Kabuuang Puntos: $_score',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
                     ),
                   ),
                 ],

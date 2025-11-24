@@ -400,30 +400,25 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildTracingLesson() {
-    // Extract expected character from lesson title
+    // Extract expected character from lesson title using pattern matching
     String expectedCharacter = 'A'; // Default
     final title = widget.lesson.title.toUpperCase();
     
-    // Try to extract vowels (A, E, I, O, U) from the title
-    // Prioritize specific character lessons
-    if (title.contains('PATINIG: A')) {
-      expectedCharacter = 'A';
-    } else if (title.contains('PATINIG: E')) {
-      expectedCharacter = 'E';
-    } else if (title.contains('PATINIG: I')) {
-      expectedCharacter = 'I';
-    } else if (title.contains('PATINIG: O')) {
-      expectedCharacter = 'O';
-    } else if (title.contains('PATINIG: U')) {
-      expectedCharacter = 'U';
+    // Extract character after "PATINIG:" using regex
+    final vowelPattern = RegExp(r'PATINIG:\s*([AEIOU])');
+    final match = vowelPattern.firstMatch(title);
+    
+    if (match != null && match.groupCount > 0) {
+      expectedCharacter = match.group(1)!;
     } else {
-      // Fallback: check content
+      // Fallback: check content for quoted character
       final content = widget.lesson.content.toLowerCase();
-      if (content.contains('"a"')) expectedCharacter = 'A';
-      else if (content.contains('"e"')) expectedCharacter = 'E';
-      else if (content.contains('"i"')) expectedCharacter = 'I';
-      else if (content.contains('"o"')) expectedCharacter = 'O';
-      else if (content.contains('"u"')) expectedCharacter = 'U';
+      final contentPattern = RegExp(r'"([aeiou])"');
+      final contentMatch = contentPattern.firstMatch(content);
+      
+      if (contentMatch != null && contentMatch.groupCount > 0) {
+        expectedCharacter = contentMatch.group(1)!.toUpperCase();
+      }
     }
 
     return Column(
