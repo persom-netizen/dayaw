@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'home.dart';
+import 'config/app_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -34,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.100.168:5000/api/login"),
+        Uri.parse("${AppConfig.apiBaseUrl}/api/login"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "username": _usernameController.text,
