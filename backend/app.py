@@ -1,9 +1,10 @@
 # backend/app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import text
 from datetime import datetime
+from werkzeug.utils import secure_filename
 import hashlib
 import sys
 import os
@@ -22,6 +23,17 @@ CORS(app)
 # ✅ MySQL connection
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+mysqlconnector://root:@localhost/dayaw"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# ✅ File Upload Configuration
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
 db = SQLAlchemy(app)
 
@@ -104,6 +116,10 @@ class Post(db.Model):
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_trivia_index_for_today():
     """Calculate which trivia to show based on current date (24-hour rotation)"""
@@ -236,9 +252,7 @@ def ask_gemini_endpoint():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-    
 
-# add near other routes (paste anywhere above the RUN section)
 
 @app.route("/api/gemini-status", methods=["GET"])
 def gemini_status():
@@ -427,6 +441,7 @@ def get_posts():
         } for p in posts]
         return jsonify(posts_list), 200
     except Exception as e:
+        print(f"[ERROR] Error fetching posts: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -436,14 +451,28 @@ def create_post():
     try:
         data = request.get_json()
         
-        if not data or not data.get("username") or not data.get("content"):
-            return jsonify({"error": "Username and content are required"}), 400
+        # Validate required fields
+        if not data:
+            print("[ERROR] No JSON data received")
+            return jsonify({"error": "No data provided"}), 400
         
+        username = data.get("username", "").strip()
+        content = data.get("content", "").strip()
+        
+        if not username:
+            print("[ERROR] Username is required")
+            return jsonify({"error": "Username is required"}), 400
+        
+        if not content:
+            print("[ERROR] Content is required")
+            return jsonify({"error": "Content is required"}), 400
+        
+        # Create new post
         new_post = Post(
-            username=data["username"],
+            username=username,
             profile_image=data.get("profile_image"),
-            title=data.get("title"),
-            content=data["content"],
+            title=data.get("title", "").strip() or None,
+            content=content,
             image_url=data.get("image_url"),
             likes_count=0,
             comments_count=0
@@ -451,6 +480,8 @@ def create_post():
         
         db.session.add(new_post)
         db.session.commit()
+        
+        print(f"[SUCCESS] Post created with ID: {new_post.id}")
         
         return jsonify({
             "id": new_post.id,
@@ -465,7 +496,8 @@ def create_post():
         }), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        print(f"[ERROR] Exception creating post: {str(e)}")
+        return jsonify({"error": f"Failed to create post: {str(e)}"}), 500
 
 
 @app.route("/api/posts/<int:post_id>", methods=["DELETE"])
@@ -492,6 +524,84 @@ def delete_post(post_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+# ===================================================
+# FILE UPLOAD ROUTES (COMMUNITY FEED)
+# ===================================================
+
+@app.route("/api/upload", methods=["POST"])
+def upload_image():
+    """Upload image file for posts and return URL."""
+    try:
+        # Check if file is in request
+        if 'file' not in request.files:
+            print("[ERROR] No file provided in request")
+            return jsonify({"success": False, "error": "No file provided"}), 400
+        
+        file = request.files['file']
+        
+        # Check if file has filename
+        if file.filename == '':
+            print("[ERROR] No file selected")
+            return jsonify({"success": False, "error": "No file selected"}), 400
+        
+        # Check if file extension is allowed
+        if not allowed_file(file.filename):
+            print(f"[ERROR] File type not allowed: {file.filename}")
+            return jsonify({
+                "success": False,
+                "error": f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+            }), 400
+        
+        # Check file size
+        file.seek(0, os.SEEK_END)
+        file_length = file.tell()
+        file.seek(0)
+        
+        if file_length > MAX_FILE_SIZE:
+            print(f"[ERROR] File too large: {file_length} bytes (max: {MAX_FILE_SIZE})")
+            return jsonify({
+                "success": False,
+                "error": f"File too large. Maximum size is 16MB"
+            }), 400
+        
+        # Create secure filename
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
+        filename = timestamp + filename
+        
+        # Save file
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # Return image URL
+        image_url = f"http://192.168.100.168:5000/uploads/{filename}"
+        
+        print(f"[SUCCESS] Image uploaded: {filename}")
+        
+        return jsonify({
+            "success": True,
+            "image_url": image_url,
+            "filename": filename
+        }), 200
+    
+    except Exception as e:
+        print(f"[ERROR] Exception during file upload: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": f"File upload failed: {str(e)}"
+        }), 500
+
+
+@app.route("/uploads/<filename>", methods=["GET"])
+def serve_upload(filename):
+    """Serve uploaded files."""
+    try:
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    except Exception as e:
+        print(f"[ERROR] Error serving file {filename}: {str(e)}")
+        return jsonify({"error": "File not found"}), 404
 
 
 # ===================================================

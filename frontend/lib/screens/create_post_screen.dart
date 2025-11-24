@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../providers/post_provider.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final String username;
-
   const CreatePostScreen({super.key, required this.username});
 
   @override
@@ -18,6 +17,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _imageUrlController = TextEditingController();
   bool _isSubmitting = false;
+  XFile? _selectedImage;
 
   @override
   void dispose() {
@@ -29,20 +29,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      // Note: Local file paths cannot be used with NetworkImage
-      // In a production app, you would upload this to a server and get a URL back
-      // For now, we'll clear the field and show a helpful message
-      if (mounted) {
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        setState(() => _selectedImage = image);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image selected. Upload functionality requires backend implementation. Please enter an image URL instead.'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text('Napili: ${image.name}'),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
@@ -56,25 +58,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     try {
       await Provider.of<PostProvider>(context, listen: false).createPost(
         username: widget.username,
-        title: _titleController.text.trim().isEmpty 
-            ? null 
+        title: _titleController.text.trim().isEmpty
+            ? null
             : _titleController.text.trim(),
         content: _contentController.text.trim(),
-        imageUrl: _imageUrlController.text.trim().isEmpty 
-            ? null 
+        imageUrl: _imageUrlController.text.trim().isEmpty
+            ? null
             : _imageUrlController.text.trim(),
+        imageFile: _selectedImage, // Pass the selected image file
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Matagumpay na nailagay ang post!')),
+          const SnackBar(content: Text('✅ Matagumpay na nailagay ang post!')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('May error sa paglikha ng post: $e')),
+          SnackBar(content: Text('❌ May error sa paglikha ng post: $e')),
         );
       }
     } finally {
@@ -110,7 +113,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   maxLength: 255,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Content field (required)
                 TextFormField(
                   controller: _contentController,
@@ -129,32 +132,68 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                
-                // Image URL field
+
+                // Image URL field (as alternative)
                 TextFormField(
                   controller: _imageUrlController,
-                  decoration: InputDecoration(
-                    labelText: 'Nais magdagdag ng larawan (opsyonal)',
-                    border: const OutlineInputBorder(),
-                    hintText: 'Ilagay ang URL ng larawan',
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.photo_library),
-                      onPressed: _pickImage,
-                      tooltip: 'Pumili mula sa gallery',
+                  decoration: const InputDecoration(
+                    labelText: 'O maglagay ng image URL',
+                    border: OutlineInputBorder(),
+                    hintText: 'https://example.com/image.jpg',
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Selected image display
+                if (_selectedImage != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Image.network(
+                            _selectedImage!.path,
+                            height: 200,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/placeholder.png',
+                                height: 200,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Text(_selectedImage!.name),
+                          TextButton(
+                            onPressed: () =>
+                                setState(() => _selectedImage = null),
+                            child: const Text('Tanggalin'),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                const SizedBox(height: 16),
+
+                // Image picker button
+                ElevatedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.image),
+                  label: const Text('Nais mag dagdag ng larawan'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Submit button
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitPost,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -162,12 +201,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
                           ),
                         )
                       : const Text(
                           'Ilaganap',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                 ),
               ],

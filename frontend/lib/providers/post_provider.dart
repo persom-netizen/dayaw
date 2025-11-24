@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/post_model.dart';
 import '../services/post_service.dart';
 
@@ -18,7 +19,6 @@ class PostProvider with ChangeNotifier {
 
     try {
       _posts = await PostService.getPosts();
-      // Sort by newest first
       _posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     } catch (e) {
       _error = e.toString();
@@ -33,15 +33,26 @@ class PostProvider with ChangeNotifier {
     String? title,
     required String content,
     String? imageUrl,
+    XFile? imageFile,
   }) async {
     try {
+      String? uploadedImageUrl;
+
+      // If image file is selected, upload it
+      if (imageFile != null) {
+        uploadedImageUrl = await PostService.uploadImage(imageFile);
+      } else if (imageUrl != null && imageUrl.isNotEmpty) {
+        uploadedImageUrl = imageUrl;
+      }
+
       final newPost = await PostService.createPost(
         username: username,
         title: title,
         content: content,
-        imageUrl: imageUrl,
+        imageUrl: uploadedImageUrl,
       );
-      _posts.insert(0, newPost); // Add to beginning for newest first
+
+      _posts.insert(0, newPost);
       notifyListeners();
     } catch (e) {
       _error = e.toString();
