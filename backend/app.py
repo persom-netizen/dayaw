@@ -462,11 +462,20 @@ def create_post():
 
 @app.route("/api/posts/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
-    """Delete a post by ID."""
+    """Delete a post by ID.
+    
+    Note: This endpoint should implement user authentication and authorization
+    to ensure users can only delete their own posts. Current implementation
+    allows any user to delete any post, which is a security risk in production.
+    """
     try:
         post = Post.query.get(post_id)
         if not post:
             return jsonify({"error": "Post not found"}), 404
+        
+        # TODO: Add authentication check here
+        # Example: if post.username != authenticated_user:
+        #     return jsonify({"error": "Unauthorized"}), 403
         
         db.session.delete(post)
         db.session.commit()

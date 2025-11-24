@@ -32,14 +32,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     
     if (image != null) {
-      // For now, we'll use the local path as a placeholder
-      // In a real app, you'd upload this to a server and get a URL back
-      _imageUrlController.text = image.path;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image selected. Note: Upload functionality requires backend support.'),
-        ),
-      );
+      // Note: Local file paths cannot be used with NetworkImage
+      // In a production app, you would upload this to a server and get a URL back
+      // For now, we'll clear the field and show a helpful message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image selected. Upload functionality requires backend implementation. Please enter an image URL instead.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
