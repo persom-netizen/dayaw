@@ -35,6 +35,15 @@ class _ImagePreviewWidgetState extends State<ImagePreviewWidget> {
   }
 
   @override
+  void didUpdateWidget(ImagePreviewWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Refresh the future if the image file changes
+    if (oldWidget.imageFile.path != widget.imageFile.path) {
+      _imageFuture = widget.imageFile.readAsBytes();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Use FutureBuilder to load bytes and display with Image.memory
     // This approach works on both web and mobile platforms
@@ -59,6 +68,18 @@ class _ImagePreviewWidgetState extends State<ImagePreviewWidget> {
             height: widget.height,
             width: widget.width,
             fit: widget.fit,
+            errorBuilder: (context, error, stackTrace) {
+              // Handle cases where bytes are not a valid image
+              debugPrint('[ImagePreviewWidget] Error decoding image: $error');
+              return Container(
+                height: widget.height,
+                width: widget.width,
+                color: Colors.grey[300],
+                child: const Center(
+                  child: Icon(Icons.broken_image, size: 50),
+                ),
+              );
+            },
           );
         } else {
           // Loading state
