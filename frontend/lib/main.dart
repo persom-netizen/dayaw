@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'login.dart';
 import 'sign_up.dart';
+import 'home.dart';
+import 'bahay.dart';
+import 'screens/create_post_screen.dart';
 import 'providers/post_provider.dart';
 
 void main() {
@@ -20,6 +23,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: const MainPage(),
+        routes: {
+          '/home': (context) => const HomePage(username: ''),
+          '/bahay': (context) => const BahayPage(username: ''),
+          '/create-post': (context) => const CreatePostScreen(username: ''),
+        },
       ),
     );
   }

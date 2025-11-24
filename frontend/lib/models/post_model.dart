@@ -6,6 +6,8 @@ class Post {
   final String content;
   final String? imageUrl;
   final DateTime createdAt;
+  final int likesCount;
+  final int commentsCount;
 
   Post({
     this.id,
@@ -15,6 +17,8 @@ class Post {
     required this.content,
     this.imageUrl,
     required this.createdAt,
+    this.likesCount = 0,
+    this.commentsCount = 0,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,8 @@ class Post {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
+      likesCount: json['likes_count'] ?? 0,
+      commentsCount: json['comments_count'] ?? 0,
     );
   }
 
@@ -40,6 +46,8 @@ class Post {
       'content': content,
       'image_url': imageUrl,
       'created_at': createdAt.toIso8601String(),
+      'likes_count': likesCount,
+      'comments_count': commentsCount,
     };
   }
 }
