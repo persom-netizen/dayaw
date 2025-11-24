@@ -10,6 +10,7 @@ class StrokePainter extends CustomPainter {
   final double strokeWidth;
   final bool showGuidelines;
   final String? referenceCharacter;
+  final bool showGuideStrokes;
 
   StrokePainter({
     required this.strokes,
@@ -18,23 +19,33 @@ class StrokePainter extends CustomPainter {
     this.strokeWidth = 12.0,
     this.showGuidelines = true,
     this.referenceCharacter,
+    this.showGuideStrokes = true,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Draw white background first to ensure visibility
+    final backgroundPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      backgroundPaint,
+    );
+
     // Draw guidelines if enabled
     if (showGuidelines) {
       _drawGuidelines(canvas, size);
     }
 
-    // Draw reference character if provided
-    if (referenceCharacter != null && referenceCharacter!.isNotEmpty) {
-      _drawReferenceCharacter(canvas, size);
+    // Draw guide strokes if enabled
+    if (showGuideStrokes && referenceCharacter != null && referenceCharacter!.isNotEmpty) {
+      _drawGuideStrokes(canvas, size);
     }
 
-    // Draw completed strokes
+    // Draw completed strokes with full opacity for high contrast
     final completedPaint = Paint()
-      ..color = strokeColor
+      ..color = strokeColor.withOpacity(1.0)
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -47,7 +58,7 @@ class StrokePainter extends CustomPainter {
     // Draw current stroke being drawn with full opacity for visibility
     if (currentStroke != null) {
       final currentPaint = Paint()
-        ..color = strokeColor
+        ..color = strokeColor.withOpacity(1.0)
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
@@ -149,6 +160,73 @@ class StrokePainter extends CustomPainter {
     textPainter.paint(canvas, offset);
   }
 
+  void _drawGuideStrokes(Canvas canvas, Size size) {
+    if (referenceCharacter == null || referenceCharacter!.isEmpty) return;
+
+    // Get guide strokes for the character
+    final guideStrokes = _getBaybayinGuideStrokes(referenceCharacter!, size);
+    if (guideStrokes.isEmpty) return;
+
+    // Draw guide strokes with semi-transparent color
+    final guidePaint = Paint()
+      ..color = Colors.blue.withOpacity(0.3)
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    for (var stroke in guideStrokes) {
+      _drawStroke(canvas, stroke, guidePaint);
+    }
+  }
+
+  List<Stroke> _getBaybayinGuideStrokes(String character, Size size) {
+    // Define guide strokes for each Baybayin vowel
+    // Coordinates are normalized to 0-1 range and scaled to canvas size
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+    final scale = size.width * 0.4; // 40% of canvas width for character size
+
+    switch (character) {
+      case 'ᜀ': // A - vertical line with small curve at bottom
+        return [
+          Stroke([
+            StrokePoint(x: centerX, y: centerY - scale * 0.8),
+            StrokePoint(x: centerX, y: centerY + scale * 0.8),
+          ]),
+        ];
+
+      case 'ᜁ': // I/E - vertical line with curve at top
+        return [
+          Stroke([
+            StrokePoint(x: centerX - scale * 0.1, y: centerY - scale * 0.7),
+            StrokePoint(x: centerX, y: centerY - scale * 0.8),
+            StrokePoint(x: centerX + scale * 0.1, y: centerY - scale * 0.7),
+          ]),
+          Stroke([
+            StrokePoint(x: centerX, y: centerY - scale * 0.7),
+            StrokePoint(x: centerX, y: centerY + scale * 0.8),
+          ]),
+        ];
+
+      case 'ᜂ': // U/O - vertical line with curve at bottom
+        return [
+          Stroke([
+            StrokePoint(x: centerX, y: centerY - scale * 0.8),
+            StrokePoint(x: centerX, y: centerY + scale * 0.7),
+          ]),
+          Stroke([
+            StrokePoint(x: centerX - scale * 0.1, y: centerY + scale * 0.7),
+            StrokePoint(x: centerX, y: centerY + scale * 0.8),
+            StrokePoint(x: centerX + scale * 0.1, y: centerY + scale * 0.7),
+          ]),
+        ];
+
+      default:
+        return [];
+    }
+  }
+
   @override
   bool shouldRepaint(covariant StrokePainter oldDelegate) {
     return strokes != oldDelegate.strokes ||
@@ -156,7 +234,8 @@ class StrokePainter extends CustomPainter {
         strokeColor != oldDelegate.strokeColor ||
         strokeWidth != oldDelegate.strokeWidth ||
         showGuidelines != oldDelegate.showGuidelines ||
-        referenceCharacter != oldDelegate.referenceCharacter;
+        referenceCharacter != oldDelegate.referenceCharacter ||
+        showGuideStrokes != oldDelegate.showGuideStrokes;
   }
 }
 
@@ -169,6 +248,7 @@ class DrawingCanvas extends StatefulWidget {
   final bool showGuidelines;
   final String? referenceCharacter;
   final double? height;
+  final bool showGuideStrokes;
 
   const DrawingCanvas({
     super.key,
@@ -179,6 +259,7 @@ class DrawingCanvas extends StatefulWidget {
     this.showGuidelines = true,
     this.referenceCharacter,
     this.height,
+    this.showGuideStrokes = true,
   });
 
   @override
@@ -300,19 +381,19 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 : MediaQuery.of(context).size.width;
             final height = widget.height ?? 300;
             
-            return CustomPaint(
-              painter: StrokePainter(
-                strokes: _strokes,
-                currentStroke: _currentStroke,
-                strokeColor: widget.strokeColor,
-                strokeWidth: widget.strokeWidth,
-                showGuidelines: widget.showGuidelines,
-                referenceCharacter: widget.referenceCharacter,
-              ),
-              child: Container(
-                width: width,
-                height: height,
-                color: Colors.white,
+            return SizedBox(
+              width: width,
+              height: height,
+              child: CustomPaint(
+                painter: StrokePainter(
+                  strokes: _strokes,
+                  currentStroke: _currentStroke,
+                  strokeColor: widget.strokeColor,
+                  strokeWidth: widget.strokeWidth,
+                  showGuidelines: widget.showGuidelines,
+                  referenceCharacter: widget.referenceCharacter,
+                  showGuideStrokes: widget.showGuideStrokes,
+                ),
               ),
             );
           },

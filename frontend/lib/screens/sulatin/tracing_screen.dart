@@ -21,13 +21,15 @@ class TracingScreen extends StatefulWidget {
 
 class _TracingScreenState extends State<TracingScreen> {
   // Scoring and validation constants
-  static const int _pointsPerSuccess = 20;
   static const int _minPointsRequired = 10;
   
   List<Stroke> _strokes = [];
   int _score = 0;
   int _attempts = 0;
   bool _isSubmitting = false;
+  bool _showGuideStrokes = true;
+  int _lastAccuracyScore = 0;
+  String _lastFeedback = '';
 
   // Baybayin vowel mappings - only vowels
   // Note: In Baybayin script, E and I share the same character (ᜁ),
@@ -74,30 +76,46 @@ class _TracingScreenState extends State<TracingScreen> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     // Basic validation: check if strokes have enough points
-    // In production, this would call an ML model for recognition
-    bool hasValidStrokes = _strokes.isNotEmpty;
-    if (hasValidStrokes) {
-      // Ensure strokes have meaningful content (minimum points per stroke)
-      int totalPoints = 0;
-      for (var stroke in _strokes) {
-        totalPoints += stroke.points.length;
-      }
-      // Require minimum points across all strokes for a meaningful drawing
-      hasValidStrokes = totalPoints >= _minPointsRequired;
+    int totalPoints = 0;
+    for (var stroke in _strokes) {
+      totalPoints += stroke.points.length;
     }
+    bool hasValidStrokes = totalPoints >= _minPointsRequired;
+
+    if (!hasValidStrokes) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      HapticFeedback.lightImpact();
+      _showMessage('Subukan muli. Gumuhit ng mas malinaw at mas mahabang mga stroke.');
+      return;
+    }
+
+    // Calculate accuracy score (1-100) based on stroke characteristics
+    // Different expected stroke counts for each character
+    int expectedStrokes = 1;
+    if (_baybayinCharacter == 'ᜁ' || _baybayinCharacter == 'ᜂ') {
+      expectedStrokes = 2; // I/E and U/O have 2 strokes
+    }
+
+    final accuracyScore = StrokeProcessor.calculateAccuracyScore(
+      _strokes,
+      expectedStrokeCount: expectedStrokes,
+      minTotalLength: 100.0,
+      maxTotalLength: 600.0,
+    );
+
+    final feedback = StrokeProcessor.getFeedbackMessage(accuracyScore);
 
     setState(() {
       _isSubmitting = false;
+      _lastAccuracyScore = accuracyScore;
+      _lastFeedback = feedback;
+      _score += accuracyScore; // Add accuracy score to total
     });
 
-    if (hasValidStrokes) {
-      _score += _pointsPerSuccess;
-      HapticFeedback.heavyImpact();
-      _showSuccessDialog();
-    } else {
-      HapticFeedback.lightImpact();
-      _showMessage('Subukan muli. Gumuhit ng mas malinaw at mas mahabang mga stroke.');
-    }
+    HapticFeedback.heavyImpact();
+    _showSuccessDialog();
   }
 
   void _showMessage(String message) {
@@ -110,18 +128,45 @@ class _TracingScreenState extends State<TracingScreen> {
   }
 
   void _showSuccessDialog() {
+    // Determine title based on score
+    String title = 'Mahusay!';
+    Color titleColor = Colors.green;
+    IconData titleIcon = Icons.check_circle;
+    
+    if (_lastAccuracyScore >= 90) {
+      title = 'Perpekto!';
+      titleColor = Colors.green;
+      titleIcon = Icons.star;
+    } else if (_lastAccuracyScore >= 71) {
+      title = 'Napakagaling!';
+      titleColor = Colors.green;
+      titleIcon = Icons.check_circle;
+    } else if (_lastAccuracyScore >= 41) {
+      title = 'Maganda!';
+      titleColor = Colors.blue;
+      titleIcon = Icons.check_circle;
+    } else if (_lastAccuracyScore >= 21) {
+      title = 'Mabuti!';
+      titleColor = Colors.orange;
+      titleIcon = Icons.check_circle_outline;
+    } else {
+      title = 'Magpatuloy!';
+      titleColor = Colors.orange;
+      titleIcon = Icons.info_outline;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green[600], size: 32),
+            Icon(titleIcon, color: titleColor, size: 32),
             const SizedBox(width: 12),
-            const Text(
-              'Mahusay!',
+            Text(
+              title,
               style: TextStyle(
-                color: Colors.green,
+                color: titleColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -131,7 +176,7 @@ class _TracingScreenState extends State<TracingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Tama ang iyong pagsulat ng "$_baybayinCharacter" (${widget.expectedCharacter})!',
+              _lastFeedback,
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
@@ -139,19 +184,33 @@ class _TracingScreenState extends State<TracingScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                color: Colors.purple[50],
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 48),
-                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 32),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Tumpak: $_lastAccuracyScore%',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   Text(
-                    '+$_pointsPerSuccess puntos',
+                    '+$_lastAccuracyScore puntos',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green[600],
+                      color: Colors.purple[600],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -286,25 +345,54 @@ class _TracingScreenState extends State<TracingScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Instructions
+            // Instructions and guide toggle
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.purple[50],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.purple[600]),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Gumuhit gamit ang iyong daliri o mouse sa ibaba',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.purple[600]),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Gumuhit gamit ang iyong daliri o mouse sa ibaba',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.visibility, color: Colors.purple[600], size: 20),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Ipakita ang gabay',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _showGuideStrokes,
+                        onChanged: (value) {
+                          setState(() {
+                            _showGuideStrokes = value;
+                          });
+                        },
+                        activeColor: Colors.purple[600],
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -326,6 +414,7 @@ class _TracingScreenState extends State<TracingScreen> {
                   strokeWidth: 12.0,
                   showGuidelines: true,
                   referenceCharacter: _baybayinCharacter,
+                  showGuideStrokes: _showGuideStrokes,
                   height: 350,
                 ),
               ),
