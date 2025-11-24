@@ -5,11 +5,15 @@ import '../models/post_model.dart';
 class FeedPostCard extends StatelessWidget {
   final Post post;
   final VoidCallback? onDelete;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
 
   const FeedPostCard({
     super.key,
     required this.post,
     this.onDelete,
+    this.onLike,
+    this.onComment,
   });
 
   String _formatTimestamp(DateTime dateTime) {
@@ -65,7 +69,7 @@ class FeedPostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'otokesengkake_${post.username}',
+                        post.username,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -137,18 +141,49 @@ class FeedPostCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  '${post.likesCount}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                // Like button
+                InkWell(
+                  onTap: onLike,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          post.isLiked ? Icons.favorite : Icons.favorite_border,
+                          size: 20,
+                          color: post.isLiked ? Colors.red : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${post.likesCount}',
+                          style: TextStyle(
+                            color: post.isLiked ? Colors.red : Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 20),
-                Icon(Icons.comment_outlined, size: 20, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  '${post.commentsCount}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                const SizedBox(width: 12),
+                // Comment button
+                InkWell(
+                  onTap: onComment,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.comment_outlined, size: 20, color: Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${post.commentsCount}',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),

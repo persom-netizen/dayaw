@@ -9,9 +9,9 @@ The Dayaw app features a Facebook-like community feed system called "Bahay" (Hom
 The main feed displays posts in chronological order with the following information:
 
 #### Post Header
-- **Username**: Displayed as `otokesengkake_{username}` for visual consistency
+- **Username**: Displayed as the actual username from login/registration
 - **Profile Picture**: Avatar with first letter of username if no image is set
-- **Timestamp**: Relative time (e.g., "5m ago", "2h ago", "3d ago") or full date for older posts
+- **Timestamp**: Relative time (e.g., "5m ago", "2h ago", "3d ago") or full date for older posts, converted to user's local timezone
 
 #### Post Content
 - **Title** (Optional): Bold heading for the post (e.g., "tula para kay manuela")
@@ -22,9 +22,8 @@ The main feed displays posts in chronological order with the following informati
 - **Media**: Optional image display with error handling for broken links
 
 #### Interaction Elements
-- **Likes**: ❤️ icon with count
-- **Comments**: 💬 icon with count
-- *(Note: Full interaction functionality coming in future updates)*
+- **Likes**: ❤️ icon with count - tap to like/unlike posts
+- **Comments**: 💬 icon with count - tap to view and add comments
 
 #### Post Actions
 - **Delete**: Users can delete their own posts with confirmation dialog
@@ -89,7 +88,7 @@ The feed is accessible via the "Bahay" tab.
    - Pamagat: "Tula para sa Inang Bayan"
    - Content: [Full poem text, up to 10,000 characters]
 5. Taps "ilaganap"
-6. Post appears in feed as "otokesengkake_maria"
+6. Post appears in feed as "maria"
 7. Other users can see and interact with the post
 
 ### Example 2: Sharing a Story
@@ -133,9 +132,14 @@ The feed is accessible via the "Bahay" tab.
 ## Technical Details
 
 ### API Endpoints
-- `GET /api/posts` - Fetch all posts for the feed
+- `GET /api/posts` - Fetch all posts for the feed (optional `username` query param for like status)
 - `POST /api/posts` - Create a new post
 - `DELETE /api/posts/:id` - Delete a specific post
+- `POST /api/posts/:id/like` - Toggle like/unlike on a post
+- `GET /api/posts/:id/like/status` - Check if user has liked a post
+- `GET /api/posts/:id/comments` - Get all comments for a post
+- `POST /api/posts/:id/comments` - Add a comment to a post
+- `DELETE /api/posts/:id/comments/:comment_id` - Delete a comment
 
 ### Data Model
 ```dart
@@ -149,6 +153,15 @@ class Post {
   DateTime createdAt;
   int likesCount;
   int commentsCount;
+  bool isLiked;
+}
+
+class Comment {
+  int id;
+  int postId;
+  String username;
+  String content;
+  DateTime createdAt;
 }
 ```
 
@@ -156,6 +169,7 @@ class Post {
 - Uses Provider pattern for reactive state updates
 - PostProvider manages all post-related state
 - Automatic feed refresh after creating/deleting posts
+- Like and comment functionality with real-time updates
 
 ### Character Limits
 - Title: 255 characters
@@ -212,21 +226,27 @@ class Post {
 - Always confirm carefully before deleting
 - Consider copying important content before deleting
 
+## Recent Updates
+
+### Implemented Features
+- ✅ Full like/unlike functionality - tap the heart icon to like/unlike posts
+- ✅ Comment system - tap the comment icon to view and add comments
+- ✅ Correct username display - shows actual username from login (removed prefix)
+- ✅ Timezone-aware timestamps - posts show correct local time
+
 ## Future Enhancements
 
 ### Planned Features
-- ✅ Full like/unlike functionality
-- ✅ Comment system with replies
-- ✅ Edit post capability
-- ✅ Image upload from device
-- ✅ Video support
-- ✅ User profiles
-- ✅ Follow/unfollow users
-- ✅ Post sharing
-- ✅ Hashtags and search
-- ✅ Notifications for interactions
-- ✅ Post bookmarking
-- ✅ Content moderation tools
+- Comment replies and threading
+- Edit post capability
+- Video support
+- User profiles
+- Follow/unfollow users
+- Post sharing
+- Hashtags and search
+- Notifications for interactions
+- Post bookmarking
+- Content moderation tools
 
 ### Long-term Vision
 - Build a vibrant Filipino language learning community

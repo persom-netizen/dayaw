@@ -110,6 +110,28 @@ class Post(db.Model):
     comments_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class PostLike(db.Model):
+    """Likes on Community Feed Posts"""
+    __tablename__ = "post_likes"
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE'), nullable=False)
+    username = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    __table_args__ = (db.UniqueConstraint('post_id', 'username', name='unique_post_like'),)
+
+
+class PostComment(db.Model):
+    """Comments on Community Feed Posts"""
+    __tablename__ = "post_comments"
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE'), nullable=False)
+    username = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
 # ===================================================
 # HELPER FUNCTIONS
 # ===================================================
@@ -427,7 +449,15 @@ def get_all_salita():
 def get_posts():
     """Get all posts for the feed."""
     try:
+        username = request.args.get("username", "").strip()
         posts = Post.query.order_by(Post.created_at.desc()).all()
+        
+        # Get user's likes if username provided
+        user_likes = set()
+        if username:
+            likes = PostLike.query.filter_by(username=username).all()
+            user_likes = {like.post_id for like in likes}
+        
         posts_list = [{
             "id": p.id,
             "username": p.username,
@@ -437,7 +467,8 @@ def get_posts():
             "image_url": p.image_url,
             "likes_count": p.likes_count,
             "comments_count": p.comments_count,
-            "created_at": p.created_at.isoformat()
+            "created_at": p.created_at.isoformat(),
+            "is_liked": p.id in user_likes
         } for p in posts]
         return jsonify(posts_list), 200
     except Exception as e:
@@ -527,6 +558,176 @@ def delete_post(post_id):
         return jsonify({"success": True, "message": "Post deleted"}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+# ===================================================
+# POST LIKE/COMMENT ROUTES (COMMUNITY FEED)
+# ===================================================
+
+@app.route("/api/posts/<int:post_id>/like", methods=["POST"])
+def toggle_like(post_id):
+    """Toggle like on a post (like/unlike)."""
+    try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        
+        if not username:
+            return jsonify({"error": "Username is required"}), 400
+        
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+        
+        # Check if user already liked the post
+        existing_like = PostLike.query.filter_by(post_id=post_id, username=username).first()
+        
+        if existing_like:
+            # Unlike: Remove the like
+            db.session.delete(existing_like)
+            post.likes_count = max(0, post.likes_count - 1)
+            db.session.commit()
+            return jsonify({
+                "success": True,
+                "liked": False,
+                "likes_count": post.likes_count
+            }), 200
+        else:
+            # Like: Add the like
+            new_like = PostLike(post_id=post_id, username=username)
+            db.session.add(new_like)
+            post.likes_count = post.likes_count + 1
+            db.session.commit()
+            return jsonify({
+                "success": True,
+                "liked": True,
+                "likes_count": post.likes_count
+            }), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error toggling like: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts/<int:post_id>/like/status", methods=["GET"])
+def get_like_status(post_id):
+    """Check if a user has liked a post."""
+    try:
+        username = request.args.get("username", "").strip()
+        
+        if not username:
+            return jsonify({"error": "Username is required"}), 400
+        
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+        
+        existing_like = PostLike.query.filter_by(post_id=post_id, username=username).first()
+        
+        return jsonify({
+            "success": True,
+            "liked": existing_like is not None,
+            "likes_count": post.likes_count
+        }), 200
+    except Exception as e:
+        print(f"[ERROR] Error getting like status: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts/<int:post_id>/comments", methods=["GET"])
+def get_comments(post_id):
+    """Get all comments for a post."""
+    try:
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+        
+        comments = PostComment.query.filter_by(post_id=post_id).order_by(PostComment.created_at.asc()).all()
+        comments_list = [{
+            "id": c.id,
+            "post_id": c.post_id,
+            "username": c.username,
+            "content": c.content,
+            "created_at": c.created_at.isoformat()
+        } for c in comments]
+        
+        return jsonify({
+            "success": True,
+            "comments": comments_list,
+            "count": len(comments_list)
+        }), 200
+    except Exception as e:
+        print(f"[ERROR] Error fetching comments: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts/<int:post_id>/comments", methods=["POST"])
+def create_comment(post_id):
+    """Add a comment to a post."""
+    try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        content = data.get("content", "").strip()
+        
+        if not username:
+            return jsonify({"error": "Username is required"}), 400
+        
+        if not content:
+            return jsonify({"error": "Comment content is required"}), 400
+        
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+        
+        new_comment = PostComment(
+            post_id=post_id,
+            username=username,
+            content=content
+        )
+        db.session.add(new_comment)
+        post.comments_count = post.comments_count + 1
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "comment": {
+                "id": new_comment.id,
+                "post_id": new_comment.post_id,
+                "username": new_comment.username,
+                "content": new_comment.content,
+                "created_at": new_comment.created_at.isoformat()
+            },
+            "comments_count": post.comments_count
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error creating comment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts/<int:post_id>/comments/<int:comment_id>", methods=["DELETE"])
+def delete_comment(post_id, comment_id):
+    """Delete a comment from a post."""
+    try:
+        comment = PostComment.query.filter_by(id=comment_id, post_id=post_id).first()
+        if not comment:
+            return jsonify({"error": "Comment not found"}), 404
+        
+        post = Post.query.get(post_id)
+        if post:
+            post.comments_count = max(0, post.comments_count - 1)
+        
+        db.session.delete(comment)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Comment deleted",
+            "comments_count": post.comments_count if post else 0
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error deleting comment: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 

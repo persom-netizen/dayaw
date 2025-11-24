@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/create_post_screen.dart';
 import 'providers/post_provider.dart';
 import 'widgets/feed_post_card.dart';
+import 'models/post_model.dart';
 
 /// Bahay (Home) - Community Feed Page
 /// Displays posts from the community in a Facebook-like feed format
@@ -20,8 +21,24 @@ class _BahayPageState extends State<BahayPage> {
   void initState() {
     super.initState();
     // Load posts when page initializes
-    Future.microtask(
-      () => Provider.of<PostProvider>(context, listen: false).loadPosts(),
+    Future.microtask(() {
+      final provider = Provider.of<PostProvider>(context, listen: false);
+      provider.setCurrentUsername(widget.username);
+      provider.loadPosts(username: widget.username);
+    });
+  }
+
+  void _showCommentsSheet(Post post) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => _CommentsSheet(
+        post: post,
+        currentUsername: widget.username,
+      ),
     );
   }
 
@@ -53,7 +70,7 @@ class _BahayPageState extends State<BahayPage> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () => postProvider.loadPosts(),
+                    onPressed: () => postProvider.loadPosts(username: widget.username),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Subukan Muli'),
                   ),
@@ -84,13 +101,34 @@ class _BahayPageState extends State<BahayPage> {
           }
 
           return RefreshIndicator(
-            onRefresh: () => postProvider.loadPosts(),
+            onRefresh: () => postProvider.loadPosts(username: widget.username),
             child: ListView.builder(
               itemCount: postProvider.posts.length,
               itemBuilder: (context, index) {
                 final post = postProvider.posts[index];
                 return FeedPostCard(
                   post: post,
+                  onLike: post.id != null
+                      ? () async {
+                          try {
+                            await postProvider.toggleLike(
+                              postId: post.id!,
+                              username: widget.username,
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('May error sa pag-like: $e'),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      : null,
+                  onComment: post.id != null
+                      ? () => _showCommentsSheet(post)
+                      : null,
                   onDelete: post.username == widget.username && post.id != null
                       ? () async {
                           final confirm = await showDialog<bool>(
@@ -159,13 +197,254 @@ class _BahayPageState extends State<BahayPage> {
           );
           // Reload posts after returning from create screen
           if (context.mounted) {
-            Provider.of<PostProvider>(context, listen: false).loadPosts();
+            Provider.of<PostProvider>(context, listen: false).loadPosts(username: widget.username);
           }
         },
         backgroundColor: Colors.blue[600],
         tooltip: 'Lumikha ng post',
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+
+/// Bottom sheet for displaying and adding comments
+class _CommentsSheet extends StatefulWidget {
+  final Post post;
+  final String currentUsername;
+
+  const _CommentsSheet({
+    required this.post,
+    required this.currentUsername,
+  });
+
+  @override
+  State<_CommentsSheet> createState() => _CommentsSheetState();
+}
+
+class _CommentsSheetState extends State<_CommentsSheet> {
+  final _commentController = TextEditingController();
+  List<Comment> _comments = [];
+  bool _isLoading = true;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadComments();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadComments() async {
+    if (widget.post.id == null) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      final provider = Provider.of<PostProvider>(context, listen: false);
+      final comments = await provider.getComments(widget.post.id!);
+      setState(() {
+        _comments = comments;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading comments: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitComment() async {
+    final content = _commentController.text.trim();
+    if (content.isEmpty || widget.post.id == null) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      final provider = Provider.of<PostProvider>(context, listen: false);
+      final newComment = await provider.addComment(
+        postId: widget.post.id!,
+        username: widget.currentUsername,
+        content: content,
+      );
+      setState(() {
+        _comments.add(newComment);
+        _isSubmitting = false;
+      });
+      _commentController.clear();
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding comment: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatTimestamp(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 7) {
+      return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Mga Komento (${_comments.length})',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Comments list
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _comments.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Walang komento pa. Maging una!',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          itemCount: _comments.length,
+                          itemBuilder: (context, index) {
+                            final comment = _comments[index];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blue[200],
+                                child: Text(
+                                  comment.username.isNotEmpty
+                                      ? comment.username[0].toUpperCase()
+                                      : 'U',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    comment.username,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _formatTimestamp(comment.createdAt),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(comment.content),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+            
+            // Comment input
+            Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 8,
+              ),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: const InputDecoration(
+                        hintText: 'Mag-komento...',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                      maxLines: null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _isSubmitting ? null : _submitComment,
+                    icon: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.send, color: Colors.blue[600]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
