@@ -102,14 +102,14 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False)
     profile_image = db.Column(db.String(500))
-    title = db.Column(db.String(255))
+    title = db.Column(db.String(500))  # Changed from 255 to 500 to match DB
     content = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(500))
+    video_url = db.Column(db.String(500))
     likes_count = db.Column(db.Integer, default=0)
     comments_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 # ===================================================
 # HELPER FUNCTIONS
 # ===================================================
@@ -467,7 +467,9 @@ def create_post():
             print("[ERROR] Content is required")
             return jsonify({"error": "Content is required"}), 400
         
-        # Create new post
+        print(f"[INFO] Creating post - Username: {username}, Content length: {len(content)}")
+        
+        # Create new post WITHOUT user_id
         new_post = Post(
             username=username,
             profile_image=data.get("profile_image"),
@@ -497,8 +499,10 @@ def create_post():
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Exception creating post: {str(e)}")
+        import traceback
+        traceback.print_exc()  # Print full traceback for debugging
         return jsonify({"error": f"Failed to create post: {str(e)}"}), 500
-
+    
 
 @app.route("/api/posts/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
