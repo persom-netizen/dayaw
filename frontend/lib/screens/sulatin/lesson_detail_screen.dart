@@ -408,7 +408,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final vowelPattern = RegExp(r'PATINIG:\s*([AEIOU])');
     final match = vowelPattern.firstMatch(title);
     
-    if (match != null && match.groupCount > 0) {
+    if (match != null && match.group(1) != null) {
       expectedCharacter = match.group(1)!;
     } else {
       // Fallback: check content for quoted character
@@ -416,7 +416,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       final contentPattern = RegExp(r'"([aeiou])"');
       final contentMatch = contentPattern.firstMatch(content);
       
-      if (contentMatch != null && contentMatch.groupCount > 0) {
+      if (contentMatch != null && contentMatch.group(1) != null) {
         expectedCharacter = contentMatch.group(1)!.toUpperCase();
       }
     }

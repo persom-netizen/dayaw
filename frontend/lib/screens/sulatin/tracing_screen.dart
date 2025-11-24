@@ -26,12 +26,14 @@ class _TracingScreenState extends State<TracingScreen> {
   bool _isSubmitting = false;
 
   // Baybayin vowel mappings - only vowels
+  // Note: In Baybayin script, E and I share the same character (ᜁ),
+  // and O and U share the same character (ᜂ). This is correct and standard.
   static const Map<String, String> _characterNames = {
-    'A': 'ᜀ',
-    'E': 'ᜁ',
-    'I': 'ᜁ',
-    'O': 'ᜂ',
-    'U': 'ᜂ',
+    'A': 'ᜀ', // U+1700 TAGALOG LETTER A
+    'E': 'ᜁ', // U+1701 TAGALOG LETTER I (also represents E)
+    'I': 'ᜁ', // U+1701 TAGALOG LETTER I
+    'O': 'ᜂ', // U+1702 TAGALOG LETTER U (also represents O)
+    'U': 'ᜂ', // U+1702 TAGALOG LETTER U
   };
 
   String get _baybayinCharacter {
@@ -65,21 +67,30 @@ class _TracingScreenState extends State<TracingScreen> {
     // Simulate processing delay
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // For now, accept any drawing with strokes
+    // Basic validation: check if strokes have enough points
     // In production, this would call an ML model for recognition
-    final hasEnoughStrokes = _strokes.length >= 1;
+    bool hasValidStrokes = _strokes.isNotEmpty;
+    if (hasValidStrokes) {
+      // Ensure strokes have meaningful content (minimum points per stroke)
+      int totalPoints = 0;
+      for (var stroke in _strokes) {
+        totalPoints += stroke.points.length;
+      }
+      // Require at least 10 total points across all strokes for a meaningful drawing
+      hasValidStrokes = totalPoints >= 10;
+    }
 
     setState(() {
       _isSubmitting = false;
     });
 
-    if (hasEnoughStrokes) {
+    if (hasValidStrokes) {
       _score += 20;
       HapticFeedback.heavyImpact();
       _showSuccessDialog();
     } else {
       HapticFeedback.lightImpact();
-      _showMessage('Subukan muli. Gumuhit ng mas malinaw.');
+      _showMessage('Subukan muli. Gumuhit ng mas malinaw at mas mahabang mga stroke.');
     }
   }
 
