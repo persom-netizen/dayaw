@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 /// 
 /// Uses Image.memory with XFile.readAsBytes() which works on all platforms.
 /// This avoids the "Image.file is not supported on Flutter Web" error.
-class ImagePreviewWidget extends StatelessWidget {
+class ImagePreviewWidget extends StatefulWidget {
   final XFile imageFile;
   final double? height;
   final double? width;
@@ -21,17 +21,32 @@ class ImagePreviewWidget extends StatelessWidget {
   });
 
   @override
+  State<ImagePreviewWidget> createState() => _ImagePreviewWidgetState();
+}
+
+class _ImagePreviewWidgetState extends State<ImagePreviewWidget> {
+  late Future<Uint8List> _imageFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache the future to avoid re-reading the file on every rebuild
+    _imageFuture = widget.imageFile.readAsBytes();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Use FutureBuilder to load bytes and display with Image.memory
     // This approach works on both web and mobile platforms
     return FutureBuilder<Uint8List>(
-      future: imageFile.readAsBytes(),
+      future: _imageFuture,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           // Error case - file couldn't be read
+          debugPrint('[ImagePreviewWidget] Error reading image: ${snapshot.error}');
           return Container(
-            height: height,
-            width: width,
+            height: widget.height,
+            width: widget.width,
             color: Colors.grey[300],
             child: const Center(
               child: Icon(Icons.broken_image, size: 50),
@@ -41,15 +56,15 @@ class ImagePreviewWidget extends StatelessWidget {
           // Success case - display the image
           return Image.memory(
             snapshot.data!,
-            height: height,
-            width: width,
-            fit: fit,
+            height: widget.height,
+            width: widget.width,
+            fit: widget.fit,
           );
         } else {
           // Loading state
           return Container(
-            height: height,
-            width: width,
+            height: widget.height,
+            width: widget.width,
             color: Colors.grey[200],
             child: const Center(
               child: CircularProgressIndicator(),
