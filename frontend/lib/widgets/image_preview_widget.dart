@@ -38,7 +38,9 @@ class _ImagePreviewWidgetState extends State<ImagePreviewWidget> {
   void didUpdateWidget(ImagePreviewWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Refresh the future if the image file changes
-    if (oldWidget.imageFile.path != widget.imageFile.path) {
+    // Compare both path and name for better cross-platform reliability
+    if (oldWidget.imageFile.path != widget.imageFile.path ||
+        oldWidget.imageFile.name != widget.imageFile.name) {
       _imageFuture = widget.imageFile.readAsBytes();
     }
   }
