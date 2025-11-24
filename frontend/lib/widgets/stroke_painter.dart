@@ -280,7 +280,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
             referenceCharacter: widget.referenceCharacter,
             showTracingGuide: widget.showTracingGuide,
           ),
-          child: Container(),
+          child: const SizedBox.expand(),
         ),
       ),
     );

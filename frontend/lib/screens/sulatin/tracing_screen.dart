@@ -44,13 +44,13 @@ class _TracingScreenState extends State<TracingScreen> {
     if (score >= 90) {
       return "Ika'y napakagaling! Ipagpatuloy mo pa!";
     } else if (score >= 71) {
-      return "Hmm! Masyado mo namang ginagalingan, ngunit konting sanay pa.";
+      return "Hmm! Masyado mo namang ginagaling, ngunit konting sanay pa.";
     } else if (score >= 41) {
       return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
     } else if (score >= 21) {
-      return "Ayos! Ngunit, kailangan mo pa ng kaunting pag sasanay.";
+      return "Ayos! Ngunit, kailangan mo pa ng kaunting pagsasanay.";
     } else {
-      return "Ok lang yan! Matututo kapa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
+      return "Ok lang yan! Matututo ka pa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
     }
   }
   
@@ -339,7 +339,7 @@ class _TracingScreenState extends State<TracingScreen> {
               if (_isCorrect == true) {
                 Navigator.pop(context, {
                   'completed': true,
-                  'score': _confidence,
+                  'score': _score ?? 0,
                 });
               }
             },
