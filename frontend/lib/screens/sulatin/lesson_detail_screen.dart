@@ -15,6 +15,9 @@ class LessonDetailScreen extends StatefulWidget {
 }
 
 class _LessonDetailScreenState extends State<LessonDetailScreen> {
+  // Lesson ID for vowels tracing lesson
+  static const int _vowelsLessonId = 9;
+  
   int? _selectedOptionIndex;
 
   @override
@@ -494,7 +497,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   /// Check if this is the vowels lesson that should trace A, E, I, O, U sequentially
   bool _isVowelsLesson() {
     // Check lesson ID first (most reliable)
-    if (widget.lesson.id == 9) return true;
+    if (widget.lesson.id == _vowelsLessonId) return true;
     
     // Fallback to content/title checking
     final content = widget.lesson.content.toLowerCase();
@@ -518,7 +521,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           builder: (context) => TracingScreen(
             lessonId: widget.lesson.id,
             expectedCharacter: currentChar,
-            lessonTitle: currentChar, // Show only the current character in title
+            // Pass current character as title to show only "A", "E", etc. in AppBar
+            // instead of the full lesson title "Pagsulat ng mga Patinig: A, E, I, O, U"
+            lessonTitle: currentChar,
           ),
         ),
       );
