@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 
 class SulatinApiClient {
-  // Using the same base URL pattern as ApiService for consistency
-  // TODO: Move to environment configuration for production deployment
-  static const String baseUrl = 'http://192.168.100.168:5000';
+  // Using centralized configuration from AppConfig
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   /// Fetch lessons from backend
   static Future<Map<String, dynamic>> fetchLessons() async {
