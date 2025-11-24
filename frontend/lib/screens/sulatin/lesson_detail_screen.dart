@@ -402,20 +402,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   Widget _buildTracingLesson() {
     // Extract expected characters from lesson content or title
     // For vowels lesson, we want to trace each character sequentially: A, E, I, O, U
-    List<String> charactersToTrace = ['A']; // Default
-    final content = widget.lesson.content.toLowerCase();
-    final title = widget.lesson.title.toLowerCase();
-    
-    // Check if this is a vowels lesson (lesson ID 9 or contains multiple vowels)
-    // Using lesson ID is more reliable than string matching
-    if (widget.lesson.id == 9 || 
-        content.contains('patinig') || 
-        title.contains('patinig') || 
-        (title.contains('a') && title.contains('e') && title.contains('i') && 
-         title.contains('o') && title.contains('u'))) {
-      // This is the vowels lesson - trace A, E, I, O, U in sequence
-      charactersToTrace = ['A', 'E', 'I', 'O', 'U'];
-    }
+    final charactersToTrace = _isVowelsLesson() 
+        ? ['A', 'E', 'I', 'O', 'U'] 
+        : ['A']; // Default
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -502,11 +491,26 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     );
   }
 
+  /// Check if this is the vowels lesson that should trace A, E, I, O, U sequentially
+  bool _isVowelsLesson() {
+    // Check lesson ID first (most reliable)
+    if (widget.lesson.id == 9) return true;
+    
+    // Fallback to content/title checking
+    final content = widget.lesson.content.toLowerCase();
+    final title = widget.lesson.title.toLowerCase();
+    
+    return content.contains('patinig') || 
+           title.contains('patinig') || 
+           (title.contains('a') && title.contains('e') && title.contains('i') && 
+            title.contains('o') && title.contains('u'));
+  }
+
   Future<void> _startTracingSession(List<String> characters) async {
     int currentCharIndex = 0;
-    bool completed = false;
+    bool userCancelled = false;
 
-    while (currentCharIndex < characters.length && !completed) {
+    while (currentCharIndex < characters.length && !userCancelled) {
       final currentChar = characters[currentCharIndex];
       final result = await Navigator.push(
         context,
@@ -524,7 +528,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         currentCharIndex++;
       } else {
         // User cancelled or went back
-        completed = true;
+        userCancelled = true;
       }
     }
 
