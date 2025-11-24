@@ -15,7 +15,7 @@ class StrokePainter extends CustomPainter {
     required this.strokes,
     this.currentStroke,
     this.strokeColor = Colors.black,
-    this.strokeWidth = 4.0,
+    this.strokeWidth = 12.0,
     this.showGuidelines = true,
     this.referenceCharacter,
   });
@@ -44,10 +44,10 @@ class StrokePainter extends CustomPainter {
       _drawStroke(canvas, stroke, completedPaint);
     }
 
-    // Draw current stroke being drawn with slightly lighter color
+    // Draw current stroke being drawn with full opacity for visibility
     if (currentStroke != null) {
       final currentPaint = Paint()
-        ..color = strokeColor.withOpacity(0.8)
+        ..color = strokeColor
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
@@ -175,7 +175,7 @@ class DrawingCanvas extends StatefulWidget {
     required this.onStrokesChanged,
     this.initialStrokes = const [],
     this.strokeColor = Colors.black,
-    this.strokeWidth = 4.0,
+    this.strokeWidth = 12.0,
     this.showGuidelines = true,
     this.referenceCharacter,
     this.height,
