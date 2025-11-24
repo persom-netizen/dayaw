@@ -37,6 +37,37 @@ class _TracingScreenState extends State<TracingScreen> {
   String? _predictionResult;
   double? _confidence;
   bool? _isCorrect;
+  int? _score; // Score from 1-100
+  
+  /// Get feedback message based on score (1-100)
+  String _getFeedbackMessage(int score) {
+    if (score >= 90) {
+      return "Ika'y napakagaling! Ipagpatuloy mo pa!";
+    } else if (score >= 71) {
+      return "Hmm! Masyado mo namang ginagalingan, ngunit konting sanay pa.";
+    } else if (score >= 41) {
+      return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
+    } else if (score >= 21) {
+      return "Ayos! Ngunit, kailangan mo pa ng kaunting pag sasanay.";
+    } else {
+      return "Ok lang yan! Matututo kapa. Ulitin muli hanggang sa masanay ka sa bawat kurba.";
+    }
+  }
+  
+  /// Get score color based on score value
+  Color _getScoreColor(int score) {
+    if (score >= 90) {
+      return Colors.green;
+    } else if (score >= 71) {
+      return Colors.lightGreen;
+    } else if (score >= 41) {
+      return Colors.blue;
+    } else if (score >= 21) {
+      return Colors.orange;
+    } else {
+      return Colors.deepOrange;
+    }
+  }
 
   void _onStrokesChanged(List<Stroke> strokes) {
     setState(() {
@@ -46,6 +77,7 @@ class _TracingScreenState extends State<TracingScreen> {
         _predictionResult = null;
         _confidence = null;
         _isCorrect = null;
+        _score = null;
       }
     });
   }
@@ -56,6 +88,7 @@ class _TracingScreenState extends State<TracingScreen> {
       _predictionResult = null;
       _confidence = null;
       _isCorrect = null;
+      _score = null;
     });
     HapticFeedback.lightImpact();
   }
@@ -95,9 +128,21 @@ class _TracingScreenState extends State<TracingScreen> {
         final predictedLabel = data['label'];
         final confidence = data['confidence'];
 
+        // Calculate score from 1-100 based on confidence
+        // Only give high scores if the prediction matches the expected character
+        int calculatedScore;
+        if (predictedLabel == widget.expectedCharacter) {
+          // Correct character: score based on confidence (60-100)
+          calculatedScore = (40 + (confidence * 60)).round().clamp(1, 100);
+        } else {
+          // Wrong character: low score based on confidence (1-40)
+          calculatedScore = (confidence * 40).round().clamp(1, 40);
+        }
+
         setState(() {
           _predictionResult = predictedLabel;
           _confidence = confidence;
+          _score = calculatedScore;
           _isCorrect = (predictedLabel == widget.expectedCharacter) && 
                        (confidence >= _confidenceThreshold);
           _isLoading = false;
@@ -137,6 +182,10 @@ class _TracingScreenState extends State<TracingScreen> {
   }
 
   void _showResultDialog() {
+    final score = _score ?? 0;
+    final feedbackMessage = _getFeedbackMessage(score);
+    final scoreColor = _getScoreColor(score);
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -168,27 +217,38 @@ class _TracingScreenState extends State<TracingScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Success or Try Again message
+            // Score display with feedback message
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _isCorrect == true ? Colors.green[50] : Colors.red[50],
+                color: scoreColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _isCorrect == true ? Colors.green[200]! : Colors.red[200]!,
+                  color: scoreColor.withOpacity(0.3),
                   width: 2,
                 ),
               ),
-              child: Text(
-                _isCorrect == true
-                    ? 'Mahusay! Tama ang iyong sulat. Ipagpatuloy ang susunod na karakter.'
-                    : 'Subukan muli. Sundin ang gabay at isulat nang maingat.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: _isCorrect == true ? Colors.green[900] : Colors.red[900],
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
+              child: Column(
+                children: [
+                  Text(
+                    'Puntos: $score/100',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: scoreColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    feedbackMessage,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scoreColor.withOpacity(0.8),
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),

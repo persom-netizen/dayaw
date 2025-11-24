@@ -242,18 +242,19 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
       onPointerUp: (event) => _handlePointerUp(),
       onPointerCancel: (event) => _handlePointerUp(),
       behavior: HitTestBehavior.opaque,
-      child: CustomPaint(
-        painter: StrokePainter(
-          strokes: _strokes,
-          currentStroke: _currentStroke,
-          strokeColor: widget.strokeColor,
-          strokeWidth: widget.strokeWidth,
-          showGuidelines: widget.showGuidelines,
-          referenceCharacter: widget.referenceCharacter,
-        ),
-        child: Container(
-          height: widget.height,
-          color: Colors.white,
+      child: Container(
+        height: widget.height,
+        color: Colors.white,
+        child: CustomPaint(
+          foregroundPainter: StrokePainter(
+            strokes: _strokes,
+            currentStroke: _currentStroke,
+            strokeColor: widget.strokeColor,
+            strokeWidth: widget.strokeWidth,
+            showGuidelines: widget.showGuidelines,
+            referenceCharacter: widget.referenceCharacter,
+          ),
+          child: Container(),
         ),
       ),
     );
