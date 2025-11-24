@@ -400,18 +400,31 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildTracingLesson() {
-    // Extract expected character from lesson content or title
+    // Extract expected character from lesson title
     String expectedCharacter = 'A'; // Default
-    final content = widget.lesson.content.toLowerCase();
+    final title = widget.lesson.title.toUpperCase();
     
-    // Try to extract vowels (A, E, I, O, U) or punctuation
-    if (content.contains('a')) expectedCharacter = 'A';
-    if (content.contains('e')) expectedCharacter = 'E';
-    if (content.contains('i')) expectedCharacter = 'I';
-    if (content.contains('o')) expectedCharacter = 'O';
-    if (content.contains('u')) expectedCharacter = 'U';
-    if (content.contains('.') || content.contains('tuldok')) expectedCharacter = '.';
-    if (content.contains(',') || content.contains('kuwit')) expectedCharacter = ',';
+    // Try to extract vowels (A, E, I, O, U) from the title
+    // Prioritize specific character lessons
+    if (title.contains('PATINIG: A')) {
+      expectedCharacter = 'A';
+    } else if (title.contains('PATINIG: E')) {
+      expectedCharacter = 'E';
+    } else if (title.contains('PATINIG: I')) {
+      expectedCharacter = 'I';
+    } else if (title.contains('PATINIG: O')) {
+      expectedCharacter = 'O';
+    } else if (title.contains('PATINIG: U')) {
+      expectedCharacter = 'U';
+    } else {
+      // Fallback: check content
+      final content = widget.lesson.content.toLowerCase();
+      if (content.contains('"a"')) expectedCharacter = 'A';
+      else if (content.contains('"e"')) expectedCharacter = 'E';
+      else if (content.contains('"i"')) expectedCharacter = 'I';
+      else if (content.contains('"o"')) expectedCharacter = 'O';
+      else if (content.contains('"u"')) expectedCharacter = 'U';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

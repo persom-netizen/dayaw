@@ -113,24 +113,45 @@ class SulatinCurriculum {
         ],
       ),
 
-      // Kabanata 3 - Writing Practice (2 lessons)
+      // Kabanata 3 - Writing Practice (5 lessons, one for each vowel)
       Chapter(
         id: 3,
         title: 'Kabanata 3: Pagsasanay sa Pagsulat',
         lessons: [
           Lesson(
             id: 9,
-            title: 'Pagsulat ng mga Patinig: A, E, I, O, U',
+            title: 'Pagsulat ng Patinig: A',
             content:
-                'Sa araling ito, matututunan mo kung paano isulat ang mga patinig ng Baybayin.\n\nAng tatlong pangunahing patinig ay:\n• ᜀ (A)\n• ᜁ (E/I)\n• ᜂ (O/U)\n\nPansinin ang direksiyon ng mga guhit at ang tamang pagkakasunod-sunod ng pagsulat.',
+                'Sa araling ito, matututunan mo kung paano isulat ang patinig na "A" sa Baybayin.\n\nAng Baybayin para sa A ay: ᜀ\n\nPansinin ang direksiyon ng mga guhit at ang tamang pagkakasunod-sunod ng pagsulat. Magsanay ng pagsulat sa canvas sa ibaba.',
             type: 'tracing',
           ),
           Lesson(
             id: 10,
-            title: 'Tuldok at Kuwit sa Baybayin',
+            title: 'Pagsulat ng Patinig: E',
             content:
-                'Ang tuldok (kudlit) at kuwit ay mahalagang bahagi ng Baybayin:\n\n• Kudlit sa itaas (·) - binabago ang tunog mula A patungo sa I/E\n• Kudlit sa ibaba (·) - binabago ang tunog mula A patungo sa O/U\n• Virama (+) - tinatanggal ang huling patinig\n\nAng mga kudlit ay dapat maingat na ilagay upang maiwasan ang pagkalito.',
-            type: 'text',
+                'Sa araling ito, matututunan mo kung paano isulat ang patinig na "E" sa Baybayin.\n\nAng Baybayin para sa E ay: ᜁ\n\nPansinin ang direksiyon ng mga guhit at ang tamang pagkakasunod-sunod ng pagsulat. Magsanay ng pagsulat sa canvas sa ibaba.',
+            type: 'tracing',
+          ),
+          Lesson(
+            id: 11,
+            title: 'Pagsulat ng Patinig: I',
+            content:
+                'Sa araling ito, matututunan mo kung paano isulat ang patinig na "I" sa Baybayin.\n\nAng Baybayin para sa I ay: ᜁ\n\nPansinin na ang I at E ay pareho ang karakter sa Baybayin. Magsanay ng pagsulat sa canvas sa ibaba.',
+            type: 'tracing',
+          ),
+          Lesson(
+            id: 12,
+            title: 'Pagsulat ng Patinig: O',
+            content:
+                'Sa araling ito, matututunan mo kung paano isulat ang patinig na "O" sa Baybayin.\n\nAng Baybayin para sa O ay: ᜂ\n\nPansinin ang direksiyon ng mga guhit at ang tamang pagkakasunod-sunod ng pagsulat. Magsanay ng pagsulat sa canvas sa ibaba.',
+            type: 'tracing',
+          ),
+          Lesson(
+            id: 13,
+            title: 'Pagsulat ng Patinig: U',
+            content:
+                'Sa araling ito, matututunan mo kung paano isulat ang patinig na "U" sa Baybayin.\n\nAng Baybayin para sa U ay: ᜂ\n\nPansinin na ang U at O ay pareho ang karakter sa Baybayin. Magsanay ng pagsulat sa canvas sa ibaba.',
+            type: 'tracing',
           ),
         ],
       ),
@@ -141,7 +162,7 @@ class SulatinCurriculum {
         title: 'Kabanata 4: Mga Silaba',
         lessons: [
           Lesson(
-            id: 11,
+            id: 14,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -155,7 +176,7 @@ class SulatinCurriculum {
         title: 'Kabanata 5: Mga Salitang Pangkaraniwan',
         lessons: [
           Lesson(
-            id: 12,
+            id: 15,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -169,7 +190,7 @@ class SulatinCurriculum {
         title: 'Kabanata 6: Mga Pangungusap',
         lessons: [
           Lesson(
-            id: 13,
+            id: 16,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -183,7 +204,7 @@ class SulatinCurriculum {
         title: 'Kabanata 7: Pagbasa ng Baybayin',
         lessons: [
           Lesson(
-            id: 14,
+            id: 17,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -197,7 +218,7 @@ class SulatinCurriculum {
         title: 'Kabanata 8: Pagsusulat ng Pangalan',
         lessons: [
           Lesson(
-            id: 15,
+            id: 18,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -211,7 +232,7 @@ class SulatinCurriculum {
         title: 'Kabanata 9: Modernong Baybayin',
         lessons: [
           Lesson(
-            id: 16,
+            id: 19,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
@@ -225,7 +246,7 @@ class SulatinCurriculum {
         title: 'Kabanata 10: Proyekto at Praktis',
         lessons: [
           Lesson(
-            id: 17,
+            id: 20,
             title: 'Sa susunod na version',
             content: 'Ang araling ito ay hindi pa available.',
             type: 'text',
