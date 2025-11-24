@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/post_provider.dart';
+import '../widgets/image_preview_widget.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final String username;
@@ -191,8 +191,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(_selectedImage!.path),
+                            child: ImagePreviewWidget(
+                              imageFile: _selectedImage!,
                               height: 200,
                               width: double.infinity,
                               fit: BoxFit.cover,
