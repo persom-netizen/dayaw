@@ -186,8 +186,8 @@ class PostProvider with ChangeNotifier {
       // Update the post's comments count
       final postIndex = _posts.indexWhere((post) => post.id == postId);
       if (postIndex != -1) {
-        _posts[postIndex].commentsCount = 
-            (_posts[postIndex].commentsCount - 1).clamp(0, double.maxFinite.toInt());
+        final currentCount = _posts[postIndex].commentsCount;
+        _posts[postIndex].commentsCount = currentCount > 0 ? currentCount - 1 : 0;
         notifyListeners();
       }
       
