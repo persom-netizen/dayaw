@@ -93,6 +93,8 @@ class Post(db.Model):
     title = db.Column(db.String(255))
     content = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(500))
+    likes_count = db.Column(db.Integer, default=0)
+    comments_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
@@ -419,6 +421,8 @@ def get_posts():
             "title": p.title,
             "content": p.content,
             "image_url": p.image_url,
+            "likes_count": p.likes_count,
+            "comments_count": p.comments_count,
             "created_at": p.created_at.isoformat()
         } for p in posts]
         return jsonify(posts_list), 200
@@ -440,7 +444,9 @@ def create_post():
             profile_image=data.get("profile_image"),
             title=data.get("title"),
             content=data["content"],
-            image_url=data.get("image_url")
+            image_url=data.get("image_url"),
+            likes_count=0,
+            comments_count=0
         )
         
         db.session.add(new_post)
@@ -453,6 +459,8 @@ def create_post():
             "title": new_post.title,
             "content": new_post.content,
             "image_url": new_post.image_url,
+            "likes_count": new_post.likes_count,
+            "comments_count": new_post.comments_count,
             "created_at": new_post.created_at.isoformat()
         }), 201
     except Exception as e:

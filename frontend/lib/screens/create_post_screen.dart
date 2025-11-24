@@ -67,14 +67,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post created successfully!')),
+          const SnackBar(content: Text('Matagumpay na nailagay ang post!')),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating post: $e')),
+          SnackBar(content: Text('May error sa paglikha ng post: $e')),
         );
       }
     } finally {
@@ -88,7 +88,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Post'),
+        title: const Text('Lumikha ng Post'),
         backgroundColor: Colors.blue[600],
       ),
       body: SingleChildScrollView(
@@ -103,11 +103,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Title (optional)',
+                    labelText: 'pamagat (opsyonal)',
                     border: OutlineInputBorder(),
-                    hintText: 'Enter a title for your post',
+                    hintText: 'Maglagay ng pamagat',
                   ),
-                  maxLength: 100,
+                  maxLength: 255,
                 ),
                 const SizedBox(height: 16),
                 
@@ -115,15 +115,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _contentController,
                   decoration: const InputDecoration(
-                    labelText: 'What\'s on your mind?',
+                    labelText: 'ano ang iyong nais isulat?',
                     border: OutlineInputBorder(),
-                    hintText: 'Share your thoughts...',
+                    hintText: 'Ibahagi ang iyong saloobin...',
                   ),
-                  maxLines: 6,
-                  maxLength: 1000,
+                  maxLines: 10,
+                  maxLength: 10000,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Content cannot be empty';
+                      return 'Hindi maaaring walang laman';
                     }
                     return null;
                   },
@@ -134,13 +134,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 TextFormField(
                   controller: _imageUrlController,
                   decoration: InputDecoration(
-                    labelText: 'Image URL (optional)',
+                    labelText: 'nais mag dagdag ng larawan (opsyonal)',
                     border: const OutlineInputBorder(),
-                    hintText: 'Enter image URL',
+                    hintText: 'Ilagay ang URL ng larawan',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.photo_library),
                       onPressed: _pickImage,
-                      tooltip: 'Pick from gallery',
+                      tooltip: 'Pumili mula sa gallery',
                     ),
                   ),
                 ),
@@ -166,7 +166,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           ),
                         )
                       : const Text(
-                          'Post',
+                          'ilaganap',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),

@@ -65,7 +65,7 @@ class FeedPostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.username,
+                        'otokesengkake_${post.username}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -132,6 +132,26 @@ class FeedPostCard extends StatelessWidget {
                 ),
               ),
             ],
+            
+            // Interaction elements (likes, comments)
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.favorite_border, size: 20, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  '${post.likesCount}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const SizedBox(width: 20),
+                Icon(Icons.comment_outlined, size: 20, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  '${post.commentsCount}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+              ],
+            ),
           ],
         ),
       ),
