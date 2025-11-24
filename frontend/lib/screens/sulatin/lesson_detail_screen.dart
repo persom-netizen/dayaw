@@ -400,18 +400,19 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildTracingLesson() {
-    // Extract expected character from lesson content or title
-    String expectedCharacter = 'A'; // Default
+    // Extract expected characters from lesson content or title
+    // For vowels lesson, we want to trace each character sequentially: A, E, I, O, U
+    List<String> charactersToTrace = ['A']; // Default
     final content = widget.lesson.content.toLowerCase();
+    final title = widget.lesson.title.toLowerCase();
     
-    // Try to extract vowels (A, E, I, O, U) or punctuation
-    if (content.contains('a')) expectedCharacter = 'A';
-    if (content.contains('e')) expectedCharacter = 'E';
-    if (content.contains('i')) expectedCharacter = 'I';
-    if (content.contains('o')) expectedCharacter = 'O';
-    if (content.contains('u')) expectedCharacter = 'U';
-    if (content.contains('.') || content.contains('tuldok')) expectedCharacter = '.';
-    if (content.contains(',') || content.contains('kuwit')) expectedCharacter = ',';
+    // Check if this is a vowels lesson (contains multiple vowels)
+    if (content.contains('patinig') || title.contains('patinig') || 
+        (title.contains('a') && title.contains('e') && title.contains('i') && 
+         title.contains('o') && title.contains('u'))) {
+      // This is the vowels lesson - trace A, E, I, O, U in sequence
+      charactersToTrace = ['A', 'E', 'I', 'O', 'U'];
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -456,20 +457,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         const SizedBox(height: 24),
         ElevatedButton(
           onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TracingScreen(
-                  lessonId: widget.lesson.id,
-                  expectedCharacter: expectedCharacter,
-                  lessonTitle: widget.lesson.title,
-                ),
-              ),
-            );
-            if (result != null && result['completed'] == true) {
-              // Lesson completed
-              Navigator.pop(context);
-            }
+            // Start tracing session with sequential characters
+            await _startTracingSession(charactersToTrace);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.purple[600],
@@ -508,5 +497,37 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _startTracingSession(List<String> characters) async {
+    int currentCharIndex = 0;
+    bool completed = false;
+
+    while (currentCharIndex < characters.length && !completed) {
+      final currentChar = characters[currentCharIndex];
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TracingScreen(
+            lessonId: widget.lesson.id,
+            expectedCharacter: currentChar,
+            lessonTitle: currentChar, // Show only the current character in title
+          ),
+        ),
+      );
+
+      if (result != null && result['completed'] == true) {
+        // Move to next character
+        currentCharIndex++;
+      } else {
+        // User cancelled or went back
+        completed = true;
+      }
+    }
+
+    // If all characters completed, mark lesson as done
+    if (currentCharIndex >= characters.length) {
+      Navigator.pop(context);
+    }
   }
 }

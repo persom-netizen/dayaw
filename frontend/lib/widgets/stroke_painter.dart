@@ -194,29 +194,31 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
     _strokes = List.from(widget.initialStrokes);
   }
 
-  void _onPanStart(DragStartDetails details) {
+  void _handlePointerDown(Offset position) {
     setState(() {
       _currentStroke = Stroke([
         StrokePoint(
-          x: details.localPosition.dx,
-          y: details.localPosition.dy,
+          x: position.dx,
+          y: position.dy,
         ),
       ]);
     });
   }
 
-  void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _currentStroke?.points.add(
-        StrokePoint(
-          x: details.localPosition.dx,
-          y: details.localPosition.dy,
-        ),
-      );
-    });
+  void _handlePointerMove(Offset position) {
+    if (_currentStroke != null) {
+      setState(() {
+        _currentStroke!.points.add(
+          StrokePoint(
+            x: position.dx,
+            y: position.dy,
+          ),
+        );
+      });
+    }
   }
 
-  void _onPanEnd(DragEndDetails details) {
+  void _handlePointerUp() {
     if (_currentStroke != null && _currentStroke!.points.isNotEmpty) {
       setState(() {
         _strokes.add(_currentStroke!);
@@ -228,10 +230,14 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanStart: _onPanStart,
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
+    // Use Listener for better pointer event handling across web and mobile
+    // This provides more direct access to pointer events and works well on both platforms
+    return Listener(
+      onPointerDown: (event) => _handlePointerDown(event.localPosition),
+      onPointerMove: (event) => _handlePointerMove(event.localPosition),
+      onPointerUp: (event) => _handlePointerUp(),
+      onPointerCancel: (event) => _handlePointerUp(),
+      behavior: HitTestBehavior.opaque,
       child: CustomPaint(
         painter: StrokePainter(
           strokes: _strokes,

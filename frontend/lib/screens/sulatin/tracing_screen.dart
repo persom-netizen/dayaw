@@ -30,8 +30,6 @@ class _TracingScreenState extends State<TracingScreen> {
     'I': {'tagalog': 'I', 'english': 'I', 'strokes': '3'},
     'O': {'tagalog': 'O', 'english': 'O', 'strokes': '1'},
     'U': {'tagalog': 'U', 'english': 'U', 'strokes': '1'},
-    '.': {'tagalog': 'Tuldok', 'english': 'Period', 'strokes': '1'},
-    ',': {'tagalog': 'Kuwit', 'english': 'Comma', 'strokes': '1'},
   };
   
   List<Stroke> _strokes = [];
