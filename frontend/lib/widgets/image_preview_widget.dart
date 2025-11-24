@@ -27,25 +27,24 @@ class ImagePreviewWidget extends StatelessWidget {
     return FutureBuilder<Uint8List>(
       future: imageFile.readAsBytes(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            return Image.memory(
-              snapshot.data!,
-              height: height,
-              width: width,
-              fit: fit,
-            );
-          } else {
-            // Error case
-            return Container(
-              height: height,
-              width: width,
-              color: Colors.grey[300],
-              child: const Center(
-                child: Icon(Icons.broken_image, size: 50),
-              ),
-            );
-          }
+        if (snapshot.hasError) {
+          // Error case - file couldn't be read
+          return Container(
+            height: height,
+            width: width,
+            color: Colors.grey[300],
+            child: const Center(
+              child: Icon(Icons.broken_image, size: 50),
+            ),
+          );
+        } else if (snapshot.hasData) {
+          // Success case - display the image
+          return Image.memory(
+            snapshot.data!,
+            height: height,
+            width: width,
+            fit: fit,
+          );
         } else {
           // Loading state
           return Container(
