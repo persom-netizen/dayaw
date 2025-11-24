@@ -8,10 +8,14 @@ class PostService {
   static const String baseUrl = "http://192.168.100.168:5000";
   static final Dio _dio = Dio();
 
-  static Future<List<Post>> getPosts() async {
+  static Future<List<Post>> getPosts({String? username}) async {
     try {
+      final uri = username != null && username.isNotEmpty
+          ? Uri.parse('$baseUrl/api/posts?username=$username')
+          : Uri.parse('$baseUrl/api/posts');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/api/posts'),
+        uri,
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -140,6 +144,111 @@ class PostService {
     } catch (e) {
       print("[ERROR] Exception deleting post: $e");
       throw Exception('Error deleting post: $e');
+    }
+  }
+
+  /// Toggle like on a post
+  static Future<Map<String, dynamic>> toggleLike({
+    required int postId,
+    required String username,
+  }) async {
+    try {
+      print("[INFO] Toggling like for post: $postId by user: $username");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/posts/$postId/like'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print("[SUCCESS] Like toggled: ${responseData['liked']}");
+        return responseData;
+      } else {
+        throw Exception('Failed to toggle like: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("[ERROR] Exception toggling like: $e");
+      throw Exception('Error toggling like: $e');
+    }
+  }
+
+  /// Get comments for a post
+  static Future<List<Comment>> getComments(int postId) async {
+    try {
+      print("[INFO] Fetching comments for post: $postId");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/posts/$postId/comments'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final List<dynamic> commentsJson = responseData['comments'] ?? [];
+        return commentsJson.map((json) => Comment.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load comments: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("[ERROR] Exception fetching comments: $e");
+      throw Exception('Error fetching comments: $e');
+    }
+  }
+
+  /// Add a comment to a post
+  static Future<Comment> addComment({
+    required int postId,
+    required String username,
+    required String content,
+  }) async {
+    try {
+      print("[INFO] Adding comment to post: $postId by user: $username");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/posts/$postId/comments'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': username,
+          'content': content,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        print("[SUCCESS] Comment added with ID: ${responseData['comment']['id']}");
+        return Comment.fromJson(responseData['comment']);
+      } else {
+        throw Exception('Failed to add comment: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("[ERROR] Exception adding comment: $e");
+      throw Exception('Error adding comment: $e');
+    }
+  }
+
+  /// Delete a comment
+  static Future<void> deleteComment({
+    required int postId,
+    required int commentId,
+  }) async {
+    try {
+      print("[INFO] Deleting comment: $commentId from post: $postId");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/posts/$postId/comments/$commentId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete comment: ${response.statusCode}');
+      }
+
+      print("[SUCCESS] Comment deleted: $commentId");
+    } catch (e) {
+      print("[ERROR] Exception deleting comment: $e");
+      throw Exception('Error deleting comment: $e');
     }
   }
 }
