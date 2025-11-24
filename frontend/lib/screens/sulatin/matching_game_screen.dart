@@ -21,8 +21,8 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
     with TickerProviderStateMixin {
   // Game state
   late List<GameCard> _cards;
-  List<int> _selectedIndices = [];
-  Set<int> _matchedIndices = {};
+  final List<int> _selectedIndices = [];
+  final Set<int> _matchedIndices = {};
   int _score = 0;
   int _attempts = 0;
   late DateTime _startTime;
@@ -59,23 +59,27 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
   void _initializeGame() {
     // Take first 6 pairs for the game
     final selectedPairs = _cardPairs.take(6).toList();
-    
+
     // Create cards from pairs
     List<GameCard> cards = [];
     for (int i = 0; i < selectedPairs.length; i++) {
       final pair = selectedPairs[i];
-      cards.add(GameCard(
-        id: i * 2,
-        value: pair['katinig']!,
-        pairId: i,
-        type: CardType.katinig,
-      ));
-      cards.add(GameCard(
-        id: i * 2 + 1,
-        value: pair['combined']!,
-        pairId: i,
-        type: CardType.combined,
-      ));
+      cards.add(
+        GameCard(
+          id: i * 2,
+          value: pair['katinig']!,
+          pairId: i,
+          type: CardType.katinig,
+        ),
+      );
+      cards.add(
+        GameCard(
+          id: i * 2 + 1,
+          value: pair['combined']!,
+          pairId: i,
+          type: CardType.combined,
+        ),
+      );
     }
 
     // Shuffle cards
@@ -493,10 +497,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
   }
 }
 
-enum CardType {
-  katinig,
-  combined,
-}
+enum CardType { katinig, combined }
 
 class GameCard {
   final int id;
