@@ -50,7 +50,7 @@ class _TracingScreenState extends State<TracingScreen> {
     if (score >= 90) {
       return "Ika'y napakagaling! Ipagpatuloy mo pa!";
     } else if (score >= 71) {
-      return "Hmm! Masyado mo namang ginaling, ngunit konting sanay pa.";
+      return "Hmm! Masyado mo namang galing, ngunit konting sanay pa.";
     } else if (score >= 41) {
       return "Nagagalak akong maganda ang naging resulta! Ipagpatuloy mo pa!";
     } else if (score >= 21) {
@@ -139,9 +139,9 @@ class _TracingScreenState extends State<TracingScreen> {
         int calculatedScore;
         if (predictedLabel == widget.expectedCharacter) {
           // Correct character: score based on confidence (60-100)
-          calculatedScore = (_minCorrectScore + (confidence * _confidenceBoostForCorrect))
-              .round()
-              .clamp(1, _maxScore);
+          // Ensure minimum score is always _minCorrectScore for correct predictions
+          final baseScore = _minCorrectScore + (confidence * _confidenceBoostForCorrect);
+          calculatedScore = baseScore.round().clamp(_minCorrectScore, _maxScore);
         } else {
           // Wrong character: low score based on confidence (1-40)
           calculatedScore = (confidence * _maxWrongScore).round().clamp(1, _maxWrongScore);
