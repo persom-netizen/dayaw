@@ -23,15 +23,13 @@ class TracingScreen extends StatefulWidget {
 class _TracingScreenState extends State<TracingScreen> {
   static const double _confidenceThreshold = 0.6;
   
-  // Character name mappings
+  // Character name mappings - Only Baybayin vowel characters
   static const Map<String, Map<String, String>> _characterNames = {
     'A': {'tagalog': 'A', 'english': 'A', 'strokes': '3'},
     'E': {'tagalog': 'E', 'english': 'E', 'strokes': '4'},
     'I': {'tagalog': 'I', 'english': 'I', 'strokes': '3'},
     'O': {'tagalog': 'O', 'english': 'O', 'strokes': '1'},
     'U': {'tagalog': 'U', 'english': 'U', 'strokes': '1'},
-    '.': {'tagalog': 'Tuldok', 'english': 'Period', 'strokes': '1'},
-    ',': {'tagalog': 'Kuwit', 'english': 'Comma', 'strokes': '1'},
   };
   
   List<Stroke> _strokes = [];
