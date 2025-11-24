@@ -206,9 +206,10 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   }
 
   void _handlePointerMove(Offset position) {
-    if (_currentStroke != null) {
+    final currentStroke = _currentStroke;
+    if (currentStroke != null) {
       setState(() {
-        _currentStroke!.points.add(
+        currentStroke.points.add(
           StrokePoint(
             x: position.dx,
             y: position.dy,

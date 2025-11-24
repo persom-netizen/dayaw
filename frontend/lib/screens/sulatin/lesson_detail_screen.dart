@@ -406,8 +406,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final content = widget.lesson.content.toLowerCase();
     final title = widget.lesson.title.toLowerCase();
     
-    // Check if this is a vowels lesson (contains multiple vowels)
-    if (content.contains('patinig') || title.contains('patinig') || 
+    // Check if this is a vowels lesson (lesson ID 9 or contains multiple vowels)
+    // Using lesson ID is more reliable than string matching
+    if (widget.lesson.id == 9 || 
+        content.contains('patinig') || 
+        title.contains('patinig') || 
         (title.contains('a') && title.contains('e') && title.contains('i') && 
          title.contains('o') && title.contains('u'))) {
       // This is the vowels lesson - trace A, E, I, O, U in sequence
