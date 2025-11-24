@@ -12,11 +12,19 @@
 class AppConfig {
   /// Base URL for the backend API server
   /// 
-  /// IMPORTANT: Change this IP address based on your testing environment:
-  /// - For Android device testing, use your machine's local network IP
-  /// - For web/emulator testing, use localhost or 127.0.0.1
+  /// ⚠️ IMPORTANT: UPDATE THIS IP ADDRESS FOR YOUR ENVIRONMENT!
   /// 
-  /// Example: 'http://192.168.1.100:5000' (replace with your actual IP)
+  /// Current default (192.168.100.168) is a specific development machine IP.
+  /// You MUST change this to match YOUR setup:
+  /// 
+  /// For Android device testing:
+  /// - Use your machine's local network IP (e.g., 'http://192.168.1.100:5000')
+  /// - Run `ipconfig` (Windows) or `ifconfig` (Mac/Linux) to find your IP
+  /// 
+  /// For web/emulator testing:
+  /// - Use 'http://localhost:5000' or 'http://127.0.0.1:5000'
+  /// 
+  /// See ANDROID_DEVICE_TESTING.md for detailed instructions
   static const String apiBaseUrl = 'http://192.168.100.168:5000';
 
   /// API timeout duration in seconds
