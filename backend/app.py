@@ -84,6 +84,18 @@ class ChatThread(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class Post(db.Model):
+    """Community Feed Posts"""
+    __tablename__ = "posts"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    profile_image = db.Column(db.String(500))
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
 # ===================================================
 # HELPER FUNCTIONS
 # ===================================================
@@ -389,6 +401,81 @@ def get_all_salita():
         return jsonify({"success": True, "count": len(salita_list), "salitas": salita_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ===================================================
+# POST ROUTES (COMMUNITY FEED)
+# ===================================================
+
+@app.route("/api/posts", methods=["GET"])
+def get_posts():
+    """Get all posts for the feed."""
+    try:
+        posts = Post.query.order_by(Post.created_at.desc()).all()
+        posts_list = [{
+            "id": p.id,
+            "username": p.username,
+            "profile_image": p.profile_image,
+            "title": p.title,
+            "content": p.content,
+            "image_url": p.image_url,
+            "created_at": p.created_at.isoformat()
+        } for p in posts]
+        return jsonify(posts_list), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts", methods=["POST"])
+def create_post():
+    """Create a new post."""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get("username") or not data.get("content"):
+            return jsonify({"error": "Username and content are required"}), 400
+        
+        new_post = Post(
+            username=data["username"],
+            profile_image=data.get("profile_image"),
+            title=data.get("title"),
+            content=data["content"],
+            image_url=data.get("image_url")
+        )
+        
+        db.session.add(new_post)
+        db.session.commit()
+        
+        return jsonify({
+            "id": new_post.id,
+            "username": new_post.username,
+            "profile_image": new_post.profile_image,
+            "title": new_post.title,
+            "content": new_post.content,
+            "image_url": new_post.image_url,
+            "created_at": new_post.created_at.isoformat()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/posts/<int:post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    """Delete a post by ID."""
+    try:
+        post = Post.query.get(post_id)
+        if not post:
+            return jsonify({"error": "Post not found"}), 404
+        
+        db.session.delete(post)
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "Post deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 # ===================================================
 # REGISTER BLUEPRINTS (SULATIN)

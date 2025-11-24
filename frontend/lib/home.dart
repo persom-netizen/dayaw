@@ -1,10 +1,14 @@
 import 'salita.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'main.dart';
 import 'ai.dart';
 import 'alaala.dart';
 import 'services/api_service.dart';
 import 'screens/sulatin/sulatin_screen.dart';
+import 'screens/create_post_screen.dart';
+import 'providers/post_provider.dart';
+import 'widgets/feed_post_card.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -16,10 +20,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  bool _isLoading = false;
-  String _dbStatus = '';
-  List<dynamic> _users = [];
-  String _openAIResponse = '';
 
   late List<Widget> _pages;
 
@@ -27,178 +27,134 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      _buildHomePage(),
+      _buildFeedPage(),
       AiPage(username: widget.username),
       SalitaPage(username: widget.username),
       AlaalaPage(username: widget.username),
       const SulatinScreen(),
     ];
-  }
-
-  Future<void> _testDbConnection() async {
-    setState(() => _isLoading = true);
-    try {
-      final result = await ApiService.testDbConnection();
-      setState(
-        () => _dbStatus = result['ok']
-            ? 'Connected'
-            : 'Error: ${result['error']}',
-      );
-    } catch (e) {
-      setState(() => _dbStatus = 'Error: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadUsers() async {
-    setState(() => _isLoading = true);
-    try {
-      final users = await ApiService.getUsers();
-      setState(() => _users = users);
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading users: $e')));
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _askOpenAI() async {
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ask OpenAI'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter your question'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Ask'),
-          ),
-        ],
-      ),
+    // Load posts when home page initializes
+    Future.microtask(
+      () => Provider.of<PostProvider>(context, listen: false).loadPosts(),
     );
-
-    if (result != null && result.isNotEmpty) {
-      setState(() => _isLoading = true);
-      try {
-        final response = await ApiService.askOpenAI(
-          result,
-          username: widget.username,
-        );
-        setState(() => _openAIResponse = response['answer'] ?? 'No response');
-      } catch (e) {
-        setState(() => _openAIResponse = 'Error: $e');
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    }
   }
 
-  Widget _buildHomePage() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Text(
-                      "Magandang Araw, ${widget.username}!",
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MainPage()),
-                      ),
-                      child: const Text("Logout"),
-                    ),
-                  ],
+  Widget _buildFeedPage() {
+    return Consumer<PostProvider>(
+      builder: (context, postProvider, child) {
+        if (postProvider.isLoading && postProvider.posts.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (postProvider.error != null && postProvider.posts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading posts',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                 ),
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  postProvider.error!,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => postProvider.loadPosts(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "API Testing",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _testDbConnection,
-                      child: const Text("Test Database Connection"),
-                    ),
-                    if (_dbStatus.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text("DB Status: $_dbStatus"),
-                    ],
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _loadUsers,
-                      child: const Text("Load Users"),
-                    ),
-                    if (_users.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text("Users loaded: ${_users.length}"),
-                      ...(_users
-                          .take(3)
-                          .map(
-                            (user) => ListTile(
-                              title: Text(user['username']),
-                              subtitle: Text(user['email']),
+          );
+        }
+
+        if (postProvider.posts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.post_add, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  'No posts yet',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Be the first to create a post!',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => postProvider.loadPosts(),
+          child: ListView.builder(
+            itemCount: postProvider.posts.length,
+            itemBuilder: (context, index) {
+              final post = postProvider.posts[index];
+              return FeedPostCard(
+                post: post,
+                onDelete: post.username == widget.username && post.id != null
+                    ? () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Post'),
+                            content: const Text(
+                              'Are you sure you want to delete this post?',
                             ),
-                          )),
-                    ],
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _askOpenAI,
-                      child: const Text("Ask OpenAI"),
-                    ),
-                    if (_openAIResponse.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      const Text(
-                        "OpenAI Response:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(_openAIResponse),
-                    ],
-                    if (_isLoading) ...[
-                      const SizedBox(height: 10),
-                      const Center(child: CircularProgressIndicator()),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          try {
+                            await postProvider.deletePost(post.id!);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Post deleted successfully'),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error deleting post: $e'),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      }
+                    : null,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -216,6 +172,24 @@ class _HomePageState extends State<HomePage> {
         automaticallyImplyLeading: false, // ✅ REMOVES BACK ARROW
       ),
       body: _pages[_selectedIndex],
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreatePostScreen(username: widget.username),
+                  ),
+                );
+                // Reload posts after returning from create screen
+                if (context.mounted) {
+                  Provider.of<PostProvider>(context, listen: false).loadPosts();
+                }
+              },
+              backgroundColor: Colors.blue[600],
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onNavBarTapped,
