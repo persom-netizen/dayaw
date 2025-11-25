@@ -13,6 +13,9 @@ import random
 # Timezone setup for Asia/Manila (UTC+8)
 MANILA_TZ = timezone(timedelta(hours=8))
 
+# Epoch date for rotation calculations
+ROTATION_EPOCH_DATE = datetime(2000, 1, 1).date()
+
 def get_manila_time():
     """Get current time in Manila timezone (UTC+8)"""
     return datetime.now(MANILA_TZ)
@@ -165,7 +168,7 @@ def get_trivia_index_for_today():
         return None
     
     today = get_manila_time().date()
-    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
     trivia_index = days_since_epoch % total_items
     return trivia_index
 
@@ -176,7 +179,7 @@ def get_salita_index_for_today():
         return None
     
     today = get_manila_time().date()
-    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
     salita_index = days_since_epoch % total_items
     return salita_index
 
