@@ -3,12 +3,30 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import text
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from werkzeug.utils import secure_filename
 import hashlib
 import sys
 import os
 import random
+
+# Timezone setup for Asia/Manila (UTC+8)
+MANILA_TZ = timezone(timedelta(hours=8))
+
+# Epoch date for rotation calculations
+ROTATION_EPOCH_DATE = datetime(2000, 1, 1).date()
+
+def get_manila_time():
+    """Get current time in Manila timezone (UTC+8)"""
+    return datetime.now(MANILA_TZ)
+
+def utc_to_manila(utc_dt):
+    """Convert UTC datetime to Manila timezone"""
+    if utc_dt is None:
+        return None
+    if utc_dt.tzinfo is None:
+        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
+    return utc_dt.astimezone(MANILA_TZ)
 
 # ensure backend folder on sys.path so local modules can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -144,24 +162,24 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_trivia_index_for_today():
-    """Calculate which trivia to show based on current date (24-hour rotation)"""
+    """Calculate which trivia to show based on current date in Manila timezone (24-hour rotation)"""
     total_items = Alaala.query.count()
     if total_items == 0:
         return None
     
-    today = datetime.now().date()
-    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    today = get_manila_time().date()
+    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
     trivia_index = days_since_epoch % total_items
     return trivia_index
 
 def get_salita_index_for_today():
-    """Calculate which Salita to show based on current date (24-hour rotation)"""
+    """Calculate which Salita to show based on current date in Manila timezone (24-hour rotation)"""
     total_items = Salita.query.count()
     if total_items == 0:
         return None
     
-    today = datetime.now().date()
-    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
+    today = get_manila_time().date()
+    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
     salita_index = days_since_epoch % total_items
     return salita_index
 
@@ -467,7 +485,7 @@ def get_posts():
             "image_url": p.image_url,
             "likes_count": p.likes_count,
             "comments_count": p.comments_count,
-            "created_at": p.created_at.isoformat(),
+            "created_at": utc_to_manila(p.created_at).isoformat() if p.created_at else None,
             "is_liked": p.id in user_likes
         } for p in posts]
         return jsonify(posts_list), 200
@@ -525,7 +543,7 @@ def create_post():
             "image_url": new_post.image_url,
             "likes_count": new_post.likes_count,
             "comments_count": new_post.comments_count,
-            "created_at": new_post.created_at.isoformat()
+            "created_at": utc_to_manila(new_post.created_at).isoformat() if new_post.created_at else None
         }), 201
     except Exception as e:
         db.session.rollback()
@@ -648,7 +666,7 @@ def get_comments(post_id):
             "post_id": c.post_id,
             "username": c.username,
             "content": c.content,
-            "created_at": c.created_at.isoformat()
+            "created_at": utc_to_manila(c.created_at).isoformat() if c.created_at else None
         } for c in comments]
         
         return jsonify({
@@ -695,7 +713,7 @@ def create_comment(post_id):
                 "post_id": new_comment.post_id,
                 "username": new_comment.username,
                 "content": new_comment.content,
-                "created_at": new_comment.created_at.isoformat()
+                "created_at": utc_to_manila(new_comment.created_at).isoformat() if new_comment.created_at else None
             },
             "comments_count": post.comments_count
         }), 201
