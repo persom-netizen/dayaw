@@ -89,6 +89,7 @@ class Comment {
   final String username;
   final String content;
   final DateTime createdAt;
+  final List<CommentReply> replies;
 
   Comment({
     required this.id,
@@ -96,12 +97,58 @@ class Comment {
     required this.username,
     required this.content,
     required this.createdAt,
-  });
+    List<CommentReply>? replies,
+  }) : replies = replies ?? [];
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
       id: json['id'],
       postId: json['post_id'],
+      username: json['username'] ?? 'Anonymous',
+      content: json['content'] ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at']).toLocal()
+          : DateTime.now(),
+      replies: json['replies'] != null
+          ? (json['replies'] as List)
+              .map((r) => CommentReply.fromJson(r))
+              .toList()
+          : [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'post_id': postId,
+      'username': username,
+      'content': content,
+      'created_at': createdAt.toIso8601String(),
+      'replies': replies.map((r) => r.toJson()).toList(),
+    };
+  }
+}
+
+
+class CommentReply {
+  final int id;
+  final int commentId;
+  final String username;
+  final String content;
+  final DateTime createdAt;
+
+  CommentReply({
+    required this.id,
+    required this.commentId,
+    required this.username,
+    required this.content,
+    required this.createdAt,
+  });
+
+  factory CommentReply.fromJson(Map<String, dynamic> json) {
+    return CommentReply(
+      id: json['id'],
+      commentId: json['comment_id'],
       username: json['username'] ?? 'Anonymous',
       content: json['content'] ?? '',
       createdAt: json['created_at'] != null
@@ -113,7 +160,7 @@ class Comment {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'post_id': postId,
+      'comment_id': commentId,
       'username': username,
       'content': content,
       'created_at': createdAt.toIso8601String(),
