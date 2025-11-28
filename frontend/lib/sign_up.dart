@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart';
+import 'config/api_config.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -50,8 +51,8 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => _isLoading = true);
 
     final url = Uri.parse(
-      "http://192.168.100.168:5000/api/signup",
-    ); // ✅ LAN IP for real device
+      "${ApiConfig.baseUrl}/api/signup",
+    );
 
     try {
       final response = await http.post(
