@@ -1,32 +1,18 @@
 # backend/app.py
+from datetime import datetime
+import pytz
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import text
-from datetime import datetime, timezone, timedelta
 from werkzeug.utils import secure_filename
 import hashlib
 import sys
 import os
-import random
+import traceback
 
-# Timezone setup for Asia/Manila (UTC+8)
-MANILA_TZ = timezone(timedelta(hours=8))
-
-# Epoch date for rotation calculations
-ROTATION_EPOCH_DATE = datetime(2000, 1, 1).date()
-
-def get_manila_time():
-    """Get current time in Manila timezone (UTC+8)"""
-    return datetime.now(MANILA_TZ)
-
-def utc_to_manila(utc_dt):
-    """Convert UTC datetime to Manila timezone"""
-    if utc_dt is None:
-        return None
-    if utc_dt.tzinfo is None:
-        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
-    return utc_dt.astimezone(MANILA_TZ)
+# Timezone setup
+local_tz = pytz.timezone('Asia/Manila')
 
 # ensure backend folder on sys.path so local modules can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -80,19 +66,19 @@ class Alaala(db.Model):
     """Filipino Trivia - 24-hour rotation"""
     __tablename__ = "alaala"
     id = db.Column(db.Integer, primary_key=True)
-    alammoba = db.Column(db.String(255), nullable=False)  # Title
-    deskription = db.Column(db.Text, nullable=False)  # Description
+    alammoba = db.Column(db.String(255), nullable=False)
+    deskription = db.Column(db.Text, nullable=False)
 
 
 class Salita(db.Model):
     """Word of the Day - 24-hour rotation"""
     __tablename__ = "salita"
     id = db.Column(db.Integer, primary_key=True)
-    salita = db.Column(db.String(255), nullable=False)  # The word
-    depinisyon = db.Column(db.Text, nullable=False)  # Definition
-    bigkas = db.Column(db.String(255))  # Pronunciation
-    etimolohiya = db.Column(db.Text)  # Etymology
-    gamit = db.Column(db.Text)  # Usage example
+    salita = db.Column(db.String(255), nullable=False)
+    depinisyon = db.Column(db.Text, nullable=False)
+    bigkas = db.Column(db.String(255))
+    etimolohiya = db.Column(db.Text)
+    gamit = db.Column(db.Text)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
@@ -120,14 +106,14 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False)
     profile_image = db.Column(db.String(500))
-    title = db.Column(db.String(500))  # Changed from 255 to 500 to match DB
+    title = db.Column(db.String(500))
     content = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(500))
     video_url = db.Column(db.String(500))
     likes_count = db.Column(db.Integer, default=0)
     comments_count = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(local_tz))
+    updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(local_tz), onupdate=lambda: datetime.now(local_tz))
 
 
 class PostLike(db.Model):
@@ -150,6 +136,7 @@ class PostComment(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+
 # ===================================================
 # HELPER FUNCTIONS
 # ===================================================
@@ -157,39 +144,40 @@ class PostComment(db.Model):
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def get_trivia_index_for_today():
-    """Calculate which trivia to show based on current date in Manila timezone (24-hour rotation)"""
+    """Calculate which trivia to show based on current date (24-hour rotation)"""
     total_items = Alaala.query.count()
     if total_items == 0:
         return None
     
-    today = get_manila_time().date()
-    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
+    today = datetime.now().date()
+    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
     trivia_index = days_since_epoch % total_items
     return trivia_index
 
+
 def get_salita_index_for_today():
-    """Calculate which Salita to show based on current date in Manila timezone (24-hour rotation)"""
+    """Calculate which Salita to show based on current date (24-hour rotation)"""
     total_items = Salita.query.count()
     if total_items == 0:
         return None
     
-    today = get_manila_time().date()
-    days_since_epoch = (today - ROTATION_EPOCH_DATE).days
+    today = datetime.now().date()
+    days_since_epoch = (today - datetime(2000, 1, 1).date()).days
     salita_index = days_since_epoch % total_items
     return salita_index
 
+
 # ===================================================
-# ROUTES
+# AUTH ROUTES
 # ===================================================
 
-# ----------------------
-# AUTH ROUTES
-# ----------------------
 @app.route("/api/signup", methods=["POST"])
 def signup():
     try:
@@ -218,6 +206,8 @@ def signup():
         return jsonify({"success": True, "message": "User registered successfully!", "username": username}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Signup error: {str(e)}")
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
 
 
@@ -240,12 +230,15 @@ def login():
         else:
             return jsonify({"success": False, "message": "Invalid credentials"}), 401
     except Exception as e:
+        print(f"[ERROR] Login error: {str(e)}")
+        traceback.print_exc()
         return jsonify({"success": False, "message": f"Login failed: {str(e)}"}), 500
 
 
-# ----------------------
+# ===================================================
 # SYSTEM ROUTES
-# ----------------------
+# ===================================================
+
 @app.route("/api/db-ping", methods=["GET"])
 def db_ping():
     try:
@@ -255,9 +248,10 @@ def db_ping():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-# ----------------------
-# CHAT ROUTES (now using Gemini)
-# ----------------------
+# ===================================================
+# CHAT ROUTES
+# ===================================================
+
 @app.route("/api/ask", methods=["POST"])
 def ask_gemini_endpoint():
     """Send a question to Gemini (Google Generative AI) and save conversation history."""
@@ -269,10 +263,8 @@ def ask_gemini_endpoint():
         if not question:
             return jsonify({"error": "Question is required"}), 400
 
-        # call Gemini wrapper
         answer = ask_gemini(question)
 
-        # Save to chat history
         chat_entry = ChatHistory(
             username=username,
             user_message=question,
@@ -291,16 +283,14 @@ def ask_gemini_endpoint():
         }), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Ask Gemini error: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/gemini-status", methods=["GET"])
 def gemini_status():
-    """
-    Returns simple diagnostics about the Gemini client and environment.
-    Useful to check whether GOOGLE_API_KEY is seen by the Flask process.
-    """
-    from gemini_client import _configure_client  # runtime import to use inner helper
+    from gemini_client import _configure_client
     configured, reason = _configure_client()
     return jsonify({
         "gemini_sdk_installed": True if 'google' in globals() or configured else (False),
@@ -312,7 +302,6 @@ def gemini_status():
 
 @app.route("/api/chat-history", methods=["GET"])
 def get_chat_history():
-    """Retrieve chat history for a user."""
     try:
         username = request.args.get("username", "anonymous")
         limit = request.args.get("limit", 50, type=int)
@@ -320,12 +309,12 @@ def get_chat_history():
         chat_list = [{"id": chat.id, "user_message": chat.user_message, "ai_response": chat.ai_response, "created_at": chat.created_at.isoformat()} for chat in chats]
         return jsonify({"success": True, "username": username, "count": len(chat_list), "chats": chat_list}), 200
     except Exception as e:
+        print(f"[ERROR] Get chat history error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/chat-history/<int:chat_id>", methods=["DELETE"])
 def delete_chat(chat_id):
-    """Delete a specific chat message."""
     try:
         chat = ChatHistory.query.get(chat_id)
         if not chat:
@@ -335,12 +324,12 @@ def delete_chat(chat_id):
         return jsonify({"success": True, "message": "Chat deleted"}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Delete chat error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/chat-threads", methods=["POST"])
 def create_chat_thread():
-    """Create a new chat thread (conversation)."""
     try:
         data = request.get_json() or {}
         username = data.get("username", "anonymous")
@@ -351,24 +340,24 @@ def create_chat_thread():
         return jsonify({"success": True, "thread_id": thread.id, "title": thread.title, "created_at": thread.created_at.isoformat()}), 201
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Create chat thread error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/chat-threads", methods=["GET"])
 def get_chat_threads():
-    """Get all chat threads for a user."""
     try:
         username = request.args.get("username", "anonymous")
         threads = ChatThread.query.filter_by(username=username).order_by(ChatThread.updated_at.desc()).all()
         thread_list = [{"id": thread.id, "title": thread.title, "created_at": thread.created_at.isoformat(), "updated_at": thread.updated_at.isoformat()} for thread in threads]
         return jsonify({"success": True, "threads": thread_list}), 200
     except Exception as e:
+        print(f"[ERROR] Get chat threads error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/chat-threads/<int:thread_id>", methods=["DELETE"])
 def delete_chat_thread(thread_id):
-    """Delete a chat thread and its associated messages."""
     try:
         thread = ChatThread.query.get(thread_id)
         if not thread:
@@ -378,16 +367,16 @@ def delete_chat_thread(thread_id):
         return jsonify({"success": True, "message": "Thread deleted"}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Delete chat thread error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
-# ===========================
+# ===================================================
 # ALAALA (24-HOUR TRIVIA)
-# ===========================
+# ===================================================
 
 @app.route("/api/alaala/today", methods=["GET"])
 def get_alaala_today():
-    """Get today's Alaala (trivia) - rotates every 24 hours."""
     try:
         trivia_index = get_trivia_index_for_today()
         if trivia_index is None:
@@ -399,12 +388,12 @@ def get_alaala_today():
         
         return jsonify({"success": True, "id": trivia.id, "alammoba": trivia.alammoba, "deskription": trivia.deskription}), 200
     except Exception as e:
+        print(f"[ERROR] Get alaala today error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/alaala/all", methods=["GET"])
 def get_all_alaala():
-    """Get all Alaala for browsing."""
     try:
         limit = request.args.get("limit", 100, type=int)
         trivias = Alaala.query.limit(limit).all()
@@ -413,16 +402,16 @@ def get_all_alaala():
         trivia_list = [{"id": trivia.id, "alammoba": trivia.alammoba, "deskription": trivia.deskription} for trivia in trivias]
         return jsonify({"success": True, "count": len(trivia_list), "trivias": trivia_list}), 200
     except Exception as e:
+        print(f"[ERROR] Get all alaala error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
-# ===========================
+# ===================================================
 # SALITA (WORD OF THE DAY)
-# ===========================
+# ===================================================
 
 @app.route("/api/salita/today", methods=["GET"])
 def get_salita_today():
-    """Get today's Salita (Word of the Day) - rotates every 24 hours."""
     try:
         salita_index = get_salita_index_for_today()
         if salita_index is None:
@@ -442,12 +431,12 @@ def get_salita_today():
             "gamit": salita.gamit
         }), 200
     except Exception as e:
+        print(f"[ERROR] Get salita today error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/salita/all", methods=["GET"])
 def get_all_salita():
-    """Get all Salita for browsing."""
     try:
         limit = request.args.get("limit", 100, type=int)
         salitas = Salita.query.limit(limit).all()
@@ -456,6 +445,7 @@ def get_all_salita():
         salita_list = [{"id": s.id, "salita": s.salita, "depinisyon": s.depinisyon, "bigkas": s.bigkas, "etimolohiya": s.etimolohiya, "gamit": s.gamit} for s in salitas]
         return jsonify({"success": True, "count": len(salita_list), "salitas": salita_list}), 200
     except Exception as e:
+        print(f"[ERROR] Get all salita error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -485,12 +475,13 @@ def get_posts():
             "image_url": p.image_url,
             "likes_count": p.likes_count,
             "comments_count": p.comments_count,
-            "created_at": utc_to_manila(p.created_at).isoformat() if p.created_at else None,
+            "created_at": p.created_at.isoformat(),
             "is_liked": p.id in user_likes
         } for p in posts]
         return jsonify(posts_list), 200
     except Exception as e:
         print(f"[ERROR] Error fetching posts: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -500,7 +491,6 @@ def create_post():
     try:
         data = request.get_json()
         
-        # Validate required fields
         if not data:
             print("[ERROR] No JSON data received")
             return jsonify({"error": "No data provided"}), 400
@@ -518,7 +508,6 @@ def create_post():
         
         print(f"[INFO] Creating post - Username: {username}, Content length: {len(content)}")
         
-        # Create new post WITHOUT user_id
         new_post = Post(
             username=username,
             profile_image=data.get("profile_image"),
@@ -543,32 +532,22 @@ def create_post():
             "image_url": new_post.image_url,
             "likes_count": new_post.likes_count,
             "comments_count": new_post.comments_count,
-            "created_at": utc_to_manila(new_post.created_at).isoformat() if new_post.created_at else None
+            "created_at": new_post.created_at.isoformat()
         }), 201
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Exception creating post: {str(e)}")
-        import traceback
-        traceback.print_exc()  # Print full traceback for debugging
+        traceback.print_exc()
         return jsonify({"error": f"Failed to create post: {str(e)}"}), 500
-    
+
 
 @app.route("/api/posts/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
-    """Delete a post by ID.
-    
-    Note: This endpoint should implement user authentication and authorization
-    to ensure users can only delete their own posts. Current implementation
-    allows any user to delete any post, which is a security risk in production.
-    """
+    """Delete a post by ID."""
     try:
         post = Post.query.get(post_id)
         if not post:
             return jsonify({"error": "Post not found"}), 404
-        
-        # TODO: Add authentication check here
-        # Example: if post.username != authenticated_user:
-        #     return jsonify({"error": "Unauthorized"}), 403
         
         db.session.delete(post)
         db.session.commit()
@@ -576,11 +555,13 @@ def delete_post(post_id):
         return jsonify({"success": True, "message": "Post deleted"}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Exception deleting post: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
 # ===================================================
-# POST LIKE/COMMENT ROUTES (COMMUNITY FEED)
+# POST LIKE ROUTES
 # ===================================================
 
 @app.route("/api/posts/<int:post_id>/like", methods=["POST"])
@@ -590,32 +571,42 @@ def toggle_like(post_id):
         data = request.get_json() or {}
         username = data.get("username", "").strip()
         
+        print(f"[INFO] Toggle like - Post ID: {post_id}, Username: {username}")
+        
         if not username:
+            print("[ERROR] Username is required for liking")
             return jsonify({"error": "Username is required"}), 400
         
         post = Post.query.get(post_id)
         if not post:
+            print(f"[ERROR] Post not found: {post_id}")
             return jsonify({"error": "Post not found"}), 404
+        
+        print(f"[INFO] Post found: {post.id}, Current likes: {post.likes_count}")
         
         # Check if user already liked the post
         existing_like = PostLike.query.filter_by(post_id=post_id, username=username).first()
         
         if existing_like:
+            print(f"[INFO] Existing like found, removing it")
             # Unlike: Remove the like
             db.session.delete(existing_like)
             post.likes_count = max(0, post.likes_count - 1)
             db.session.commit()
+            print(f"[SUCCESS] Post unliked. New count: {post.likes_count}")
             return jsonify({
                 "success": True,
                 "liked": False,
                 "likes_count": post.likes_count
             }), 200
         else:
+            print(f"[INFO] No existing like found, adding new like")
             # Like: Add the like
             new_like = PostLike(post_id=post_id, username=username)
             db.session.add(new_like)
             post.likes_count = post.likes_count + 1
             db.session.commit()
+            print(f"[SUCCESS] Post liked. New count: {post.likes_count}")
             return jsonify({
                 "success": True,
                 "liked": True,
@@ -623,7 +614,8 @@ def toggle_like(post_id):
             }), 200
     except Exception as e:
         db.session.rollback()
-        print(f"[ERROR] Error toggling like: {str(e)}")
+        print(f"[ERROR] Exception toggling like: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -649,24 +641,34 @@ def get_like_status(post_id):
         }), 200
     except Exception as e:
         print(f"[ERROR] Error getting like status: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ===================================================
+# POST COMMENT ROUTES
+# ===================================================
 
 @app.route("/api/posts/<int:post_id>/comments", methods=["GET"])
 def get_comments(post_id):
     """Get all comments for a post."""
     try:
+        print(f"[INFO] Fetching comments for post: {post_id}")
+        
         post = Post.query.get(post_id)
         if not post:
+            print(f"[ERROR] Post not found: {post_id}")
             return jsonify({"error": "Post not found"}), 404
         
         comments = PostComment.query.filter_by(post_id=post_id).order_by(PostComment.created_at.asc()).all()
+        print(f"[INFO] Found {len(comments)} comments")
+        
         comments_list = [{
             "id": c.id,
             "post_id": c.post_id,
             "username": c.username,
             "content": c.content,
-            "created_at": utc_to_manila(c.created_at).isoformat() if c.created_at else None
+            "created_at": c.created_at.isoformat()
         } for c in comments]
         
         return jsonify({
@@ -676,6 +678,7 @@ def get_comments(post_id):
         }), 200
     except Exception as e:
         print(f"[ERROR] Error fetching comments: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -687,15 +690,22 @@ def create_comment(post_id):
         username = data.get("username", "").strip()
         content = data.get("content", "").strip()
         
+        print(f"[INFO] Creating comment - Post ID: {post_id}, Username: {username}")
+        
         if not username:
+            print("[ERROR] Username is required for commenting")
             return jsonify({"error": "Username is required"}), 400
         
         if not content:
+            print("[ERROR] Comment content is required")
             return jsonify({"error": "Comment content is required"}), 400
         
         post = Post.query.get(post_id)
         if not post:
+            print(f"[ERROR] Post not found: {post_id}")
             return jsonify({"error": "Post not found"}), 404
+        
+        print(f"[INFO] Post found. Creating comment...")
         
         new_comment = PostComment(
             post_id=post_id,
@@ -706,6 +716,8 @@ def create_comment(post_id):
         post.comments_count = post.comments_count + 1
         db.session.commit()
         
+        print(f"[SUCCESS] Comment created. New comment count: {post.comments_count}")
+        
         return jsonify({
             "success": True,
             "comment": {
@@ -713,13 +725,14 @@ def create_comment(post_id):
                 "post_id": new_comment.post_id,
                 "username": new_comment.username,
                 "content": new_comment.content,
-                "created_at": utc_to_manila(new_comment.created_at).isoformat() if new_comment.created_at else None
+                "created_at": new_comment.created_at.isoformat()
             },
             "comments_count": post.comments_count
         }), 201
     except Exception as e:
         db.session.rollback()
-        print(f"[ERROR] Error creating comment: {str(e)}")
+        print(f"[ERROR] Exception creating comment: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -746,30 +759,28 @@ def delete_comment(post_id, comment_id):
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Error deleting comment: {str(e)}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
 # ===================================================
-# FILE UPLOAD ROUTES (COMMUNITY FEED)
+# FILE UPLOAD ROUTES
 # ===================================================
 
 @app.route("/api/upload", methods=["POST"])
 def upload_image():
     """Upload image file for posts and return URL."""
     try:
-        # Check if file is in request
         if 'file' not in request.files:
             print("[ERROR] No file provided in request")
             return jsonify({"success": False, "error": "No file provided"}), 400
         
         file = request.files['file']
         
-        # Check if file has filename
         if file.filename == '':
             print("[ERROR] No file selected")
             return jsonify({"success": False, "error": "No file selected"}), 400
         
-        # Check if file extension is allowed
         if not allowed_file(file.filename):
             print(f"[ERROR] File type not allowed: {file.filename}")
             return jsonify({
@@ -777,7 +788,6 @@ def upload_image():
                 "error": f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
             }), 400
         
-        # Check file size
         file.seek(0, os.SEEK_END)
         file_length = file.tell()
         file.seek(0)
@@ -789,16 +799,13 @@ def upload_image():
                 "error": f"File too large. Maximum size is 16MB"
             }), 400
         
-        # Create secure filename
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
         filename = timestamp + filename
         
-        # Save file
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        # Return image URL
         image_url = f"http://192.168.100.168:5000/uploads/{filename}"
         
         print(f"[SUCCESS] Image uploaded: {filename}")
@@ -811,6 +818,7 @@ def upload_image():
     
     except Exception as e:
         print(f"[ERROR] Exception during file upload: {str(e)}")
+        traceback.print_exc()
         return jsonify({
             "success": False,
             "error": f"File upload failed: {str(e)}"
@@ -833,6 +841,7 @@ def serve_upload(filename):
 from sulatin_routes import sulatin_bp
 app.register_blueprint(sulatin_bp)
 
+
 # ===================================================
 # RUN / DB INIT HANDLER
 # ===================================================
@@ -840,11 +849,7 @@ import argparse
 from sqlalchemy import text as sa_text
 
 def create_sulatin_tables_via_sql():
-    """
-    Create sulatin tables directly via raw SQL (avoids importing sulatin_routes
-    during db init and prevents circular import issues).
-    """
-    # SQL for sulatin_samples and sulatin_attempts (MySQL syntax)
+    """Create sulatin tables directly via raw SQL"""
     sulatin_samples_sql = """
     CREATE TABLE IF NOT EXISTS sulatin_samples (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -877,12 +882,10 @@ def create_sulatin_tables_via_sql():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--init-db", action="store_true", help="Create DB tables (app models + sulatin tables) and exit")
-    # parse only known args here so it doesn't interfere with Flask's own args
+    parser.add_argument("--init-db", action="store_true", help="Create DB tables and exit")
     args, _ = parser.parse_known_args()
 
     if args.init_db or os.environ.get("INIT_DB") == "1":
-        # Create tables for models defined in this module (SignUp, Login, etc.)
         with app.app_context():
             print("Creating tables for models defined in app.py...")
             db.create_all()
@@ -892,8 +895,6 @@ if __name__ == "__main__":
             except Exception as e:
                 print("Warning: creating sulatin tables via SQL failed:", e)
             print("DB tables created. Exiting (init-db).")
-        # Exit so the process does not continue to run the server
         sys.exit(0)
 
-    # Normal run: start the Flask server
     app.run(host="0.0.0.0", port=5000, debug=True)
