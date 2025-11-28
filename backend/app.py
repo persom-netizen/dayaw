@@ -66,6 +66,8 @@ class SignUp(db.Model):
     email = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     confirm_password = db.Column(db.String(255), nullable=False)
+    pangalan = db.Column(db.String(100), nullable=True)  # Full name
+    mongkahe = db.Column(db.Text, nullable=True)  # Bio
 
 
 class Login(db.Model):
@@ -74,6 +76,8 @@ class Login(db.Model):
     username = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    pangalan = db.Column(db.String(100), nullable=True)  # Full name
+    mongkahe = db.Column(db.Text, nullable=True)  # Bio
 
 
 class Alaala(db.Model):
@@ -252,6 +256,88 @@ def login():
             return jsonify({"success": False, "message": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"success": False, "message": f"Login failed: {str(e)}"}), 500
+
+
+# ----------------------
+# USER PROFILE ROUTES
+# ----------------------
+@app.route("/api/users/<username>", methods=["GET"])
+def get_user_profile(username):
+    """Get user profile info and their posts."""
+    try:
+        # Find user in login table
+        user = Login.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"success": False, "message": "User not found"}), 404
+        
+        # Get user's posts
+        posts = Post.query.filter_by(username=username).order_by(Post.created_at.desc()).all()
+        posts_list = [{
+            "id": p.id,
+            "username": p.username,
+            "profile_image": p.profile_image,
+            "title": p.title,
+            "content": p.content,
+            "image_url": p.image_url,
+            "likes_count": p.likes_count,
+            "comments_count": p.comments_count,
+            "created_at": utc_to_manila(p.created_at).isoformat() if p.created_at else None,
+        } for p in posts]
+        
+        return jsonify({
+            "success": True,
+            "user": {
+                "username": user.username,
+                "email": user.email,
+                "pangalan": user.pangalan or "",
+                "mongkahe": user.mongkahe or "",
+            },
+            "posts": posts_list,
+            "post_count": len(posts_list)
+        }), 200
+    except Exception as e:
+        print(f"[ERROR] Error getting user profile: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route("/api/users/<username>/profile", methods=["PUT"])
+def update_user_profile(username):
+    """Update user profile (pangalan and mongkahe)."""
+    try:
+        data = request.get_json() or {}
+        pangalan = data.get("pangalan", "").strip()
+        mongkahe = data.get("mongkahe", "").strip()
+        
+        # Update in login table
+        user_login = Login.query.filter_by(username=username).first()
+        if not user_login:
+            return jsonify({"success": False, "message": "User not found"}), 404
+        
+        user_login.pangalan = pangalan
+        user_login.mongkahe = mongkahe
+        
+        # Also update in sign_up table if exists
+        user_signup = SignUp.query.filter_by(username=username).first()
+        if user_signup:
+            user_signup.pangalan = pangalan
+            user_signup.mongkahe = mongkahe
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Profile updated successfully",
+            "user": {
+                "username": user_login.username,
+                "email": user_login.email,
+                "pangalan": user_login.pangalan or "",
+                "mongkahe": user_login.mongkahe or "",
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error updating user profile: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 # ----------------------

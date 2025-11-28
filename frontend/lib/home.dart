@@ -4,6 +4,7 @@ import 'ai.dart';
 import 'alaala.dart';
 import 'bahay.dart';
 import 'screens/sulatin/sulatin_screen.dart';
+import 'screens/profile_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -42,6 +43,36 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         backgroundColor: Colors.blue[600],
         automaticallyImplyLeading: false, // ✅ REMOVES BACK ARROW
+        actions: [
+          // Profile icon in top right corner
+          IconButton(
+            icon: CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.white,
+              child: Text(
+                widget.username.isNotEmpty ? widget.username[0].toUpperCase() : 'U',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[600],
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(
+                    username: widget.username,
+                    currentUsername: widget.username,
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Profile',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
