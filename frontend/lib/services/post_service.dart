@@ -251,4 +251,82 @@ class PostService {
       throw Exception('Error deleting comment: $e');
     }
   }
+
+  /// Get replies for a comment
+  static Future<List<CommentReply>> getReplies(int commentId) async {
+    try {
+      print("[INFO] Fetching replies for comment: $commentId");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/comments/$commentId/replies'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final List<dynamic> repliesJson = responseData['replies'] ?? [];
+        return repliesJson.map((json) => CommentReply.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load replies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("[ERROR] Exception fetching replies: $e");
+      throw Exception('Error fetching replies: $e');
+    }
+  }
+
+  /// Add a reply to a comment
+  static Future<CommentReply> addReply({
+    required int commentId,
+    required String username,
+    required String content,
+  }) async {
+    try {
+      print("[INFO] Adding reply to comment: $commentId by user: $username");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/comments/$commentId/replies'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': username,
+          'content': content,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        print("[SUCCESS] Reply added with ID: ${responseData['reply']['id']}");
+        return CommentReply.fromJson(responseData['reply']);
+      } else {
+        throw Exception('Failed to add reply: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("[ERROR] Exception adding reply: $e");
+      throw Exception('Error adding reply: $e');
+    }
+  }
+
+  /// Delete a reply
+  static Future<void> deleteReply({
+    required int commentId,
+    required int replyId,
+  }) async {
+    try {
+      print("[INFO] Deleting reply: $replyId from comment: $commentId");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/comments/$commentId/replies/$replyId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete reply: ${response.statusCode}');
+      }
+
+      print("[SUCCESS] Reply deleted: $replyId");
+    } catch (e) {
+      print("[ERROR] Exception deleting reply: $e");
+      throw Exception('Error deleting reply: $e');
+    }
+  }
 }

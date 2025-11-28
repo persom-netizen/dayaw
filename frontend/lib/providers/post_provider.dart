@@ -200,4 +200,64 @@ class PostProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Get replies for a comment
+  Future<List<CommentReply>> getReplies(int commentId) async {
+    try {
+      print("[INFO] PostProvider: Getting replies for comment: $commentId");
+      final replies = await PostService.getReplies(commentId);
+      print("[SUCCESS] PostProvider: Got ${replies.length} replies");
+      return replies;
+    } catch (e) {
+      print("[ERROR] PostProvider: Error getting replies: $e");
+      rethrow;
+    }
+  }
+
+  /// Add a reply to a comment
+  Future<CommentReply> addReply({
+    required int commentId,
+    required String username,
+    required String content,
+  }) async {
+    try {
+      print("[INFO] PostProvider: Adding reply to comment: $commentId");
+      final reply = await PostService.addReply(
+        commentId: commentId,
+        username: username,
+        content: content,
+      );
+      
+      _error = null;
+      print("[SUCCESS] PostProvider: Reply added successfully");
+      return reply;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      print("[ERROR] PostProvider: Error adding reply: $e");
+      rethrow;
+    }
+  }
+
+  /// Delete a reply
+  Future<void> deleteReply({
+    required int commentId,
+    required int replyId,
+  }) async {
+    try {
+      print("[INFO] PostProvider: Deleting reply: $replyId");
+      await PostService.deleteReply(
+        commentId: commentId,
+        replyId: replyId,
+      );
+      
+      _error = null;
+      print("[SUCCESS] PostProvider: Reply deleted successfully");
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      print("[ERROR] PostProvider: Error deleting reply: $e");
+      rethrow;
+    }
+  }
 }
