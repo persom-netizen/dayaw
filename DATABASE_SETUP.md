@@ -37,6 +37,12 @@ If you're upgrading from an older version, apply migrations:
 ```bash
 # Add likes and comments support to posts table
 mysql -u root dayaw < backend/migrations/add_likes_comments_to_posts.sql
+
+# Add post_likes and post_comments tables
+mysql -u root dayaw < backend/migrations/add_post_likes_comments_tables.sql
+
+# Add comment_replies table
+mysql -u root dayaw < backend/migrations/add_comment_replies_table.sql
 ```
 
 ## Database Schema

@@ -157,7 +157,10 @@ class _BahayPageState extends State<BahayPage> {
 
                           if (confirm == true) {
                             try {
-                              await postProvider.deletePost(post.id!);
+                              await postProvider.deletePost(
+                                post.id!,
+                                username: widget.username,
+                              );
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
