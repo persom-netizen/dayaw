@@ -228,6 +228,10 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   List<Comment> _comments = [];
   bool _isLoading = true;
   bool _isSubmitting = false;
+  int? _replyingToCommentId;
+  String? _replyingToUsername;
+  Map<int, List<CommentReply>> _repliesCache = {};
+  Set<int> _expandedComments = {};
 
   @override
   void initState() {
@@ -262,28 +266,84 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     }
   }
 
+  Future<void> _loadReplies(int commentId) async {
+    try {
+      final provider = Provider.of<PostProvider>(context, listen: false);
+      final replies = await provider.getReplies(commentId);
+      setState(() {
+        _repliesCache[commentId] = replies;
+        _expandedComments.add(commentId);
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading replies: $e')),
+        );
+      }
+    }
+  }
+
+  void _startReply(int commentId, String username) {
+    setState(() {
+      _replyingToCommentId = commentId;
+      _replyingToUsername = username;
+    });
+    _commentController.clear();
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingToCommentId = null;
+      _replyingToUsername = null;
+    });
+    _commentController.clear();
+  }
+
   Future<void> _submitComment() async {
     final content = _commentController.text.trim();
     if (content.isEmpty || widget.post.id == null) return;
 
     setState(() => _isSubmitting = true);
+    
     try {
       final provider = Provider.of<PostProvider>(context, listen: false);
-      final newComment = await provider.addComment(
-        postId: widget.post.id!,
-        username: widget.currentUsername,
-        content: content,
-      );
-      setState(() {
-        _comments.add(newComment);
-        _isSubmitting = false;
-      });
+      
+      if (_replyingToCommentId != null) {
+        // Adding a reply to a comment
+        final newReply = await provider.addReply(
+          commentId: _replyingToCommentId!,
+          username: widget.currentUsername,
+          content: content,
+        );
+        setState(() {
+          if (_repliesCache.containsKey(_replyingToCommentId)) {
+            _repliesCache[_replyingToCommentId]!.add(newReply);
+          } else {
+            _repliesCache[_replyingToCommentId!] = [newReply];
+          }
+          _expandedComments.add(_replyingToCommentId!);
+          _replyingToCommentId = null;
+          _replyingToUsername = null;
+          _isSubmitting = false;
+        });
+      } else {
+        // Adding a new comment
+        final newComment = await provider.addComment(
+          postId: widget.post.id!,
+          username: widget.currentUsername,
+          content: content,
+        );
+        setState(() {
+          _comments.add(newComment);
+          _isSubmitting = false;
+        });
+      }
       _commentController.clear();
     } catch (e) {
       setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding comment: $e')),
+          SnackBar(content: Text('Error: $e')),
         );
       }
     }
@@ -304,6 +364,162 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } else {
       return 'Just now';
     }
+  }
+
+  Widget _buildReplyItem(CommentReply reply) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 48, top: 4, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 14,
+            backgroundColor: Colors.green[200],
+            child: Text(
+              reply.username.isNotEmpty ? reply.username[0].toUpperCase() : 'U',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      reply.username,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatTimestamp(reply.createdAt),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  reply.content,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentItem(Comment comment) {
+    final replies = _repliesCache[comment.id] ?? [];
+    final isExpanded = _expandedComments.contains(comment.id);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.blue[200],
+            child: Text(
+              comment.username.isNotEmpty
+                  ? comment.username[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          title: Row(
+            children: [
+              Text(
+                comment.username,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _formatTimestamp(comment.createdAt),
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(comment.content),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _startReply(comment.id, comment.username),
+                    icon: const Icon(Icons.reply, size: 16),
+                    label: const Text('Reply', style: TextStyle(fontSize: 12)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                  if (!isExpanded)
+                    TextButton(
+                      onPressed: () => _loadReplies(comment.id),
+                      child: Text(
+                        'View replies',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[600]),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  if (isExpanded && replies.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _expandedComments.remove(comment.id);
+                        });
+                      },
+                      child: Text(
+                        'Hide replies (${replies.length})',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Show replies if expanded
+        if (isExpanded && replies.isNotEmpty)
+          ...replies.map((reply) => _buildReplyItem(reply)),
+      ],
+    );
   }
 
   @override
@@ -357,47 +573,38 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                           controller: scrollController,
                           itemCount: _comments.length,
                           itemBuilder: (context, index) {
-                            final comment = _comments[index];
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.blue[200],
-                                child: Text(
-                                  comment.username.isNotEmpty
-                                      ? comment.username[0].toUpperCase()
-                                      : 'U',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Text(
-                                    comment.username,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _formatTimestamp(comment.createdAt),
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(comment.content),
-                              ),
-                            );
+                            return _buildCommentItem(_comments[index]);
                           },
                         ),
             ),
+            
+            // Reply indicator
+            if (_replyingToCommentId != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.grey[100],
+                child: Row(
+                  children: [
+                    Icon(Icons.reply, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Replying to $_replyingToUsername',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: _cancelReply,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
             
             // Comment input
             Container(
@@ -417,10 +624,12 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                   Expanded(
                     child: TextField(
                       controller: _commentController,
-                      decoration: const InputDecoration(
-                        hintText: 'Mag-komento...',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        hintText: _replyingToCommentId != null
+                            ? 'Write a reply...'
+                            : 'Mag-komento...',
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
                         ),

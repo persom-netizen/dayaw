@@ -150,6 +150,17 @@ class PostComment(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+
+class CommentReply(db.Model):
+    """Replies to Comments on Community Feed Posts"""
+    __tablename__ = "comment_replies"
+    id = db.Column(db.Integer, primary_key=True)
+    comment_id = db.Column(db.Integer, db.ForeignKey('post_comments.id', ondelete='CASCADE'), nullable=False)
+    username = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
 # ===================================================
 # HELPER FUNCTIONS
 # ===================================================
@@ -746,6 +757,100 @@ def delete_comment(post_id, comment_id):
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Error deleting comment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ===================================================
+# COMMENT REPLY ROUTES (COMMUNITY FEED)
+# ===================================================
+
+@app.route("/api/comments/<int:comment_id>/replies", methods=["GET"])
+def get_replies(comment_id):
+    """Get all replies for a comment."""
+    try:
+        comment = PostComment.query.get(comment_id)
+        if not comment:
+            return jsonify({"error": "Comment not found"}), 404
+        
+        replies = CommentReply.query.filter_by(comment_id=comment_id).order_by(CommentReply.created_at.asc()).all()
+        replies_list = [{
+            "id": r.id,
+            "comment_id": r.comment_id,
+            "username": r.username,
+            "content": r.content,
+            "created_at": utc_to_manila(r.created_at).isoformat() if r.created_at else None
+        } for r in replies]
+        
+        return jsonify({
+            "success": True,
+            "replies": replies_list,
+            "count": len(replies_list)
+        }), 200
+    except Exception as e:
+        print(f"[ERROR] Error fetching replies: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/comments/<int:comment_id>/replies", methods=["POST"])
+def create_reply(comment_id):
+    """Add a reply to a comment."""
+    try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        content = data.get("content", "").strip()
+        
+        if not username:
+            return jsonify({"error": "Username is required"}), 400
+        
+        if not content:
+            return jsonify({"error": "Reply content is required"}), 400
+        
+        comment = PostComment.query.get(comment_id)
+        if not comment:
+            return jsonify({"error": "Comment not found"}), 404
+        
+        new_reply = CommentReply(
+            comment_id=comment_id,
+            username=username,
+            content=content
+        )
+        db.session.add(new_reply)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "reply": {
+                "id": new_reply.id,
+                "comment_id": new_reply.comment_id,
+                "username": new_reply.username,
+                "content": new_reply.content,
+                "created_at": utc_to_manila(new_reply.created_at).isoformat() if new_reply.created_at else None
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error creating reply: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/comments/<int:comment_id>/replies/<int:reply_id>", methods=["DELETE"])
+def delete_reply(comment_id, reply_id):
+    """Delete a reply from a comment."""
+    try:
+        reply = CommentReply.query.filter_by(id=reply_id, comment_id=comment_id).first()
+        if not reply:
+            return jsonify({"error": "Reply not found"}), 404
+        
+        db.session.delete(reply)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Reply deleted"
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error deleting reply: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
