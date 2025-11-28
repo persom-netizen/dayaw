@@ -80,10 +80,14 @@ class PostProvider with ChangeNotifier {
   }
 
   /// Delete post
-  Future<void> deletePost(int postId) async {
+  Future<void> deletePost(int postId, {String? username}) async {
     try {
-      print("[INFO] PostProvider: Deleting post: $postId");
-      await PostService.deletePost(postId);
+      final user = username ?? _currentUsername;
+      if (user == null || user.isEmpty) {
+        throw Exception('Username is required to delete a post');
+      }
+      print("[INFO] PostProvider: Deleting post: $postId by user: $user");
+      await PostService.deletePost(postId, username: user);
       _posts.removeWhere((post) => post.id == postId);
       _error = null;
       notifyListeners();
@@ -175,12 +179,18 @@ class PostProvider with ChangeNotifier {
   Future<void> deleteComment({
     required int postId,
     required int commentId,
+    String? username,
   }) async {
     try {
-      print("[INFO] PostProvider: Deleting comment: $commentId");
+      final user = username ?? _currentUsername;
+      if (user == null || user.isEmpty) {
+        throw Exception('Username is required to delete a comment');
+      }
+      print("[INFO] PostProvider: Deleting comment: $commentId by user: $user");
       await PostService.deleteComment(
         postId: postId,
         commentId: commentId,
+        username: user,
       );
       
       // Update the post's comments count
@@ -243,12 +253,18 @@ class PostProvider with ChangeNotifier {
   Future<void> deleteReply({
     required int commentId,
     required int replyId,
+    String? username,
   }) async {
     try {
-      print("[INFO] PostProvider: Deleting reply: $replyId");
+      final user = username ?? _currentUsername;
+      if (user == null || user.isEmpty) {
+        throw Exception('Username is required to delete a reply');
+      }
+      print("[INFO] PostProvider: Deleting reply: $replyId by user: $user");
       await PostService.deleteReply(
         commentId: commentId,
         replyId: replyId,
+        username: user,
       );
       
       _error = null;

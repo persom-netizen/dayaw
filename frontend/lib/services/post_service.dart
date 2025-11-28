@@ -128,15 +128,19 @@ class PostService {
   }
 
   /// Delete post
-  static Future<void> deletePost(int postId) async {
+  static Future<void> deletePost(int postId, {required String username}) async {
     try {
-      print("[INFO] Deleting post: $postId");
+      print("[INFO] Deleting post: $postId by user: $username");
 
       final response = await http.delete(
         Uri.parse('$baseUrl/api/posts/$postId'),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username}),
       );
 
+      if (response.statusCode == 403) {
+        throw Exception('You can only delete your own posts');
+      }
       if (response.statusCode != 200) {
         throw Exception('Failed to delete post: ${response.statusCode}');
       }
@@ -233,15 +237,20 @@ class PostService {
   static Future<void> deleteComment({
     required int postId,
     required int commentId,
+    required String username,
   }) async {
     try {
-      print("[INFO] Deleting comment: $commentId from post: $postId");
+      print("[INFO] Deleting comment: $commentId from post: $postId by user: $username");
 
       final response = await http.delete(
         Uri.parse('$baseUrl/api/posts/$postId/comments/$commentId'),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username}),
       );
 
+      if (response.statusCode == 403) {
+        throw Exception('You can only delete your own comments');
+      }
       if (response.statusCode != 200) {
         throw Exception('Failed to delete comment: ${response.statusCode}');
       }
@@ -311,15 +320,20 @@ class PostService {
   static Future<void> deleteReply({
     required int commentId,
     required int replyId,
+    required String username,
   }) async {
     try {
-      print("[INFO] Deleting reply: $replyId from comment: $commentId");
+      print("[INFO] Deleting reply: $replyId from comment: $commentId by user: $username");
 
       final response = await http.delete(
         Uri.parse('$baseUrl/api/comments/$commentId/replies/$replyId'),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username}),
       );
 
+      if (response.statusCode == 403) {
+        throw Exception('You can only delete your own replies');
+      }
       if (response.statusCode != 200) {
         throw Exception('Failed to delete reply: ${response.statusCode}');
       }

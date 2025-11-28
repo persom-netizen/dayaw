@@ -568,25 +568,35 @@ def create_post():
 def delete_post(post_id):
     """Delete a post by ID.
     
-    Note: This endpoint should implement user authentication and authorization
-    to ensure users can only delete their own posts. Current implementation
-    allows any user to delete any post, which is a security risk in production.
+    Only the post creator can delete their own post.
+    Requires 'username' in request body for authorization.
     """
     try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        
+        if not username:
+            print(f"[ERROR] Delete post {post_id}: Username is required")
+            return jsonify({"error": "Username is required"}), 400
+        
         post = Post.query.get(post_id)
         if not post:
+            print(f"[ERROR] Delete post {post_id}: Post not found")
             return jsonify({"error": "Post not found"}), 404
         
-        # TODO: Add authentication check here
-        # Example: if post.username != authenticated_user:
-        #     return jsonify({"error": "Unauthorized"}), 403
+        # Authorization check: Only the post creator can delete
+        if post.username != username:
+            print(f"[ERROR] Delete post {post_id}: User '{username}' is not authorized (owner: '{post.username}')")
+            return jsonify({"error": "You can only delete your own posts"}), 403
         
         db.session.delete(post)
         db.session.commit()
         
+        print(f"[SUCCESS] Post {post_id} deleted by user '{username}'")
         return jsonify({"success": True, "message": "Post deleted"}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Error deleting post {post_id}: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -736,11 +746,28 @@ def create_comment(post_id):
 
 @app.route("/api/posts/<int:post_id>/comments/<int:comment_id>", methods=["DELETE"])
 def delete_comment(post_id, comment_id):
-    """Delete a comment from a post."""
+    """Delete a comment from a post.
+    
+    Only the comment creator can delete their own comment.
+    Requires 'username' in request body for authorization.
+    """
     try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        
+        if not username:
+            print(f"[ERROR] Delete comment {comment_id}: Username is required")
+            return jsonify({"error": "Username is required"}), 400
+        
         comment = PostComment.query.filter_by(id=comment_id, post_id=post_id).first()
         if not comment:
+            print(f"[ERROR] Delete comment {comment_id}: Comment not found")
             return jsonify({"error": "Comment not found"}), 404
+        
+        # Authorization check: Only the comment creator can delete
+        if comment.username != username:
+            print(f"[ERROR] Delete comment {comment_id}: User '{username}' is not authorized (owner: '{comment.username}')")
+            return jsonify({"error": "You can only delete your own comments"}), 403
         
         post = Post.query.get(post_id)
         if post:
@@ -749,6 +776,7 @@ def delete_comment(post_id, comment_id):
         db.session.delete(comment)
         db.session.commit()
         
+        print(f"[SUCCESS] Comment {comment_id} deleted by user '{username}'")
         return jsonify({
             "success": True,
             "message": "Comment deleted",
@@ -756,7 +784,7 @@ def delete_comment(post_id, comment_id):
         }), 200
     except Exception as e:
         db.session.rollback()
-        print(f"[ERROR] Error deleting comment: {str(e)}")
+        print(f"[ERROR] Error deleting comment {comment_id}: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -835,22 +863,40 @@ def create_reply(comment_id):
 
 @app.route("/api/comments/<int:comment_id>/replies/<int:reply_id>", methods=["DELETE"])
 def delete_reply(comment_id, reply_id):
-    """Delete a reply from a comment."""
+    """Delete a reply from a comment.
+    
+    Only the reply creator can delete their own reply.
+    Requires 'username' in request body for authorization.
+    """
     try:
+        data = request.get_json() or {}
+        username = data.get("username", "").strip()
+        
+        if not username:
+            print(f"[ERROR] Delete reply {reply_id}: Username is required")
+            return jsonify({"error": "Username is required"}), 400
+        
         reply = CommentReply.query.filter_by(id=reply_id, comment_id=comment_id).first()
         if not reply:
+            print(f"[ERROR] Delete reply {reply_id}: Reply not found")
             return jsonify({"error": "Reply not found"}), 404
+        
+        # Authorization check: Only the reply creator can delete
+        if reply.username != username:
+            print(f"[ERROR] Delete reply {reply_id}: User '{username}' is not authorized (owner: '{reply.username}')")
+            return jsonify({"error": "You can only delete your own replies"}), 403
         
         db.session.delete(reply)
         db.session.commit()
         
+        print(f"[SUCCESS] Reply {reply_id} deleted by user '{username}'")
         return jsonify({
             "success": True,
             "message": "Reply deleted"
         }), 200
     except Exception as e:
         db.session.rollback()
-        print(f"[ERROR] Error deleting reply: {str(e)}")
+        print(f"[ERROR] Error deleting reply {reply_id}: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
