@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
         fontWeight: FontWeight.w500,
       ),
       hintStyle: TextStyle(
-        color: goldColor.withAlpha(153),
+        color: goldColor.withOpacity(0.6),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -91,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
         borderSide: const BorderSide(color: lightGoldColor, width: 2),
       ),
       filled: true,
-      fillColor: Colors.white.withAlpha(77),
+      fillColor: Colors.white.withOpacity(0.3),
       suffixIcon: suffixIcon,
     );
   }
@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(217),
+                      color: Colors.white.withOpacity(0.85),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: goldColor,
@@ -127,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(26),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
