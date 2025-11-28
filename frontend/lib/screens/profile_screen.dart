@@ -255,6 +255,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final post = _posts[index];
                   return FeedPostCard(
                     post: post,
+                    onUserTap: post.username != widget.username
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProfileScreen(
+                                  username: post.username,
+                                  currentUsername: widget.currentUsername,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
                     onLike: null, // Disable like in profile view for now
                     onComment: null, // Disable comment in profile view for now
                     onDelete: null, // Disable delete in profile view
