@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import '../models/post_model.dart';
+import '../config/api_config.dart';
 
 class PostService {
-  static const String baseUrl = "http://192.168.100.168:5000";
+  static String get baseUrl => ApiConfig.baseUrl;
   static final Dio _dio = Dio();
 
   static Future<List<Post>> getPosts({String? username}) async {
