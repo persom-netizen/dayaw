@@ -28,7 +28,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/Login.png
+    - assets/pasukin.png
 
   fonts:
     - family: Fortalesia
