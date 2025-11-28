@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/create_post_screen.dart';
+import 'screens/profile_screen.dart';
 import 'providers/post_provider.dart';
 import 'widgets/feed_post_card.dart';
 import 'models/post_model.dart';
@@ -108,6 +109,17 @@ class _BahayPageState extends State<BahayPage> {
                 final post = postProvider.posts[index];
                 return FeedPostCard(
                   post: post,
+                  onUserTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfileScreen(
+                          username: post.username,
+                          currentUsername: widget.username,
+                        ),
+                      ),
+                    );
+                  },
                   onLike: post.id != null
                       ? () async {
                           try {

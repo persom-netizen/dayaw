@@ -7,6 +7,7 @@ class FeedPostCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onLike;
   final VoidCallback? onComment;
+  final VoidCallback? onUserTap;
 
   const FeedPostCard({
     super.key,
@@ -14,6 +15,7 @@ class FeedPostCard extends StatelessWidget {
     this.onDelete,
     this.onLike,
     this.onComment,
+    this.onUserTap,
   });
 
   String _formatTimestamp(DateTime dateTime) {
@@ -45,44 +47,50 @@ class FeedPostCard extends StatelessWidget {
             // Header with profile image, username, and timestamp
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.blue[200],
-                  backgroundImage: post.profileImage != null
-                      ? NetworkImage(post.profileImage!)
-                      : null,
-                  child: post.profileImage == null
-                      ? Text(
-                          post.username.isNotEmpty
-                              ? post.username[0].toUpperCase()
-                              : 'U',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
+                GestureDetector(
+                  onTap: onUserTap,
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.blue[200],
+                    backgroundImage: post.profileImage != null
+                        ? NetworkImage(post.profileImage!)
+                        : null,
+                    child: post.profileImage == null
+                        ? Text(
+                            post.username.isNotEmpty
+                                ? post.username[0].toUpperCase()
+                                : 'U',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.username,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  child: GestureDetector(
+                    onTap: onUserTap,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _formatTimestamp(post.createdAt),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                        Text(
+                          _formatTimestamp(post.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 if (onDelete != null)
