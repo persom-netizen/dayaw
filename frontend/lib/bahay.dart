@@ -36,10 +36,8 @@ class _BahayPageState extends State<BahayPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => _CommentsSheet(
-        post: post,
-        currentUsername: widget.username,
-      ),
+      builder: (context) =>
+          _CommentsSheet(post: post, currentUsername: widget.username),
     );
   }
 
@@ -71,7 +69,8 @@ class _BahayPageState extends State<BahayPage> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () => postProvider.loadPosts(username: widget.username),
+                    onPressed: () =>
+                        postProvider.loadPosts(username: widget.username),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Subukan Muli'),
                   ),
@@ -212,7 +211,10 @@ class _BahayPageState extends State<BahayPage> {
           );
           // Reload posts after returning from create screen
           if (context.mounted) {
-            Provider.of<PostProvider>(context, listen: false).loadPosts(username: widget.username);
+            Provider.of<PostProvider>(
+              context,
+              listen: false,
+            ).loadPosts(username: widget.username);
           }
         },
         backgroundColor: Colors.blue[600],
@@ -223,16 +225,12 @@ class _BahayPageState extends State<BahayPage> {
   }
 }
 
-
 /// Bottom sheet for displaying and adding comments
 class _CommentsSheet extends StatefulWidget {
   final Post post;
   final String currentUsername;
 
-  const _CommentsSheet({
-    required this.post,
-    required this.currentUsername,
-  });
+  const _CommentsSheet({required this.post, required this.currentUsername});
 
   @override
   State<_CommentsSheet> createState() => _CommentsSheetState();
@@ -245,8 +243,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   bool _isSubmitting = false;
   int? _replyingToCommentId;
   String? _replyingToUsername;
-  Map<int, List<CommentReply>> _repliesCache = {};
-  Set<int> _expandedComments = {};
+  final Map<int, List<CommentReply>> _repliesCache = {};
+  final Set<int> _expandedComments = {};
 
   @override
   void initState() {
@@ -262,7 +260,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
 
   Future<void> _loadComments() async {
     if (widget.post.id == null) return;
-    
+
     setState(() => _isLoading = true);
     try {
       final provider = Provider.of<PostProvider>(context, listen: false);
@@ -274,9 +272,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading comments: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading comments: $e')));
       }
     }
   }
@@ -291,9 +289,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading replies: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading replies: $e')));
       }
     }
   }
@@ -319,10 +317,10 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     if (content.isEmpty || widget.post.id == null) return;
 
     setState(() => _isSubmitting = true);
-    
+
     try {
       final provider = Provider.of<PostProvider>(context, listen: false);
-      
+
       if (_replyingToCommentId != null) {
         // Adding a reply to a comment
         final newReply = await provider.addReply(
@@ -357,9 +355,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } catch (e) {
       setState(() => _isSubmitting = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -416,18 +414,12 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                     const SizedBox(width: 8),
                     Text(
                       _formatTimestamp(reply.createdAt),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 11),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  reply.content,
-                  style: const TextStyle(fontSize: 13),
-                ),
+                Text(reply.content, style: const TextStyle(fontSize: 13)),
               ],
             ),
           ),
@@ -439,7 +431,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
   Widget _buildCommentItem(Comment comment) {
     final replies = _repliesCache[comment.id] ?? [];
     final isExpanded = _expandedComments.contains(comment.id);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -468,10 +460,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               const SizedBox(width: 8),
               Text(
                 _formatTimestamp(comment.createdAt),
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
             ],
           ),
@@ -498,14 +487,14 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                   if (!isExpanded)
                     TextButton(
                       onPressed: () => _loadReplies(comment.id),
-                      child: Text(
-                        'View replies',
-                        style: TextStyle(fontSize: 12, color: Colors.blue[600]),
-                      ),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'View replies',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[600]),
                       ),
                     ),
                   if (isExpanded && replies.isNotEmpty)
@@ -515,14 +504,14 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                           _expandedComments.remove(comment.id);
                         });
                       },
-                      child: Text(
-                        'Hide replies (${replies.length})',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Hide replies (${replies.length})',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ),
                 ],
@@ -551,9 +540,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!),
-                ),
+                border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -572,31 +559,34 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 ],
               ),
             ),
-            
+
             // Comments list
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _comments.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Walang komento pa. Maging una!',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount: _comments.length,
-                          itemBuilder: (context, index) {
-                            return _buildCommentItem(_comments[index]);
-                          },
-                        ),
+                  ? const Center(
+                      child: Text(
+                        'Walang komento pa. Maging una!',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: _comments.length,
+                      itemBuilder: (context, index) {
+                        return _buildCommentItem(_comments[index]);
+                      },
+                    ),
             ),
-            
+
             // Reply indicator
             if (_replyingToCommentId != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 color: Colors.grey[100],
                 child: Row(
                   children: [
@@ -605,10 +595,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                     Expanded(
                       child: Text(
                         'Replying to $_replyingToUsername',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
                       ),
                     ),
                     IconButton(
@@ -620,7 +607,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                   ],
                 ),
               ),
-            
+
             // Comment input
             Container(
               padding: EdgeInsets.only(
@@ -630,9 +617,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 bottom: MediaQuery.of(context).viewInsets.bottom + 8,
               ),
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey[300]!),
-                ),
+                border: Border(top: BorderSide(color: Colors.grey[300]!)),
               ),
               child: Row(
                 children: [
