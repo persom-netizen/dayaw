@@ -89,7 +89,7 @@ class Comment {
   final String username;
   final String content;
   final DateTime createdAt;
-  List<CommentReply> replies;
+  final List<CommentReply> replies;
 
   Comment({
     required this.id,
