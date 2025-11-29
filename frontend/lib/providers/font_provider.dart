@@ -6,6 +6,8 @@ import '../models/font_preference.dart';
 /// Uses SharedPreferences for persistence across app sessions
 class FontProvider with ChangeNotifier {
   static const String _fontLevelKey = 'font_size_level';
+  static const int _minFontLevel = 1;
+  static const int _maxFontLevel = 5;
 
   FontPreference _preference = FontPreference.defaultPreference();
   bool _isLoaded = false;
@@ -59,7 +61,7 @@ class FontProvider with ChangeNotifier {
 
   /// Set font size level by integer value (1-5)
   Future<void> setFontLevelByValue(int value) async {
-    final clampedValue = value.clamp(1, 5);
+    final clampedValue = value.clamp(_minFontLevel, _maxFontLevel);
     final level = FontSizeLevel.fromValue(clampedValue);
     await setFontLevel(level);
   }

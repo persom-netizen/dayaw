@@ -366,7 +366,7 @@ class _FontSizeSlider extends StatelessWidget {
   String _getLevelIcon(FontSizeLevel level) {
     switch (level) {
       case FontSizeLevel.level1:
-        return 'A';
+        return 'ᴬ';
       case FontSizeLevel.level2:
         return 'A';
       case FontSizeLevel.level3:
@@ -374,7 +374,7 @@ class _FontSizeSlider extends StatelessWidget {
       case FontSizeLevel.level4:
         return 'A';
       case FontSizeLevel.level5:
-        return 'A';
+        return '𝐀';
     }
   }
 }

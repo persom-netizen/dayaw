@@ -4,6 +4,9 @@ import '../providers/font_provider.dart';
 /// App Theme Configuration
 /// Centralizes theme definitions and applies font preferences globally
 class AppTheme {
+  /// Font size offset for intermediate text sizes
+  static const double _fontSizeOffset = 2.0;
+
   /// Create a light theme with font size preferences applied
   static ThemeData lightTheme(FontProvider fontProvider) {
     return ThemeData(
@@ -168,7 +171,7 @@ class AppTheme {
         color: textColor,
       ),
       titleMedium: TextStyle(
-        fontSize: fontProvider.descriptionSize + 2,
+        fontSize: fontProvider.descriptionSize + _fontSizeOffset,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
@@ -188,13 +191,13 @@ class AppTheme {
         color: textColor,
       ),
       bodySmall: TextStyle(
-        fontSize: fontProvider.header4Size + 2,
+        fontSize: fontProvider.header4Size + _fontSizeOffset,
         color: textColor,
       ),
       
       // Label styles (Header4 group)
       labelLarge: TextStyle(
-        fontSize: fontProvider.header4Size + 2,
+        fontSize: fontProvider.header4Size + _fontSizeOffset,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
