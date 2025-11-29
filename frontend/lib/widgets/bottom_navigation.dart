@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Custom Bottom Navigation Bar with Modern Design
 /// 
@@ -64,7 +65,7 @@ class CustomBottomNavigation extends StatelessWidget {
             _buildNavItem(
               index: 2,
               icon: Icons.person_rounded,
-              label: 'Akin',
+              label: 'Juan',
               isActive: currentIndex == 2,
             ),
             _buildNavItem(
@@ -133,7 +134,7 @@ class CustomBottomNavigation extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   color: navIconColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
