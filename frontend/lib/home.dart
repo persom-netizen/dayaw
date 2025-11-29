@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'ai.dart';
 import 'alaala.dart';
+import 'matuto.dart';
 import 'screens/bahay_page.dart';
 import 'screens/sulatin/sulatin_screen.dart';
 import 'screens/settings_screen.dart';
@@ -39,11 +40,12 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _pages = [
       BahayPage(username: widget.username), // 0 - Bahay
-      AlaalaPage(username: widget.username), // 1 - Alaala (Matuto)
-      const SulatinScreen(), // 2 - Sulatin (Matuto)
-      SalitaPage(username: widget.username), // 3 - Salita (Matuto)
-      AiPage(username: widget.username), // 4 - Juan (AI Chatbot)
-      SettingsScreen(username: widget.username), // 5 - Setting
+      MatutoPage(username: widget.username), // 1 - Matuto (unified page)
+      AlaalaPage(username: widget.username), // 2 - Alaala (legacy/submenu)
+      const SulatinScreen(), // 3 - Sulatin (legacy/submenu)
+      SalitaPage(username: widget.username), // 4 - Salita (legacy/submenu)
+      AiPage(username: widget.username), // 5 - Juan (AI Chatbot)
+      SettingsScreen(username: widget.username), // 6 - Setting
     ];
   }
 
@@ -53,45 +55,25 @@ class _HomePageState extends State<HomePage> {
         _selectedIndex = 0;
         _selectedMatutoSubPage = null;
       } else if (index == 1) {
-        _showMatutoMenu();
+        // Navigate directly to Matuto page
+        _selectedIndex = 1;
+        _selectedMatutoSubPage = null;
       } else if (index == 2) {
-        _selectedIndex = 4;
+        _selectedIndex = 5;
         _selectedMatutoSubPage = null;
       } else if (index == 3) {
-        _selectedIndex = 5;
+        _selectedIndex = 6;
         _selectedMatutoSubPage = null;
       }
     });
   }
 
   void _showMatutoMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: backgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => _MatutoMenuSheet(
-        selectedSubPage: _selectedMatutoSubPage,
-        onSubPageSelected: (subPage) {
-          Navigator.pop(context);
-          setState(() {
-            _selectedMatutoSubPage = subPage;
-            switch (subPage) {
-              case MatutoSubPage.alaala:
-                _selectedIndex = 1;
-                break;
-              case MatutoSubPage.sulatin:
-                _selectedIndex = 2;
-                break;
-              case MatutoSubPage.salita:
-                _selectedIndex = 3;
-                break;
-            }
-          });
-        },
-      ),
-    );
+    // Navigate to Matuto page directly
+    setState(() {
+      _selectedIndex = 1;
+      _selectedMatutoSubPage = null;
+    });
   }
 
   int _getBottomNavIndex() {
@@ -101,10 +83,11 @@ class _HomePageState extends State<HomePage> {
       case 1:
       case 2:
       case 3:
-        return 1;
       case 4:
-        return 2;
+        return 1;
       case 5:
+        return 2;
+      case 6:
         return 3;
       default:
         return 0;
@@ -116,14 +99,16 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return 'Bahay';
       case 1:
-        return 'Alaala';
+        return 'Matuto';
       case 2:
-        return 'Sulatin';
+        return 'Alaala';
       case 3:
-        return 'Salita';
+        return 'Sulatin';
       case 4:
-        return 'Juan';
+        return 'Salita';
       case 5:
+        return 'Juan';
+      case 6:
         return 'Setting';
       default:
         return 'Dayaw';
@@ -134,9 +119,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Consumer<FontProvider>(
       builder: (context, fontProvider, child) {
+        // Matuto page has its own header, so hide the app bar
+        final bool isMatutoPage = _selectedIndex == 1;
+
         return Scaffold(
           backgroundColor: backgroundColor,
-          appBar: _buildModernAppBar(fontProvider),
+          appBar: isMatutoPage ? null : _buildModernAppBar(fontProvider),
           body: _pages[_selectedIndex],
           bottomNavigationBar: CustomBottomNavigation(
             currentIndex: _getBottomNavIndex(),
@@ -202,7 +190,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: () {
             setState(() {
-              _selectedIndex = 5;
+              _selectedIndex = 6;
               _selectedMatutoSubPage = null;
             });
           },
