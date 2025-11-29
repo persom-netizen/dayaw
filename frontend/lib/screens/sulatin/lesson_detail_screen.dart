@@ -4,6 +4,7 @@ import '../../widgets/sulatin_widgets.dart';
 import 'tracing_screen.dart';
 import 'matching_game_screen.dart';
 import 'quiz_screen.dart';
+import '../baybayin/kabanata_0.dart';
 
 class LessonDetailScreen extends StatefulWidget {
   final Lesson lesson;
@@ -18,7 +19,44 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   int? _selectedOptionIndex;
 
   @override
+  void initState() {
+    super.initState();
+    // For flipcard lessons, navigate directly to Kabanata0Screen
+    if (widget.lesson.type == 'flipcard') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToFlipcard();
+      });
+    }
+  }
+
+  Future<void> _navigateToFlipcard() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const Kabanata0Screen(),
+      ),
+    );
+    if (mounted) {
+      // Navigate back after flipcard is completed or closed
+      Navigator.pop(context, result);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Show loading while redirecting for flipcard
+    if (widget.lesson.type == 'flipcard') {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.lesson.title),
+          backgroundColor: Colors.teal[600],
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.lesson.title),
@@ -46,6 +84,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         return _buildMatchingLesson();
       case 'tracing':
         return _buildTracingLesson();
+      case 'flipcard':
+        return const SizedBox.shrink(); // Handled by navigation
       default:
         return _buildTextLesson();
     }

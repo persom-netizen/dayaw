@@ -35,6 +35,21 @@ class Chapter {
 class SulatinCurriculum {
   static List<Chapter> getAllChapters() {
     return [
+      // Kabanata 0 - Baybayin Letters Introduction (Flipcard)
+      Chapter(
+        id: 0,
+        title: 'Kabanata 0: Mga Letra ng Baybayin',
+        lessons: [
+          Lesson(
+            id: 0,
+            title: 'Mga Letra ng Baybayin (Flipcard)',
+            content:
+                'Matutunan mo ang lahat ng letra ng Baybayin gamit ang interactive flipcard system. Kasama ang mga patinig (A, E, I, O, U) at mga katinig (K, G, H, L, M, N, P, S, T, W, Y).',
+            type: 'flipcard',
+          ),
+        ],
+      ),
+
       // Kabanata 1 - Introduction to Baybayin (5 lessons)
       Chapter(
         id: 1,
