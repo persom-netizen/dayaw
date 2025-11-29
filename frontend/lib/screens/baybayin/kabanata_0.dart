@@ -75,6 +75,12 @@ class _Kabanata0ScreenState extends State<Kabanata0Screen>
     }
   }
 
+  /// Returns true when the user has completed viewing all letters.
+  /// This occurs when viewing the last consonant (last card in the consonants section).
+  bool _shouldShowCompleteButton() {
+    return _currentIndex == _currentLetters.length - 1 && !_showingVowels;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,8 +214,9 @@ class _Kabanata0ScreenState extends State<Kabanata0Screen>
             ),
           ),
 
-          // Complete button (appears when on last card)
-          if (_currentIndex == _currentLetters.length - 1 && !_showingVowels)
+          // Complete button - shows only when viewing the last consonant,
+          // indicating all letters (vowels + consonants) have been reviewed
+          if (_shouldShowCompleteButton())
             Padding(
               padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
               child: ElevatedButton(

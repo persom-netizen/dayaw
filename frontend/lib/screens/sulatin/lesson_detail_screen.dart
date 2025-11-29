@@ -30,14 +30,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Future<void> _navigateToFlipcard() async {
-    final result = await Navigator.pushReplacement(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const Kabanata0Screen(),
       ),
     );
-    if (result != null && result['completed'] == true && mounted) {
-      Navigator.pop(context);
+    if (mounted) {
+      // Navigate back after flipcard is completed or closed
+      Navigator.pop(context, result);
     }
   }
 

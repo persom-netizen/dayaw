@@ -206,7 +206,7 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(51),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
