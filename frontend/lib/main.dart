@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'login.dart';
 import 'sign_up.dart';
 import 'home.dart';
-import 'bahay.dart';
+import 'screens/bahay_page.dart';
 import 'screens/create_post_screen.dart';
 import 'providers/post_provider.dart';
 import 'providers/font_provider.dart';
