@@ -1,4 +1,4 @@
-import 'package:flutter/material. dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
 import '../models/font_preference.dart';
@@ -94,7 +94,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -121,10 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Account Section
                 _buildSectionHeader('Username', fontProvider),
                 _buildSettingsTile(
                   icon: Icons.person_outline,
@@ -132,16 +128,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: widget.username,
                   fontProvider: fontProvider,
                 ),
-
                 const Divider(),
-
-                // Mga Nais (Preferences) Section - Font Size
                 _buildSectionHeader('Mga Nais', fontProvider),
                 _buildFontSizePreference(fontProvider),
-
                 const Divider(),
-
-                // Preferences Section
                 _buildSectionHeader('Mga Kagustuhan', fontProvider),
                 SwitchListTile(
                   secondary: Icon(
@@ -179,10 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _darkModeEnabled = value);
                   },
                 ),
-
                 const Divider(),
-
-                // About Section
                 _buildSectionHeader('Tungkol sa App', fontProvider),
                 _buildSettingsTile(
                   icon: Icons.info_outline,
@@ -214,10 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   },
                 ),
-
                 const Divider(),
-
-                // Logout Section
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
@@ -282,14 +266,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// Build the font size preference section with slider and preview
   Widget _buildFontSizePreference(FontProvider fontProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Font size header
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.text_fields, color: Colors.blue[600]),
@@ -302,20 +284,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(fontSize: fontProvider.header4Size),
             ),
           ),
-
           const SizedBox(height: 8),
-
-          // Font size slider
           _FontSizeSlider(
             fontProvider: fontProvider,
             onFontSizeChanged: _showFontSizeConfirmation,
           ),
-
           const SizedBox(height: 16),
-
-          // Font size preview
           _FontSizePreview(fontProvider: fontProvider),
-
           const SizedBox(height: 8),
         ],
       ),
@@ -323,7 +298,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-/// Font Size Slider Widget
 class _FontSizeSlider extends StatelessWidget {
   final FontProvider fontProvider;
   final Function(FontProvider, FontSizeLevel) onFontSizeChanged;
@@ -343,7 +317,6 @@ class _FontSizeSlider extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Level labels
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: FontSizeLevel.values.map((level) {
@@ -374,10 +347,7 @@ class _FontSizeSlider extends StatelessWidget {
               );
             }).toList(),
           ),
-
           const SizedBox(height: 8),
-
-          // Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: Colors.blue[600],
@@ -398,10 +368,7 @@ class _FontSizeSlider extends StatelessWidget {
               },
             ),
           ),
-
           const SizedBox(height: 8),
-
-          // Current level label
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -438,7 +405,6 @@ class _FontSizeSlider extends StatelessWidget {
   }
 }
 
-/// Font Size Preview Widget
 class _FontSizePreview extends StatelessWidget {
   final FontProvider fontProvider;
 
@@ -463,7 +429,6 @@ class _FontSizePreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Preview header
           Row(
             children: [
               Icon(Icons.preview, size: 16, color: Colors.grey[600]),
@@ -478,10 +443,7 @@ class _FontSizePreview extends StatelessWidget {
               ),
             ],
           ),
-
           const Divider(height: 24),
-
-          // Title preview (Group A)
           _buildPreviewRow(
             label: 'Pamagat',
             sampleText: 'Maligayang Pagdating sa Dayaw',
@@ -489,10 +451,7 @@ class _FontSizePreview extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
           ),
-
           const SizedBox(height: 12),
-
-          // Header1 preview (Group B)
           _buildPreviewRow(
             label: 'Header',
             sampleText: 'Matuto ng Baybayin',
@@ -500,10 +459,7 @@ class _FontSizePreview extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
           ),
-
           const SizedBox(height: 12),
-
-          // Description preview (Group C)
           _buildPreviewRow(
             label: 'Nilalaman',
             sampleText:
@@ -512,10 +468,7 @@ class _FontSizePreview extends StatelessWidget {
             fontWeight: FontWeight.normal,
             fontProvider: fontProvider,
           ),
-
           const SizedBox(height: 12),
-
-          // Header4 preview (Group D)
           _buildPreviewRow(
             label: 'Caption',
             sampleText: 'Maliit na detalye at helper text',
@@ -540,7 +493,6 @@ class _FontSizePreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label with size indicator
         Row(
           children: [
             Text(
@@ -570,7 +522,6 @@ class _FontSizePreview extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        // Sample text
         AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 200),
           style: TextStyle(
