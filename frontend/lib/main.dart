@@ -11,17 +11,17 @@ import 'config/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Create and initialize FontProvider
   final fontProvider = FontProvider();
   await fontProvider.loadPreferences();
-  
+
   runApp(MyApp(fontProvider: fontProvider));
 }
 
 class MyApp extends StatelessWidget {
   final FontProvider fontProvider;
-  
+
   const MyApp({super.key, required this.fontProvider});
 
   @override
@@ -74,7 +74,7 @@ class MainPage extends StatelessWidget {
         children: [
           // 🌄 Background image
           const Image(
-            image: AssetImage('assets/rehistro.jpg'),
+            image: AssetImage('assets/rehistro.png'),
             fit: BoxFit.cover,
           ),
 

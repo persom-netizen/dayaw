@@ -35,18 +35,12 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: TextStyle(
-            fontSize: fontProvider.descriptionSize,
-          ),
+          textStyle: TextStyle(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: TextStyle(
-          fontSize: fontProvider.descriptionSize,
-        ),
-        hintStyle: TextStyle(
-          fontSize: fontProvider.descriptionSize,
-        ),
+        labelStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+        hintStyle: TextStyle(fontSize: fontProvider.descriptionSize),
       ),
       listTileTheme: ListTileThemeData(
         titleTextStyle: TextStyle(
@@ -58,10 +52,7 @@ class AppTheme {
           color: Colors.grey[600],
         ),
       ),
-      cardTheme: const CardTheme(
-        elevation: 2,
-        margin: EdgeInsets.all(8),
-      ),
+      cardTheme: const CardThemeData(elevation: 2, margin: EdgeInsets.all(8)),
     );
   }
 
@@ -93,18 +84,12 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: TextStyle(
-            fontSize: fontProvider.descriptionSize,
-          ),
+          textStyle: TextStyle(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: TextStyle(
-          fontSize: fontProvider.descriptionSize,
-        ),
-        hintStyle: TextStyle(
-          fontSize: fontProvider.descriptionSize,
-        ),
+        labelStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+        hintStyle: TextStyle(fontSize: fontProvider.descriptionSize),
       ),
       listTileTheme: ListTileThemeData(
         titleTextStyle: TextStyle(
@@ -116,17 +101,17 @@ class AppTheme {
           color: Colors.grey[400],
         ),
       ),
-      cardTheme: const CardTheme(
-        elevation: 2,
-        margin: EdgeInsets.all(8),
-      ),
+      cardTheme: const CardThemeData(elevation: 2, margin: EdgeInsets.all(8)),
     );
   }
 
   /// Build text theme with font size preferences
-  static TextTheme _buildTextTheme(FontProvider fontProvider, Brightness brightness) {
-    final Color textColor = brightness == Brightness.light 
-        ? Colors.black87 
+  static TextTheme _buildTextTheme(
+    FontProvider fontProvider,
+    Brightness brightness,
+  ) {
+    final Color textColor = brightness == Brightness.light
+        ? Colors.black87
         : Colors.white;
 
     return TextTheme(
@@ -146,7 +131,7 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
-      
+
       // Headline styles (Header1 group)
       headlineLarge: TextStyle(
         fontSize: fontProvider.header1Size,
@@ -163,7 +148,7 @@ class AppTheme {
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
-      
+
       // Title styles (between Header1 and Description)
       titleLarge: TextStyle(
         fontSize: fontProvider.header1Size,
@@ -180,7 +165,7 @@ class AppTheme {
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
-      
+
       // Body styles (Description group)
       bodyLarge: TextStyle(
         fontSize: fontProvider.descriptionSize,
@@ -194,7 +179,7 @@ class AppTheme {
         fontSize: fontProvider.header4Size + _fontSizeOffset,
         color: textColor,
       ),
-      
+
       // Label styles (Header4 group)
       labelLarge: TextStyle(
         fontSize: fontProvider.header4Size + _fontSizeOffset,
