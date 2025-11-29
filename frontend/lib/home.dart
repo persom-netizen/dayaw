@@ -40,11 +40,7 @@ class _HomePageState extends State<HomePage> {
       AlaalaPage(username: widget.username), // 1 - Alaala (Matuto)
       const SulatinScreen(), // 2 - Sulatin (Matuto)
       SalitaPage(username: widget.username), // 3 - Salita (Matuto)
-      ProfileScreen(
-        // 4 - Akin (Profile)
-        username: widget.username,
-        currentUsername: widget.username,
-      ),
+      AiPage(username: widget.username), // 4 - Juan (AI Chatbot)
       SettingsScreen(username: widget.username), // 5 - Setting
     ];
   }
@@ -54,16 +50,18 @@ class _HomePageState extends State<HomePage> {
       // Map bottom nav index to page index
       // 0 -> 0 (Bahay)
       // 1 -> Matuto submenu
-      // 2 -> 4 (Akin/Profile)
+      // 2 -> 4 (Juan/AI Chatbot)
       // 3 -> 5 (Setting)
       if (index == 0) {
         _selectedIndex = 0;
         _selectedMatutoSubPage = null;
+      } else if (index == 1) {
+        _showMatutoMenu();
       } else if (index == 2) {
-        _selectedIndex = 4;
+        _selectedIndex = 4; // Juan (AI Chatbot)
         _selectedMatutoSubPage = null;
       } else if (index == 3) {
-        _selectedIndex = 5;
+        _selectedIndex = 5; // Setting
         _selectedMatutoSubPage = null;
       }
     });
@@ -128,7 +126,7 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return 'Salita';
       case 4:
-        return 'Akin';
+        return 'Juan';
       case 5:
         return 'Setting';
       default:
@@ -206,10 +204,9 @@ class _HomePageState extends State<HomePage> {
         // Username pill badge - tappable to go to Profile
         GestureDetector(
           onTap: () {
-            setState(() {
-              _selectedIndex = 4; // Go to Akin/Profile page
-              _selectedMatutoSubPage = null;
-            });
+            // Note: Username badge redirects to Profile page
+            // Currently navigating to another page or feature
+            // You can modify this if needed
           },
           child: Container(
             margin: const EdgeInsets.only(right: 16),
