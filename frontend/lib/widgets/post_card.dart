@@ -167,7 +167,7 @@ class _PostCardState extends State<PostCard>
             Container(
               height: 1,
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: primaryYellow.withOpacity(0.5),
+              color: primaryYellow.withValues(alpha: 0.5),
             ),
           ],
         ),
