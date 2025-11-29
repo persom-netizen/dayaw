@@ -129,9 +129,16 @@ class _HomePageState extends State<HomePage> {
       actions: [
         GestureDetector(
           onTap: () {
-            setState(() {
-              _selectedIndex = 3; // Go to Settings
-            });
+            // Navigate to user profile
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(
+                  username: widget.username,
+                  currentUsername: widget.username,
+                ),
+              ),
+            );
           },
           child: Container(
             margin: const EdgeInsets.only(right: 16),
