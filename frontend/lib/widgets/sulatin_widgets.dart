@@ -77,6 +77,8 @@ class LessonCard extends StatelessWidget {
         return Icons.extension;
       case 'tracing':
         return Icons.edit;
+      case 'flipcard':
+        return Icons.flip;
       default:
         return Icons.book;
     }
@@ -95,6 +97,8 @@ class LessonCard extends StatelessWidget {
         return Colors.orange;
       case 'tracing':
         return Colors.purple;
+      case 'flipcard':
+        return Colors.teal;
       default:
         return Colors.blue;
     }
