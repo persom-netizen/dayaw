@@ -6,25 +6,45 @@ import 'home.dart';
 import 'bahay.dart';
 import 'screens/create_post_screen.dart';
 import 'providers/post_provider.dart';
+import 'providers/font_provider.dart';
+import 'config/theme.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Create and initialize FontProvider
+  final fontProvider = FontProvider();
+  await fontProvider.loadPreferences();
+  
+  runApp(MyApp(fontProvider: fontProvider));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final FontProvider fontProvider;
+  
+  const MyApp({super.key, required this.fontProvider});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => PostProvider())],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: const MainPage(),
-        routes: {
-          '/home': (context) => const HomePage(username: ''),
-          '/bahay': (context) => const BahayPage(username: ''),
-          '/create-post': (context) => const CreatePostScreen(username: ''),
+      providers: [
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider.value(value: fontProvider),
+      ],
+      child: Consumer<FontProvider>(
+        builder: (context, fontProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme(fontProvider),
+            darkTheme: AppTheme.darkTheme(fontProvider),
+            themeMode: ThemeMode.light,
+            home: const MainPage(),
+            routes: {
+              '/home': (context) => const HomePage(username: ''),
+              '/bahay': (context) => const BahayPage(username: ''),
+              '/create-post': (context) => const CreatePostScreen(username: ''),
+            },
+          );
         },
       ),
     );
