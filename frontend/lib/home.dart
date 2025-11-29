@@ -6,14 +6,7 @@ import 'bahay.dart';
 import 'screens/sulatin/sulatin_screen.dart';
 import 'screens/settings_screen.dart';
 
-/// Navigation indices for the new navigation structure:
-/// 0 - Bahay (Home/Feed)
-/// 1 - Matuto submenu pages (Alaala, Sulatin, Salita)
-///     1 - Alaala (Memory/Flashcards)
-///     2 - Sulatin (Writing)
-///     3 - Salita (Vocabulary)
-/// 4 - Juan (AI Chat/Profile)
-/// 5 - Setting (Settings)
+/// Matuto submenu page options
 enum MatutoSubPage { alaala, sulatin, salita }
 
 class HomePage extends StatefulWidget {
@@ -28,13 +21,6 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   MatutoSubPage? _selectedMatutoSubPage;
 
-  // Page indices:
-  // 0 - Bahay
-  // 1 - Alaala (Matuto submenu)
-  // 2 - Sulatin (Matuto submenu)
-  // 3 - Salita (Matuto submenu)
-  // 4 - Juan
-  // 5 - Setting
   late List<Widget> _pages;
 
   @override
