@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Post Header Widget
 /// 
@@ -102,7 +103,7 @@ class PostHeader extends StatelessWidget {
               children: [
                 Text(
                   '@$username',
-                  style: const TextStyle(
+                  style: GoogleFonts.inter(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: textColor,
@@ -111,7 +112,7 @@ class PostHeader extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   _formatTimestamp(createdAt),
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: textColor.withValues(alpha: 0.5),
                     fontSize: 12,
                   ),
@@ -187,23 +188,17 @@ class _DeleteButtonState extends State<_DeleteButton>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.transparent,
+                color: Colors.transparent, // No fill color
                 border: Border.all(
-                  color: PostHeader.primaryYellow,
+                  color: PostHeader.primaryYellow, // Yellow outline only
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                // No shadow/grey effect
               ),
               child: Icon(
-                Icons.delete_outline_rounded,
-                color: PostHeader.primaryYellow,
+                Icons.delete_outline_rounded, // Outline icon
+                color: PostHeader.primaryYellow, // Yellow color
                 size: 20,
               ),
             ),

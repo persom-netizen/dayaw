@@ -1,5 +1,6 @@
 import 'salita.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'ai.dart';
 import 'alaala.dart';
 import 'screens/bahay_page.dart';
@@ -191,7 +192,7 @@ class _HomePageState extends State<HomePage> {
           // Page Title
           Text(
             _getPageTitle(),
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: textColor,
@@ -201,27 +202,35 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       actions: [
-        // Username pill badge
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: primaryYellow,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: primaryYellow.withValues(alpha: 0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+        // Username pill badge - tappable to go to Profile
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedIndex = 4; // Go to Akin/Profile page
+              _selectedMatutoSubPage = null;
+            });
+          },
+          child: Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: primaryYellow,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryYellow.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              '@${widget.username}',
+              style: GoogleFonts.inter(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
-            ],
-          ),
-          child: Text(
-            '@${widget.username}',
-            style: const TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
             ),
           ),
         ),
@@ -284,9 +293,9 @@ class _MatutoMenuSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   'Matuto',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: textColor,
@@ -300,7 +309,7 @@ class _MatutoMenuSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               'Piliin ang gusto mong aralin',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14,
                 color: textColor.withValues(alpha: 0.6),
               ),
@@ -416,7 +425,7 @@ class _MatutoMenuSheet extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           color: isSelected ? primaryYellow : textColor,
@@ -425,7 +434,7 @@ class _MatutoMenuSheet extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
                           color: textColor.withValues(alpha: 0.6),
                         ),

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/font_provider.dart';
 
 /// App Theme Configuration
 /// Centralizes theme definitions and applies font preferences globally
+/// Typography:
+/// - Titles: Playfair Display font family
+/// - All other text: Inter font family
 class AppTheme {
   /// Font size offset for intermediate text sizes
   static const double _fontSizeOffset = 2.0;
@@ -19,7 +23,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header1Size,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -27,7 +31,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          textStyle: TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.bold,
           ),
@@ -35,19 +39,19 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+          textStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: TextStyle(fontSize: fontProvider.descriptionSize),
-        hintStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+        labelStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+        hintStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
       ),
       listTileTheme: ListTileThemeData(
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.descriptionSize,
           color: Colors.black87,
         ),
-        subtitleTextStyle: TextStyle(
+        subtitleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header4Size,
           color: Colors.grey[600],
         ),
@@ -68,7 +72,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.blue[800],
         foregroundColor: Colors.white,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header1Size,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -76,7 +80,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          textStyle: TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.bold,
           ),
@@ -84,19 +88,19 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+          textStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: TextStyle(fontSize: fontProvider.descriptionSize),
-        hintStyle: TextStyle(fontSize: fontProvider.descriptionSize),
+        labelStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+        hintStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
       ),
       listTileTheme: ListTileThemeData(
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.descriptionSize,
           color: Colors.white70,
         ),
-        subtitleTextStyle: TextStyle(
+        subtitleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header4Size,
           color: Colors.grey[400],
         ),
@@ -106,6 +110,7 @@ class AppTheme {
   }
 
   /// Build text theme with font size preferences
+  /// Titles use Playfair Display, all other text uses Inter
   static TextTheme _buildTextTheme(
     FontProvider fontProvider,
     Brightness brightness,
@@ -115,82 +120,82 @@ class AppTheme {
         : Colors.white;
 
     return TextTheme(
-      // Display styles (Titles group)
-      displayLarge: TextStyle(
+      // Display styles (Titles group) - Playfair Display
+      displayLarge: GoogleFonts.playfairDisplay(
         fontSize: fontProvider.titleSize,
         fontWeight: FontWeight.bold,
         color: textColor,
       ),
-      displayMedium: TextStyle(
+      displayMedium: GoogleFonts.playfairDisplay(
         fontSize: fontProvider.titleSize,
         fontWeight: FontWeight.bold,
         color: textColor,
       ),
-      displaySmall: TextStyle(
+      displaySmall: GoogleFonts.playfairDisplay(
         fontSize: fontProvider.titleSize,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
 
-      // Headline styles (Header1 group)
-      headlineLarge: TextStyle(
+      // Headline styles (Header1 group) - Inter
+      headlineLarge: GoogleFonts.inter(
         fontSize: fontProvider.header1Size,
         fontWeight: FontWeight.bold,
         color: textColor,
       ),
-      headlineMedium: TextStyle(
+      headlineMedium: GoogleFonts.inter(
         fontSize: fontProvider.header1Size,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
-      headlineSmall: TextStyle(
+      headlineSmall: GoogleFonts.inter(
         fontSize: fontProvider.header1Size,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
 
-      // Title styles (between Header1 and Description)
-      titleLarge: TextStyle(
+      // Title styles (between Header1 and Description) - Playfair Display for large, Inter for others
+      titleLarge: GoogleFonts.playfairDisplay(
         fontSize: fontProvider.header1Size,
         fontWeight: FontWeight.bold,
         color: textColor,
       ),
-      titleMedium: TextStyle(
+      titleMedium: GoogleFonts.inter(
         fontSize: fontProvider.descriptionSize + _fontSizeOffset,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
-      titleSmall: TextStyle(
+      titleSmall: GoogleFonts.inter(
         fontSize: fontProvider.descriptionSize,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
 
-      // Body styles (Description group)
-      bodyLarge: TextStyle(
+      // Body styles (Description group) - Inter
+      bodyLarge: GoogleFonts.inter(
         fontSize: fontProvider.descriptionSize,
         color: textColor,
       ),
-      bodyMedium: TextStyle(
+      bodyMedium: GoogleFonts.inter(
         fontSize: fontProvider.descriptionSize,
         color: textColor,
       ),
-      bodySmall: TextStyle(
+      bodySmall: GoogleFonts.inter(
         fontSize: fontProvider.header4Size + _fontSizeOffset,
         color: textColor,
       ),
 
-      // Label styles (Header4 group)
-      labelLarge: TextStyle(
+      // Label styles (Header4 group) - Inter
+      labelLarge: GoogleFonts.inter(
         fontSize: fontProvider.header4Size + _fontSizeOffset,
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
-      labelMedium: TextStyle(
+      labelMedium: GoogleFonts.inter(
         fontSize: fontProvider.header4Size,
         color: textColor,
       ),
-      labelSmall: TextStyle(
+      labelSmall: GoogleFonts.inter(
         fontSize: fontProvider.header4Size,
         color: textColor,
       ),

@@ -31,9 +31,9 @@ class PostActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Like/Star Button
+        // Like/Star Button - always outline icon, yellow color
         _ActionButton(
-          icon: isLiked ? Icons.star_rounded : Icons.star_outline_rounded,
+          icon: Icons.star_outline_rounded, // Always outline
           label: likesCount.toString(),
           isActive: isLiked,
           onTap: onLike,
@@ -41,9 +41,9 @@ class PostActions extends StatelessWidget {
           inactiveColor: primaryYellow,
         ),
         const SizedBox(width: 24),
-        // Comment Button
+        // Comment Button - always outline icon, yellow color
         _ActionButton(
-          icon: Icons.chat_bubble_outline_rounded,
+          icon: Icons.chat_bubble_outline_rounded, // Always outline
           label: commentsCount.toString(),
           isActive: false,
           onTap: onComment,
@@ -136,25 +136,13 @@ class _ActionButtonState extends State<_ActionButton>
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: widget.isActive
-                  ? widget.activeColor.withValues(alpha: 0.1)
-                  : Colors.transparent,
+              color: Colors.transparent, // No fill color
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: widget.isActive
-                    ? widget.activeColor
-                    : widget.inactiveColor.withValues(alpha: 0.5),
+                color: widget.activeColor, // Yellow outline only
                 width: 2,
               ),
-              boxShadow: _isPressed
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+              // No shadow/grey effect
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

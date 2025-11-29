@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/post_model.dart';
 import 'post_header.dart';
 import 'post_media.dart';
@@ -79,117 +80,96 @@ class _PostCardState extends State<PostCard>
       opacity: _fadeAnimation,
       child: SlideTransition(
         position: _slideAnimation,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: primaryYellow.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Post Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: PostHeader(
-                  username: widget.post.username,
-                  profileImage: widget.post.profileImage,
-                  createdAt: widget.post.createdAt,
-                  onUserTap: widget.onUserTap,
-                  onDelete: widget.onDelete,
-                  showDeleteButton: widget.showDeleteButton,
-                ),
-              ),
-
-              // Post Title
-              if (widget.post.title != null && widget.post.title!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    widget.post.title!,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                      height: 1.3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // No background color - blends with page background (#FFF9F4)
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Post Header
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: PostHeader(
+                      username: widget.post.username,
+                      profileImage: widget.post.profileImage,
+                      createdAt: widget.post.createdAt,
+                      onUserTap: widget.onUserTap,
+                      onDelete: widget.onDelete,
+                      showDeleteButton: widget.showDeleteButton,
                     ),
                   ),
-                ),
 
-              // Post Description/Content
-              if (widget.post.content.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    top: widget.post.title != null && widget.post.title!.isNotEmpty ? 8 : 0,
-                    bottom: 12,
-                  ),
-                  child: Text(
-                    widget.post.content,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: textColor,
-                      height: 1.5,
+                  // Post Title
+                  if (widget.post.title != null && widget.post.title!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        widget.post.title!,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+
+                  // Post Description/Content
+                  if (widget.post.content.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: widget.post.title != null && widget.post.title!.isNotEmpty ? 8 : 0,
+                        bottom: 12,
+                      ),
+                      child: Text(
+                        widget.post.content,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: textColor,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+
+                  // Post Media (Images)
+                  if (widget.post.imageUrl != null && widget.post.imageUrl!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: PostMedia(
+                        imageUrl: widget.post.imageUrl,
+                        height: 200,
+                      ),
+                    ),
+
+                  // Post Actions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: PostActions(
+                      likesCount: widget.post.likesCount,
+                      commentsCount: widget.post.commentsCount,
+                      isLiked: widget.post.isLiked,
+                      onLike: widget.onLike,
+                      onComment: widget.onComment,
                     ),
                   ),
-                ),
 
-              // Post Media (Images)
-              if (widget.post.imageUrl != null && widget.post.imageUrl!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: PostMedia(
-                    imageUrl: widget.post.imageUrl,
-                    height: 200,
-                  ),
-                ),
-
-              // Post Actions
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: PostActions(
-                  likesCount: widget.post.likesCount,
-                  commentsCount: widget.post.commentsCount,
-                  isLiked: widget.post.isLiked,
-                  onLike: widget.onLike,
-                  onComment: widget.onComment,
-                ),
+                  // Bottom padding
+                  const SizedBox(height: 16),
+                ],
               ),
-
-              // Bottom padding
-              const SizedBox(height: 16),
-
-              // Divider
-              Container(
-                height: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      primaryYellow.withValues(alpha: 0.3),
-                      primaryYellow.withValues(alpha: 0.3),
-                      Colors.transparent,
-                    ],
-                    stops: const [0, 0.2, 0.8, 1],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+            // Yellow divider at 50% opacity between posts
+            Container(
+              height: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: primaryYellow.withValues(alpha: 0.5),
+            ),
+          ],
         ),
       ),
     );
