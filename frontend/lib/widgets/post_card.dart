@@ -203,27 +203,45 @@ class _PostCardState extends State<PostCard> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.star_outline, color: primaryYellow, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${widget.post.likesCount}',
-                      style: GoogleFonts.inter(
-                        fontSize: fontProvider.descriptionSize,
-                        color: textColor,
+                    GestureDetector(
+                      onTap: widget.onLike,
+                      child: Row(
+                        children: [
+                          Icon(
+                            widget.post.isLiked ? Icons.star : Icons.star_outline,
+                            color: primaryYellow,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${widget.post.likesCount}',
+                            style: GoogleFonts.inter(
+                              fontSize: fontProvider.descriptionSize,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      color: primaryYellow,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${widget.post.commentsCount}',
-                      style: GoogleFonts.inter(
-                        fontSize: fontProvider.descriptionSize,
-                        color: textColor,
+                    GestureDetector(
+                      onTap: widget.onComment ?? widget.onCommentsTap,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            color: primaryYellow,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${widget.post.commentsCount}',
+                            style: GoogleFonts.inter(
+                              fontSize: fontProvider.descriptionSize,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
