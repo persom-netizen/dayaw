@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'providers/font_provider.dart';
 import 'services/api_service.dart';
 
 class SalitaPage extends StatefulWidget {
@@ -47,14 +50,18 @@ class _SalitaPageState extends State<SalitaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildTodayView(),
+    return Consumer<FontProvider>(
+      builder: (context, fontProvider, child) {
+        return Scaffold(
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildTodayView(fontProvider),
+        );
+      },
     );
   }
 
-  Widget _buildTodayView() {
+  Widget _buildTodayView(FontProvider fontProvider) {
     if (_todayWord == null) {
       return Center(
         child: Column(
@@ -62,14 +69,17 @@ class _SalitaPageState extends State<SalitaPage> {
           children: [
             Icon(Icons.auto_stories, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Walang Salita ngayong araw',
-              style: TextStyle(fontSize: 18),
+              style: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadTodayWord,
-              child: const Text('Mag-retry'),
+              child: Text(
+                'Mag-retry',
+                style: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+              ),
             ),
           ],
         ),
@@ -85,8 +95,8 @@ class _SalitaPageState extends State<SalitaPage> {
           Center(
             child: Text(
               'Salita ng Araw',
-              style: TextStyle(
-                fontSize: 24,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: fontProvider.titleSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue[600],
               ),
@@ -116,8 +126,8 @@ class _SalitaPageState extends State<SalitaPage> {
                   // Salita (The Word - Large and Bold)
                   Text(
                     _todayWord?['salita'] ?? 'N/A',
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: fontProvider.header1Size,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
@@ -129,19 +139,19 @@ class _SalitaPageState extends State<SalitaPage> {
                   const SizedBox(height: 20),
 
                   // Depinisyon (Definition)
-                  _buildField('Depinisyon:', _todayWord?['depinisyon']),
+                  _buildField('Depinisyon:', _todayWord?['depinisyon'], fontProvider),
                   const SizedBox(height: 16),
 
                   // Bigkas (Pronunciation)
-                  _buildField('Bigkas:', _todayWord?['bigkas']),
+                  _buildField('Bigkas:', _todayWord?['bigkas'], fontProvider),
                   const SizedBox(height: 16),
 
                   // Etimolohiya (Etymology)
-                  _buildField('Etimolohiya:', _todayWord?['etimolohiya']),
+                  _buildField('Etimolohiya:', _todayWord?['etimolohiya'], fontProvider),
                   const SizedBox(height: 16),
 
                   // Gamit (Usage)
-                  _buildField('Gamit:', _todayWord?['gamit']),
+                  _buildField('Gamit:', _todayWord?['gamit'], fontProvider),
                 ],
               ),
             ),
@@ -151,7 +161,7 @@ class _SalitaPageState extends State<SalitaPage> {
     );
   }
 
-  Widget _buildField(String label, dynamic value) {
+  Widget _buildField(String label, dynamic value, FontProvider fontProvider) {
     if (value == null || value.toString().isEmpty) {
       return const SizedBox.shrink();
     }
@@ -161,8 +171,8 @@ class _SalitaPageState extends State<SalitaPage> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
+          style: GoogleFonts.inter(
+            fontSize: fontProvider.header4Size,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
           ),
@@ -170,8 +180,8 @@ class _SalitaPageState extends State<SalitaPage> {
         const SizedBox(height: 6),
         Text(
           value.toString(),
-          style: const TextStyle(
-            fontSize: 15,
+          style: GoogleFonts.inter(
+            fontSize: fontProvider.descriptionSize,
             height: 1.6,
             color: Colors.black87,
           ),
