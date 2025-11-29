@@ -1,6 +1,7 @@
 import 'salita.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'ai.dart';
 import 'alaala.dart';
 import 'screens/bahay_page.dart';
@@ -8,6 +9,7 @@ import 'screens/sulatin/sulatin_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/profile_screen.dart';
 import 'widgets/bottom_navigation.dart';
+import 'providers/font_provider.dart';
 
 /// Matuto submenu page options
 enum MatutoSubPage { alaala, sulatin, salita }
@@ -47,21 +49,16 @@ class _HomePageState extends State<HomePage> {
 
   void _onNavBarTapped(int index) {
     setState(() {
-      // Map bottom nav index to page index
-      // 0 -> 0 (Bahay)
-      // 1 -> Matuto submenu
-      // 2 -> 4 (Juan/AI Chatbot)
-      // 3 -> 5 (Setting)
       if (index == 0) {
         _selectedIndex = 0;
         _selectedMatutoSubPage = null;
       } else if (index == 1) {
         _showMatutoMenu();
       } else if (index == 2) {
-        _selectedIndex = 4; // Juan (AI Chatbot)
+        _selectedIndex = 4;
         _selectedMatutoSubPage = null;
       } else if (index == 3) {
-        _selectedIndex = 5; // Setting
+        _selectedIndex = 5;
         _selectedMatutoSubPage = null;
       }
     });
@@ -98,18 +95,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   int _getBottomNavIndex() {
-    // Convert page index to bottom nav index
     switch (_selectedIndex) {
       case 0:
-        return 0; // Bahay
+        return 0;
       case 1:
       case 2:
       case 3:
-        return 1; // Matuto (any subpage)
+        return 1;
       case 4:
-        return 2; // Juan (AI Chatbot)
+        return 2;
       case 5:
-        return 3; // Setting
+        return 3;
       default:
         return 0;
     }
@@ -136,26 +132,29 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: _buildModernAppBar(),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: CustomBottomNavigation(
-        currentIndex: _getBottomNavIndex(),
-        onTap: _onNavBarTapped,
-        onMatutoTap: _showMatutoMenu,
-      ),
+    return Consumer<FontProvider>(
+      builder: (context, fontProvider, child) {
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: _buildModernAppBar(fontProvider),
+          body: _pages[_selectedIndex],
+          bottomNavigationBar: CustomBottomNavigation(
+            currentIndex: _getBottomNavIndex(),
+            onTap: _onNavBarTapped,
+            onMatutoTap: _showMatutoMenu,
+          ),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildModernAppBar() {
+  PreferredSizeWidget _buildModernAppBar(FontProvider fontProvider) {
     return AppBar(
       backgroundColor: backgroundColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
         children: [
-          // Logo
           Container(
             width: 40,
             height: 40,
@@ -188,11 +187,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 12),
-          // Page Title
           Text(
             _getPageTitle(),
-            style: GoogleFonts.inter(
-              fontSize: 24,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: fontProvider.titleSize,
               fontWeight: FontWeight.bold,
               color: textColor,
               letterSpacing: 0.5,
@@ -201,12 +199,12 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       actions: [
-        // Username pill badge - tappable to go to Profile
         GestureDetector(
           onTap: () {
-            // Note: Username badge redirects to Profile page
-            // Currently navigating to another page or feature
-            // You can modify this if needed
+            setState(() {
+              _selectedIndex = 5;
+              _selectedMatutoSubPage = null;
+            });
           },
           child: Container(
             margin: const EdgeInsets.only(right: 16),
@@ -227,7 +225,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.inter(
                 color: textColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: fontProvider.descriptionSize,
               ),
             ),
           ),
@@ -237,12 +235,10 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// Bottom sheet menu for Matuto submenu options
 class _MatutoMenuSheet extends StatelessWidget {
   final MatutoSubPage? selectedSubPage;
   final Function(MatutoSubPage) onSubPageSelected;
 
-  // Design color constants
   static const Color primaryYellow = Color(0xFFFFDF00);
   static const Color textColor = Color(0xFF554141);
   static const Color backgroundColor = Color(0xFFFFF9F4);
@@ -254,111 +250,113 @@ class _MatutoMenuSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: const BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: textColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
+    return Consumer<FontProvider>(
+      builder: (context, fontProvider, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: const BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: primaryYellow.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: primaryYellow,
-                    size: 28,
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: textColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Matuto',
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: primaryYellow.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.school_rounded,
+                        color: primaryYellow,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Matuto',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: fontProvider.titleSize,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Piliin ang gusto mong aralin',
                   style: GoogleFonts.inter(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+                    fontSize: fontProvider.descriptionSize,
+                    color: textColor.withValues(alpha: 0.6),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Piliin ang gusto mong aralin',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: textColor.withValues(alpha: 0.6),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 1,
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  primaryYellow.withValues(alpha: 0.3),
-                  primaryYellow.withValues(alpha: 0.3),
-                  Colors.transparent,
-                ],
+              const SizedBox(height: 16),
+              Container(
+                height: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      primaryYellow.withValues(alpha: 0.3),
+                      primaryYellow.withValues(alpha: 0.3),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              _buildMenuItem(
+                context,
+                icon: Icons.lightbulb_rounded,
+                title: 'Alaala',
+                subtitle: 'Memory/Flashcards - Mga Trivia',
+                isSelected: selectedSubPage == MatutoSubPage.alaala,
+                onTap: () => onSubPageSelected(MatutoSubPage.alaala),
+                fontProvider: fontProvider,
+              ),
+              _buildMenuItem(
+                context,
+                icon: Icons.edit_rounded,
+                title: 'Sulatin',
+                subtitle: 'Writing - Baybayin Lessons',
+                isSelected: selectedSubPage == MatutoSubPage.sulatin,
+                onTap: () => onSubPageSelected(MatutoSubPage.sulatin),
+                fontProvider: fontProvider,
+              ),
+              _buildMenuItem(
+                context,
+                icon: Icons.auto_stories_rounded,
+                title: 'Salita',
+                subtitle: 'Vocabulary - Salita ng Araw',
+                isSelected: selectedSubPage == MatutoSubPage.salita,
+                onTap: () => onSubPageSelected(MatutoSubPage.salita),
+                fontProvider: fontProvider,
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-          const SizedBox(height: 8),
-
-          // Menu options
-          _buildMenuItem(
-            context,
-            icon: Icons.lightbulb_rounded,
-            title: 'Alaala',
-            subtitle: 'Memory/Flashcards - Mga Trivia',
-            isSelected: selectedSubPage == MatutoSubPage.alaala,
-            onTap: () => onSubPageSelected(MatutoSubPage.alaala),
-          ),
-          _buildMenuItem(
-            context,
-            icon: Icons.edit_rounded,
-            title: 'Sulatin',
-            subtitle: 'Writing - Baybayin Lessons',
-            isSelected: selectedSubPage == MatutoSubPage.sulatin,
-            onTap: () => onSubPageSelected(MatutoSubPage.sulatin),
-          ),
-          _buildMenuItem(
-            context,
-            icon: Icons.auto_stories_rounded,
-            title: 'Salita',
-            subtitle: 'Vocabulary - Salita ng Araw',
-            isSelected: selectedSubPage == MatutoSubPage.salita,
-            onTap: () => onSubPageSelected(MatutoSubPage.salita),
-          ),
-
-          const SizedBox(height: 16),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -369,6 +367,7 @@ class _MatutoMenuSheet extends StatelessWidget {
     required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
+    required FontProvider fontProvider,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -423,9 +422,9 @@ class _MatutoMenuSheet extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.playfairDisplay(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: fontProvider.header1Size,
                           color: isSelected ? primaryYellow : textColor,
                         ),
                       ),
@@ -433,7 +432,7 @@ class _MatutoMenuSheet extends StatelessWidget {
                       Text(
                         subtitle,
                         style: GoogleFonts.inter(
-                          fontSize: 12,
+                          fontSize: fontProvider.header4Size,
                           color: textColor.withValues(alpha: 0.6),
                         ),
                       ),
