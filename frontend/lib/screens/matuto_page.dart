@@ -60,9 +60,9 @@ class _MatutoPageState extends State<MatutoPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading Salita: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading Salita: $e')));
     } finally {
       if (!mounted) return;
       setState(() => _isLoadingSalita = false);
@@ -81,9 +81,9 @@ class _MatutoPageState extends State<MatutoPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading Alaala: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading Alaala: $e')));
     } finally {
       if (!mounted) return;
       setState(() => _isLoadingAlaala = false);
@@ -139,7 +139,8 @@ class _MatutoPageState extends State<MatutoPage> {
   Widget _buildDivider() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      height: 4,
+      padding: const EdgeInsets.only(top: 500),
+      height: 2,
       decoration: BoxDecoration(
         color: primaryYellow,
         borderRadius: BorderRadius.circular(2),

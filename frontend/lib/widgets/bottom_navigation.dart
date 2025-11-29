@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Custom Bottom Navigation Bar with Modern Design
-/// 
+///
 /// Design Specifications:
 /// - Container: Yellow (#FFDF00), pill-shaped (border-radius: 100)
 /// - Buttons: Soft rounded, drop shadow (down), inside shadow (up)
@@ -114,18 +114,15 @@ class CustomBottomNavigation extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: navIconColor,
-                size: 24,
-              ),
+              Icon(icon, color: navIconColor, size: 24),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: GoogleFonts.inter(
                   color: navIconColor,
-                  fontSize: 12,
                   fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
