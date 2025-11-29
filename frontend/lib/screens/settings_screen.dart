@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material. dart';
 import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
 import '../models/font_preference.dart';
@@ -32,14 +32,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigate back to main/login page, clearing all routes
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/', (route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
             child: const Text('Lumabas'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFontSizeConfirmation(
+    FontProvider fontProvider,
+    FontSizeLevel newLevel,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Baguhin ang Laki ng Font'),
+        content: const Text(
+          'Sigurado ka bang nais mong palitan ang laki ng font mo?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hindi'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              fontProvider.setFontLevel(newLevel);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Laki ng font ay nagbago sa buong sistema'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Oo'),
           ),
         ],
       ),
@@ -59,14 +98,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                  ),
+                  decoration: BoxDecoration(color: Colors.blue[50]),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Settings',
+                        'Setting',
                         style: TextStyle(
                           fontSize: fontProvider.titleSize,
                           fontWeight: FontWeight.bold,
@@ -88,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 16),
 
                 // Account Section
-                _buildSectionHeader('Account', fontProvider),
+                _buildSectionHeader('Username', fontProvider),
                 _buildSettingsTile(
                   icon: Icons.person_outline,
                   title: 'Username',
@@ -107,7 +144,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Preferences Section
                 _buildSectionHeader('Mga Kagustuhan', fontProvider),
                 SwitchListTile(
-                  secondary: Icon(Icons.notifications_outlined, color: Colors.blue[600]),
+                  secondary: Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.blue[600],
+                  ),
                   title: Text(
                     'Mga Notification',
                     style: TextStyle(fontSize: fontProvider.descriptionSize),
@@ -122,7 +162,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 SwitchListTile(
-                  secondary: Icon(Icons.dark_mode_outlined, color: Colors.blue[600]),
+                  secondary: Icon(
+                    Icons.dark_mode_outlined,
+                    color: Colors.blue[600],
+                  ),
                   title: Text(
                     'Dark Mode',
                     style: TextStyle(fontSize: fontProvider.descriptionSize),
@@ -153,7 +196,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   fontProvider: fontProvider,
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Mga Tuntunin ng Serbisyo - Coming Soon')),
+                      const SnackBar(
+                        content: Text('Mga Tuntunin ng Serbisyo - Coming Soon'),
+                      ),
                     );
                   },
                 ),
@@ -163,7 +208,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   fontProvider: fontProvider,
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Patakaran sa Privacy - Coming Soon')),
+                      const SnackBar(
+                        content: Text('Patakaran sa Privacy - Coming Soon'),
+                      ),
                     );
                   },
                 ),
@@ -180,7 +227,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: const Icon(Icons.logout),
                       label: Text(
                         'Lumabas',
-                        style: TextStyle(fontSize: fontProvider.descriptionSize),
+                        style: TextStyle(
+                          fontSize: fontProvider.descriptionSize,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -226,10 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(fontSize: fontProvider.descriptionSize),
       ),
       subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: TextStyle(fontSize: fontProvider.header4Size),
-            )
+          ? Text(subtitle, style: TextStyle(fontSize: fontProvider.header4Size))
           : null,
       trailing: onTap != null ? const Icon(Icons.chevron_right) : null,
       onTap: onTap,
@@ -256,17 +302,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(fontSize: fontProvider.header4Size),
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Font size slider
-          _FontSizeSlider(fontProvider: fontProvider),
-          
+          _FontSizeSlider(
+            fontProvider: fontProvider,
+            onFontSizeChanged: _showFontSizeConfirmation,
+          ),
+
           const SizedBox(height: 16),
-          
+
           // Font size preview
           _FontSizePreview(fontProvider: fontProvider),
-          
+
           const SizedBox(height: 8),
         ],
       ),
@@ -277,8 +326,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 /// Font Size Slider Widget
 class _FontSizeSlider extends StatelessWidget {
   final FontProvider fontProvider;
+  final Function(FontProvider, FontSizeLevel) onFontSizeChanged;
 
-  const _FontSizeSlider({required this.fontProvider});
+  const _FontSizeSlider({
+    required this.fontProvider,
+    required this.onFontSizeChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -295,30 +348,35 @@ class _FontSizeSlider extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: FontSizeLevel.values.map((level) {
               final isSelected = fontProvider.level == level;
-              return Column(
-                children: [
-                  Text(
-                    '${level.value}',
-                    style: TextStyle(
-                      fontSize: isSelected ? 16 : 14,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.blue[600] : Colors.grey[600],
+              return GestureDetector(
+                onTap: () {
+                  onFontSizeChanged(fontProvider, level);
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      '${level.value}',
+                      style: TextStyle(
+                        fontSize: isSelected ? 16 : 14,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected ? Colors.blue[600] : Colors.grey[600],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _getLevelIcon(level),
-                    style: TextStyle(
-                      fontSize: isSelected ? 20 : 16,
+                    const SizedBox(height: 2),
+                    Text(
+                      _getLevelIcon(level),
+                      style: TextStyle(fontSize: isSelected ? 20 : 16),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Slider
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
@@ -335,13 +393,14 @@ class _FontSizeSlider extends StatelessWidget {
               max: 5,
               divisions: 4,
               onChanged: (value) {
-                fontProvider.setFontLevelByValue(value.round());
+                final newLevel = FontSizeLevel.values[value.round() - 1];
+                onFontSizeChanged(fontProvider, newLevel);
               },
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Current level label
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -419,9 +478,9 @@ class _FontSizePreview extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const Divider(height: 24),
-          
+
           // Title preview (Group A)
           _buildPreviewRow(
             label: 'Pamagat',
@@ -430,9 +489,9 @@ class _FontSizePreview extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Header1 preview (Group B)
           _buildPreviewRow(
             label: 'Header',
@@ -441,20 +500,21 @@ class _FontSizePreview extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Description preview (Group C)
           _buildPreviewRow(
             label: 'Nilalaman',
-            sampleText: 'Ito ay isang halimbawa ng regular na teksto na makikita mo sa aplikasyon.',
+            sampleText:
+                'Ito ay isang halimbawa ng regular na teksto na makikita mo sa aplikasyon.',
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.normal,
             fontProvider: fontProvider,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Header4 preview (Group D)
           _buildPreviewRow(
             label: 'Caption',
