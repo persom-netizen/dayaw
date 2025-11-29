@@ -11,6 +11,8 @@ class PostCard extends StatefulWidget {
   final VoidCallback? onUserTap;
   final VoidCallback? onDeleteTap;
   final VoidCallback? onCommentsTap;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
 
   const PostCard({
     super.key,
@@ -19,6 +21,8 @@ class PostCard extends StatefulWidget {
     this.onUserTap,
     this.onDeleteTap,
     this.onCommentsTap,
+    this.onLike,
+    this.onComment,
   });
 
   @override
@@ -29,6 +33,33 @@ class _PostCardState extends State<PostCard> {
   static const Color primaryYellow = Color(0xFFFFDF00);
   static const Color textColor = Color(0xFF554141);
   static const Color backgroundColor = Color(0xFFFFF9F4);
+
+  /// Get relative time string (e.g., "2 days ago", "3 hours ago")
+  String _getRelativeTime() {
+    final now = DateTime.now();
+    final difference = now.difference(widget.post.createdAt);
+
+    if (difference.inDays > 7) {
+      return '${widget.post.createdAt.month}/${widget.post.createdAt.day}/${widget.post.createdAt.year}';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  /// Get formatted time string (e.g., "2:30 PM")
+  String _getTime() {
+    final hour = widget.post.createdAt.hour;
+    final minute = widget.post.createdAt.minute;
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$hour12:${minute.toString().padLeft(2, '0')} $period';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +117,7 @@ class _PostCardState extends State<PostCard> {
                               ),
                             ),
                             Text(
-                              '${widget.post.daysAgo} days ago | ${widget.post.time}',
+                              '${_getRelativeTime()} | ${_getTime()}',
                               style: GoogleFonts.inter(
                                 fontSize: fontProvider.header4Size,
                                 color: textColor.withValues(alpha: 0.5),
