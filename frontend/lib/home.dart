@@ -36,15 +36,16 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      BahayPage(username: widget.username),        // 0 - Bahay
-      AlaalaPage(username: widget.username),       // 1 - Alaala (Matuto)
-      const SulatinScreen(),                       // 2 - Sulatin (Matuto)
-      SalitaPage(username: widget.username),       // 3 - Salita (Matuto)
-      ProfileScreen(                               // 4 - Akin (Profile)
+      BahayPage(username: widget.username), // 0 - Bahay
+      AlaalaPage(username: widget.username), // 1 - Alaala (Matuto)
+      const SulatinScreen(), // 2 - Sulatin (Matuto)
+      SalitaPage(username: widget.username), // 3 - Salita (Matuto)
+      ProfileScreen(
+        // 4 - Akin (Profile)
         username: widget.username,
         currentUsername: widget.username,
       ),
-      SettingsScreen(username: widget.username),   // 5 - Setting
+      SettingsScreen(username: widget.username), // 5 - Setting
     ];
   }
 
@@ -108,7 +109,7 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return 1; // Matuto (any subpage)
       case 4:
-        return 2; // Akin (Profile)
+        return 2; // Juan (AI Chatbot)
       case 5:
         return 3; // Setting
       default:
@@ -446,7 +447,9 @@ class _MatutoMenuSheet extends StatelessWidget {
                   isSelected
                       ? Icons.check_circle_rounded
                       : Icons.chevron_right_rounded,
-                  color: isSelected ? primaryYellow : textColor.withValues(alpha: 0.4),
+                  color: isSelected
+                      ? primaryYellow
+                      : textColor.withValues(alpha: 0.4),
                   size: 24,
                 ),
               ],
