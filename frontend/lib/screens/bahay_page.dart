@@ -119,7 +119,7 @@ class _BahayPageState extends State<BahayPage>
                   onComment: post.id != null
                       ? () => _showCommentsSheet(post)
                       : null,
-                  onDelete: post.username == widget.username && post.id != null
+                  onDeleteTap: post.username == widget.username && post.id != null
                       ? () => _handleDelete(postProvider, post)
                       : null,
                 );
