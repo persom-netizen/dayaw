@@ -22,26 +22,26 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _isLoading = false;
 
   // Brown color for text and borders
-  static const Color brownColor = Color. fromARGB(255, 71, 61, 29);
+  static const Color brownColor = Color.fromARGB(255, 71, 61, 29);
   static const Color goldColor = Color(0xFFD4AF37);
 
   Future<void> _signUp() async {
     if (_isLoading) return;
 
     if (_usernameController.text.isEmpty ||
-        _emailController.text. isEmpty ||
-        _passwordController. text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger. of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in all fields")),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Passwords do not match")));
       return;
     }
 
@@ -62,14 +62,14 @@ class _SignUpPageState extends State<SignUpPage> {
       final res = jsonDecode(response.body);
 
       if (response.statusCode == 200 && res["success"] == true) {
-        ScaffoldMessenger.of(context). showSnackBar(
-          const SnackBar(content: Text("Registration successful!  Please login.")),
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Registration successful!  Please login."),
+          ),
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const LoginPage(),
-          ),
+          MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,9 +77,9 @@ class _SignUpPageState extends State<SignUpPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Network error: ${e.toString()}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Network error: ${e.toString()}")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -92,17 +92,17 @@ class _SignUpPageState extends State<SignUpPage> {
         color: brownColor,
         fontWeight: FontWeight.w500,
       ),
-      hintStyle: TextStyle(color: brownColor. withOpacity(0.6)),
+      hintStyle: TextStyle(color: brownColor.withOpacity(0.6)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: brownColor, width: 1. 5),
+        borderSide: const BorderSide(color: brownColor, width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: goldColor, width: 2),
       ),
       filled: true,
-      fillColor: Colors.white. withOpacity(0.3),
+      fillColor: Colors.white.withOpacity(0.3),
       suffixIcon: suffixIcon,
     );
   }
@@ -115,7 +115,7 @@ class _SignUpPageState extends State<SignUpPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/rehistro. png'),
+            image: AssetImage('assets/rehistro.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -130,15 +130,15 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                     child: Container(
-                      width: double. infinity,
+                      width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 28,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white. withOpacity(0.10),
+                        color: Colors.white.withOpacity(0.10),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: goldColor, width: 2. 5),
+                        border: Border.all(color: goldColor, width: 2.5),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
@@ -182,8 +182,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword
-                                      ? Icons. visibility
-                                      : Icons. visibility_off,
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
                                   color: brownColor,
                                 ),
                                 onPressed: () => setState(
@@ -228,11 +228,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                 elevation: 4,
                               ),
                               child: _isLoading
-                                  ?  const SizedBox(
+                                  ? const SizedBox(
                                       width: 24,
                                       height: 24,
                                       child: CircularProgressIndicator(
-                                        strokeWidth: 2. 5,
+                                        strokeWidth: 2.5,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
                                               brownColor,
