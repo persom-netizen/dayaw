@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'providers/font_provider.dart';
 import 'services/api_service.dart';
 
 class AlaalaPage extends StatefulWidget {
@@ -41,14 +44,18 @@ class _AlaalaPageState extends State<AlaalaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildTodayView(),
+    return Consumer<FontProvider>(
+      builder: (context, fontProvider, child) {
+        return Scaffold(
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _buildTodayView(fontProvider),
+        );
+      },
     );
   }
 
-  Widget _buildTodayView() {
+  Widget _buildTodayView(FontProvider fontProvider) {
     if (_todayTrivia == null) {
       return Center(
         child: Column(
@@ -56,14 +63,17 @@ class _AlaalaPageState extends State<AlaalaPage> {
           children: [
             Icon(Icons.lightbulb_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Walang Alaala ngayong araw',
-              style: TextStyle(fontSize: 18),
+              style: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadTodayTrivia,
-              child: const Text('Mag-retry'),
+              child: Text(
+                'Mag-retry',
+                style: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+              ),
             ),
           ],
         ),
@@ -79,8 +89,8 @@ class _AlaalaPageState extends State<AlaalaPage> {
           Center(
             child: Text(
               'Alam mo ba?',
-              style: TextStyle(
-                fontSize: 24,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: fontProvider.titleSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue[600],
               ),
@@ -110,8 +120,8 @@ class _AlaalaPageState extends State<AlaalaPage> {
                   // Title (Large and Bold)
                   Text(
                     _todayTrivia?['alammoba'] ?? 'N/A',
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: fontProvider.header1Size,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
@@ -125,8 +135,8 @@ class _AlaalaPageState extends State<AlaalaPage> {
                   // Description
                   Text(
                     _todayTrivia?['deskription'] ?? 'N/A',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: GoogleFonts.inter(
+                      fontSize: fontProvider.descriptionSize,
                       height: 1.8,
                       color: Colors.black87,
                       fontWeight: FontWeight.w500,
