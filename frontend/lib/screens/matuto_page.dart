@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
 import '../services/api_service.dart';
-import 'profile_screen.dart';
 import 'sulatin/sulatin_screen.dart';
 
 /// Matuto (Learn) - Navigation page with sleek, minimalist UI design
@@ -112,18 +111,6 @@ class _MatutoPageState extends State<MatutoPage>
     setState(() => _isSalitaCardFlipped = !_isSalitaCardFlipped);
   }
 
-  void _navigateToProfile() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfileScreen(
-          username: widget.username,
-          currentUsername: widget.username,
-        ),
-      ),
-    );
-  }
-
   void _showComingSoonSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -144,8 +131,6 @@ class _MatutoPageState extends State<MatutoPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Section
-                  _buildHeader(fontProvider),
                   // Yellow Divider with drop shadow
                   _buildDivider(),
                   const SizedBox(height: 20),
@@ -164,52 +149,6 @@ class _MatutoPageState extends State<MatutoPage>
           ),
         );
       },
-    );
-  }
-
-  Widget _buildHeader(FontProvider fontProvider) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Title
-          Text(
-            'Matuto.',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          // Username chip
-          GestureDetector(
-            onTap: _navigateToProfile,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: primaryYellow,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryYellow.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                '@${widget.username}',
-                style: GoogleFonts.inter(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: fontProvider.descriptionSize,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -304,11 +243,11 @@ class _MatutoPageState extends State<MatutoPage>
             ),
           ),
           const SizedBox(height: 8),
-          // "iyong buksan!" text
+          // "alamin!" text
           Row(
             children: [
               Text(
-                'iyong buksan!',
+                'alamin!',
                 style: GoogleFonts.inter(
                   fontSize: fontProvider.descriptionSize,
                   color: textColor.withValues(alpha: 0.7),

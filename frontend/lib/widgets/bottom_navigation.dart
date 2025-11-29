@@ -12,8 +12,6 @@ import 'package:google_fonts/google_fonts.dart';
 class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final bool showMatutoSubmenu;
-  final VoidCallback? onMatutoTap;
 
   // Design color constants
   static const Color primaryYellow = Color(0xFFFFDF00);
@@ -24,8 +22,6 @@ class CustomBottomNavigation extends StatelessWidget {
     super.key,
     required this.currentIndex,
     required this.onTap,
-    this.showMatutoSubmenu = false,
-    this.onMatutoTap,
   });
 
   @override
@@ -60,7 +56,6 @@ class CustomBottomNavigation extends StatelessWidget {
               icon: Icons.school_rounded,
               label: 'Matuto',
               isActive: currentIndex == 1,
-              isSubmenu: true,
             ),
             _buildNavItem(
               index: 2,
@@ -85,18 +80,11 @@ class CustomBottomNavigation extends StatelessWidget {
     required IconData icon,
     required String label,
     required bool isActive,
-    bool isSubmenu = false,
   }) {
     final double opacity = isActive ? 1.0 : 0.5;
 
     return GestureDetector(
-      onTap: () {
-        if (isSubmenu && onMatutoTap != null) {
-          onMatutoTap!();
-        } else {
-          onTap(index);
-        }
-      },
+      onTap: () => onTap(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
