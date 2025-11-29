@@ -30,6 +30,7 @@ flutter:
   assets:
     - assets/pasukin.png
     - assets/rehistro.png
+    - assets/logo_yellow.png
 
   fonts:
     - family: Fortalesia
