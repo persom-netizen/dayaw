@@ -105,7 +105,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
     _fadeController.forward();
   }
 
-  void _nextPage() async {
+  void _nextPage() {
     if (_currentPage < _pages.length - 1) {
       _pageController.animateToPage(
         _currentPage + 1,
@@ -113,15 +113,30 @@ class _IntroductionScreenState extends State<IntroductionScreen>
         curve: Curves.easeInOut,
       );
     } else {
-      // Mark onboarding as complete on final page
-      await widget.onboardingProvider.markOnboardingComplete();
-      
-      // Navigate to login page
-      if (mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
-      }
+      _completeOnboarding();
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    // Mark onboarding as complete on final page
+    await widget.onboardingProvider.markOnboardingComplete();
+    
+    // Navigate to login page
+    if (mounted) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+    }
+  }
+
+  Future<void> _skipOnboarding() async {
+    // Mark onboarding as complete when skipping
+    await widget.onboardingProvider.markOnboardingComplete();
+    
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
     }
   }
 
@@ -167,16 +182,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                   // Skip button (only show before last page)
                   if (_currentPage < _pages.length - 1)
                     TextButton(
-                      onPressed: () async {
-                        // Mark onboarding as complete when skipping
-                        await widget.onboardingProvider.markOnboardingComplete();
-                        
-                        if (mounted) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const LoginPage()),
-                          );
-                        }
-                      },
+                      onPressed: _skipOnboarding,
                       style: TextButton.styleFrom(
                         foregroundColor: textColor.withOpacity(0.7),
                       ),
