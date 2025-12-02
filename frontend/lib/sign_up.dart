@@ -358,31 +358,35 @@ class _SignUpPageState extends State<SignUpPage> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Mayroon nang account?  ',
-                                style: TextStyle(color: brownColor),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const LoginPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Pasukin',
-                                  style: TextStyle(
-                                    color: goldColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          // Login link button
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginPage(),
                                 ),
+                              );
+                            },
+                            child: RichText(
+                              text: const TextSpan(
+                                style: TextStyle(
+                                  color: brownColor,
+                                  fontSize: 14,
+                                ),
+                                children: [
+                                  TextSpan(text: 'Mayroon nang account?  '),
+                                  TextSpan(
+                                    text: 'Pasukin',
+                                    style: TextStyle(
+                                      color: goldColor,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),

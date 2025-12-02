@@ -349,31 +349,35 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Wala pang account?  ',
-                                style: TextStyle(color: brownColor),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const SignUpPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Rehistro',
-                                  style: TextStyle(
-                                    color: goldColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          // Sign up link button
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SignUpPage(),
                                 ),
+                              );
+                            },
+                            child: RichText(
+                              text: const TextSpan(
+                                style: TextStyle(
+                                  color: brownColor,
+                                  fontSize: 14,
+                                ),
+                                children: [
+                                  TextSpan(text: 'Wala pang account?  '),
+                                  TextSpan(
+                                    text: 'Rehistro',
+                                    style: TextStyle(
+                                      color: goldColor,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
