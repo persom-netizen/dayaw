@@ -8,7 +8,7 @@ import 'create_post_screen.dart';
 import 'profile_screen.dart';
 
 /// Bahay (Home) - Modern Community Feed Page
-/// 
+///
 /// Design Specifications:
 /// - Background: #FFF9F4
 /// - Primary Yellow: #FFDF00
@@ -66,10 +66,8 @@ class _BahayPageState extends State<BahayPage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => _CommentsSheet(
-        post: post,
-        currentUsername: widget.username,
-      ),
+      builder: (context) =>
+          _CommentsSheet(post: post, currentUsername: widget.username),
     );
   }
 
@@ -79,27 +77,30 @@ class _BahayPageState extends State<BahayPage>
       builder: (context, themeProvider, _) {
         final isDark = themeProvider.isDarkMode;
         final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
-        
+
         return Scaffold(
           backgroundColor: bgColor,
           body: Consumer<PostProvider>(
             builder: (context, postProvider, child) {
-          if (postProvider.isLoading && postProvider.posts.isEmpty) {
-            return _buildLoadingState();
-          }
+              if (postProvider.isLoading && postProvider.posts.isEmpty) {
+                return _buildLoadingState();
+              }
 
-          if (postProvider.error != null && postProvider.posts.isEmpty) {
-            return _buildErrorState(postProvider);
-          }
+              if (postProvider.error != null && postProvider.posts.isEmpty) {
+                return _buildErrorState(postProvider);
+              }
 
               if (postProvider.posts.isEmpty) {
                 return _buildEmptyState();
               }
 
               return RefreshIndicator(
-                onRefresh: () => postProvider.loadPosts(username: widget.username),
+                onRefresh: () =>
+                    postProvider.loadPosts(username: widget.username),
                 color: primaryYellow,
-                backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                backgroundColor: isDark
+                    ? const Color(0xFF2A2A2A)
+                    : Colors.white,
                 child: ListView.builder(
                   padding: const EdgeInsets.only(top: 8, bottom: 100),
                   itemCount: postProvider.posts.length,
@@ -125,7 +126,8 @@ class _BahayPageState extends State<BahayPage>
                       onComment: post.id != null
                           ? () => _showCommentsSheet(post)
                           : null,
-                      onDeleteTap: post.username == widget.username && post.id != null
+                      onDeleteTap:
+                          post.username == widget.username && post.id != null
                           ? () => _handleDelete(postProvider, post)
                           : null,
                     );
@@ -135,32 +137,31 @@ class _BahayPageState extends State<BahayPage>
             },
           ),
           floatingActionButton: ScaleTransition(
-        scale: CurvedAnimation(
-          parent: _fabController,
-          curve: Curves.elasticOut,
-        ),
-        child: FloatingActionButton(
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CreatePostScreen(username: widget.username),
-              ),
-            );
-            if (mounted) {
-              Provider.of<PostProvider>(context, listen: false)
-                  .loadPosts(username: widget.username);
-            }
-          },
-          backgroundColor: primaryYellow,
-          elevation: 8,
-          child: const Icon(
-            Icons.add_rounded,
-            color: textColor,
-            size: 28,
+            scale: CurvedAnimation(
+              parent: _fabController,
+              curve: Curves.elasticOut,
+            ),
+            child: FloatingActionButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreatePostScreen(username: widget.username),
+                  ),
+                );
+                if (mounted) {
+                  Provider.of<PostProvider>(
+                    context,
+                    listen: false,
+                  ).loadPosts(username: widget.username);
+                }
+              },
+              backgroundColor: primaryYellow,
+              elevation: 8,
+              child: const Icon(Icons.add_rounded, color: textColor, size: 28),
+            ),
           ),
-          ),
-        ),
+        );
       },
     );
   }
@@ -231,13 +232,17 @@ class _BahayPageState extends State<BahayPage>
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => postProvider.loadPosts(username: widget.username),
+              onPressed: () =>
+                  postProvider.loadPosts(username: widget.username),
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Subukan Muli'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryYellow,
                 foregroundColor: textColor,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -279,7 +284,7 @@ class _BahayPageState extends State<BahayPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Maging una sa paglikha ng post!',
+              'Maging una sa paglikha ng post! ',
               style: TextStyle(
                 fontSize: 14,
                 color: textColor.withValues(alpha: 0.6),
@@ -318,9 +323,7 @@ class _BahayPageState extends State<BahayPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Tanggalin ang Post',
           style: TextStyle(color: textColor),
@@ -437,9 +440,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading comments: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading comments: $e')));
       }
     }
   }
@@ -454,9 +457,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading replies: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading replies: $e')));
       }
     }
   }
@@ -518,9 +521,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     } catch (e) {
       setState(() => _isSubmitting = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -653,7 +656,11 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 children: [
                   TextButton.icon(
                     onPressed: () => _startReply(comment.id, comment.username),
-                    icon: Icon(Icons.reply_rounded, size: 16, color: primaryYellow),
+                    icon: Icon(
+                      Icons.reply_rounded,
+                      size: 16,
+                      color: primaryYellow,
+                    ),
                     label: Text(
                       'Reply',
                       style: TextStyle(fontSize: 12, color: primaryYellow),
@@ -757,10 +764,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               ),
 
               // Divider
-              Container(
-                height: 1,
-                color: primaryYellow.withValues(alpha: 0.3),
-              ),
+              Container(height: 1, color: primaryYellow.withValues(alpha: 0.3)),
 
               // Comments list
               Expanded(
@@ -769,27 +773,30 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         child: CircularProgressIndicator(color: primaryYellow),
                       )
                     : _comments.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Walang komento pa. Maging una!',
-                              style: TextStyle(
-                                color: textColor.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: _comments.length,
-                            itemBuilder: (context, index) {
-                              return _buildCommentItem(_comments[index]);
-                            },
+                    ? Center(
+                        child: Text(
+                          'Walang komento pa.Maging una! ',
+                          style: TextStyle(
+                            color: textColor.withValues(alpha: 0.6),
                           ),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: _comments.length,
+                        itemBuilder: (context, index) {
+                          return _buildCommentItem(_comments[index]);
+                        },
+                      ),
               ),
 
               // Reply indicator
               if (_replyingToCommentId != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   color: primaryYellow.withValues(alpha: 0.1),
                   child: Row(
                     children: [
