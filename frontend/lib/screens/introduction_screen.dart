@@ -54,7 +54,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
       gifAsset: 'assets/page4.gif',
       title: 'Buksan at mata!',
       subtitle:
-          'Halina\'t samahan ang libo-libong tao na nais mapasama sa pamilya ni Dayaw.',
+          "Halina't samahan ang libo-libong tao na nais mapasama sa pamilya ni Dayaw.",
     ),
   ];
 
@@ -123,10 +123,8 @@ class _IntroductionScreenState extends State<IntroductionScreen>
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else {
-      // Exit on first page
-      Navigator.of(context).pop();
     }
+    // Do nothing on first page - user can only proceed forward or swipe
   }
 
   @override
@@ -136,24 +134,51 @@ class _IntroductionScreenState extends State<IntroductionScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button at top right
+            // Navigation buttons at top
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _previousPage,
-                  style: TextButton.styleFrom(
-                    foregroundColor: textColor,
-                  ),
-                  child: Text(
-                    'Balikan',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Back button (only show after first page)
+                  if (_currentPage > 0)
+                    TextButton(
+                      onPressed: _previousPage,
+                      style: TextButton.styleFrom(
+                        foregroundColor: textColor,
+                      ),
+                      child: Text(
+                        'Balikan',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  // Skip button (only show before last page)
+                  if (_currentPage < _pages.length - 1)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: textColor.withOpacity(0.7),
+                      ),
+                      child: Text(
+                        'Laktawan',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                ],
               ),
             ),
 
