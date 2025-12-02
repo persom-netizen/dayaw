@@ -67,9 +67,10 @@ class _IntroductionScreenState extends State<IntroductionScreen>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
 
     // Initialize scale animation controller for buttons
     _scaleController = AnimationController(
@@ -110,9 +111,9 @@ class _IntroductionScreenState extends State<IntroductionScreen>
       );
     } else {
       // Navigate to login page on final page
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
     }
   }
 
@@ -144,9 +145,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                   if (_currentPage > 0)
                     TextButton(
                       onPressed: _previousPage,
-                      style: TextButton.styleFrom(
-                        foregroundColor: textColor,
-                      ),
+                      style: TextButton.styleFrom(foregroundColor: textColor),
                       child: Text(
                         'Balikan',
                         style: GoogleFonts.inter(
@@ -288,10 +287,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    page.gifAsset,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.asset(page.gifAsset, fit: BoxFit.contain),
                 ),
               ),
             ),
@@ -311,13 +307,6 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black,
-                      blurRadius: 8,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
                 ),
               ),
             ),

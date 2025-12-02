@@ -78,7 +78,9 @@ class _SalitaPageState extends State<SalitaPage> {
               onPressed: _loadTodayWord,
               child: Text(
                 'Mag-retry',
-                style: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+                style: GoogleFonts.inter(
+                  fontSize: fontProvider.descriptionSize,
+                ),
               ),
             ),
           ],
@@ -139,7 +141,11 @@ class _SalitaPageState extends State<SalitaPage> {
                   const SizedBox(height: 20),
 
                   // Depinisyon (Definition)
-                  _buildField('Depinisyon:', _todayWord?['depinisyon'], fontProvider),
+                  _buildField(
+                    'Depinisyon:',
+                    _todayWord?['depinisyon'],
+                    fontProvider,
+                  ),
                   const SizedBox(height: 16),
 
                   // Bigkas (Pronunciation)
@@ -147,7 +153,11 @@ class _SalitaPageState extends State<SalitaPage> {
                   const SizedBox(height: 16),
 
                   // Etimolohiya (Etymology)
-                  _buildField('Etimolohiya:', _todayWord?['etimolohiya'], fontProvider),
+                  _buildField(
+                    'Etimolohiya:',
+                    _todayWord?['etimolohiya'],
+                    fontProvider,
+                  ),
                   const SizedBox(height: 16),
 
                   // Gamit (Usage)
