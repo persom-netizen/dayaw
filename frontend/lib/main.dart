@@ -5,6 +5,7 @@ import 'sign_up.dart';
 import 'home.dart';
 import 'screens/bahay_page.dart';
 import 'screens/create_post_screen.dart';
+import 'screens/introduction_screen.dart';
 import 'providers/post_provider.dart';
 import 'providers/font_provider.dart';
 import 'providers/theme_provider.dart';
@@ -51,8 +52,9 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme(fontProvider),
             darkTheme: AppTheme.darkTheme(fontProvider),
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: const MainPage(),
+            home: const IntroductionScreen(),
             routes: {
+              '/main': (context) => const MainPage(),
               '/home': (context) => const HomePage(username: ''),
               '/bahay': (context) => const BahayPage(username: ''),
               '/create-post': (context) => const CreatePostScreen(username: ''),
