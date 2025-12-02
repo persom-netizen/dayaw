@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/login.gif'),
+            image: AssetImage('assets/bg.gif'),
             fit: BoxFit.cover,
           ),
         ),
@@ -353,7 +353,7 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
-                                'Wala pang acc?  ',
+                                'Wala pang account?  ',
                                 style: TextStyle(color: brownColor),
                               ),
                               GestureDetector(

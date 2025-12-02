@@ -115,7 +115,7 @@ class _SignUpPageState extends State<SignUpPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/login.gif'),
+            image: AssetImage('assets/bg.gif'),
             fit: BoxFit.cover,
           ),
         ),
@@ -205,7 +205,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             obscureText: _obscureConfirmPassword,
                             style: const TextStyle(color: brownColor),
                             decoration: _buildInputDecoration(
-                              'Confirm Password',
+                              'Siguraduhin ang password',
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword
@@ -270,7 +270,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 child: Text(
-                                  'O',
+                                  'Gumawa gamit ang',
                                   style: TextStyle(
                                     color: brownColor.withOpacity(0.7),
                                     fontWeight: FontWeight.w500,
@@ -362,7 +362,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
-                                'May account na?  ',
+                                'Mayroon nang account?  ',
                                 style: TextStyle(color: brownColor),
                               ),
                               GestureDetector(
