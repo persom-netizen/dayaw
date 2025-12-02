@@ -12,12 +12,17 @@ class AiPage extends StatefulWidget {
   State<AiPage> createState() => _AiPageState();
 }
 
-class _AiPageState extends State<AiPage> {
+class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   List<Map<String, String>> _messages = [];
   bool _isLoading = false;
+  
+  // Design color constants
+  static const Color primaryYellow = Color(0xFFFFDF00);
+  static const Color textColor = Color(0xFF554141);
+  static const Color backgroundColor = Color(0xFFFFF9F4);
 
   @override
   void initState() {
@@ -160,6 +165,7 @@ class _AiPageState extends State<AiPage> {
     return Consumer<FontProvider>(
       builder: (context, fontProvider, child) {
         return Scaffold(
+          backgroundColor: backgroundColor,
           body: Column(
             children: [
               // Messages List
@@ -172,21 +178,22 @@ class _AiPageState extends State<AiPage> {
                             Icon(
                               Icons.chat_bubble_outline,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: primaryYellow,
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Walang mensahe pa',
                               style: GoogleFonts.inter(
-                                color: Colors.grey[600],
+                                color: textColor,
                                 fontSize: fontProvider.descriptionSize,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Magsimula ng pag-usap sa Juan',
                               style: GoogleFonts.inter(
-                                color: Colors.grey[500],
+                                color: textColor.withValues(alpha: 0.6),
                                 fontSize: fontProvider.header4Size,
                               ),
                             ),
@@ -200,56 +207,74 @@ class _AiPageState extends State<AiPage> {
                           final msg = _messages[index];
                           final isUser = msg['type'] == 'user';
 
-                          return Align(
-                            alignment: isUser
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: GestureDetector(
-                              onLongPress: !isUser && msg['id']!.isNotEmpty
-                                  ? () => _deleteMessage(msg['id']!)
-                                  : null,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 16,
+                          return TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 300),
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            builder: (context, value, child) {
+                              return Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, 20 * (1 - value)),
+                                  child: child,
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isUser
-                                      ? Colors.blue[500]
-                                      : Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: isUser
-                                      ? CrossAxisAlignment.end
-                                      : CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      msg['message'] ?? '',
-                                      style: GoogleFonts.inter(
-                                        color: isUser
-                                            ? Colors.white
-                                            : Colors.black87,
-                                        fontSize: fontProvider.descriptionSize,
+                              );
+                            },
+                            child: Align(
+                              alignment: isUser
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: GestureDetector(
+                                onLongPress: !isUser && msg['id']!.isNotEmpty
+                                    ? () => _deleteMessage(msg['id']!)
+                                    : null,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 16,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isUser
+                                        ? primaryYellow
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.05),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
                                       ),
-                                    ),
-                                    if (!isUser && msg['id']!.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          'Long press to delete',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.grey[500],
-                                            fontSize: fontProvider.header4Size,
-                                            fontStyle: FontStyle.italic,
-                                          ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: isUser
+                                        ? CrossAxisAlignment.end
+                                        : CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        msg['message'] ?? '',
+                                        style: GoogleFonts.inter(
+                                          color: textColor,
+                                          fontSize: fontProvider.descriptionSize,
                                         ),
                                       ),
-                                  ],
+                                      if (!isUser && msg['id']!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            'Long press to delete',
+                                            style: GoogleFonts.inter(
+                                              color: textColor.withValues(alpha: 0.5),
+                                              fontSize: fontProvider.header4Size,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -260,17 +285,66 @@ class _AiPageState extends State<AiPage> {
 
               // Loading Indicator
               if (_isLoading)
-                const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: CircularProgressIndicator(),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: primaryYellow,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Juan is typing...',
+                              style: GoogleFonts.inter(
+                                color: textColor.withValues(alpha: 0.6),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
               // Input Field
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -280,19 +354,33 @@ class _AiPageState extends State<AiPage> {
                         enabled: !_isLoading,
                         style: GoogleFonts.inter(
                           fontSize: fontProvider.descriptionSize,
+                          color: textColor,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Magsulat ng mensahe...',
                           hintStyle: GoogleFonts.inter(
-                            color: Colors.grey[500],
+                            color: textColor.withValues(alpha: 0.4),
                             fontSize: fontProvider.descriptionSize,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: primaryYellow.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: const BorderSide(
+                              color: primaryYellow,
+                              width: 2,
+                            ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: backgroundColor,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
@@ -302,13 +390,24 @@ class _AiPageState extends State<AiPage> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    FloatingActionButton(
-                      onPressed: _isLoading ? null : _sendMessage,
-                      mini: true,
-                      backgroundColor: Colors.blue[600],
-                      child: Icon(
-                        _isLoading ? Icons.hourglass_top : Icons.send,
-                        color: Colors.white,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: primaryYellow,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryYellow.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: _isLoading ? null : _sendMessage,
+                        icon: Icon(
+                          _isLoading ? Icons.hourglass_top : Icons.send_rounded,
+                          color: textColor,
+                        ),
                       ),
                     ),
                   ],

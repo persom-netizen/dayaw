@@ -18,19 +18,36 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   User? _user;
   List<Post> _posts = [];
   int _postCount = 0;
   bool _isLoading = true;
   String? _error;
+  late AnimationController _animationController;
+  
+  // Design color constants
+  static const Color primaryYellow = Color(0xFFFFDF00);
+  static const Color textColor = Color(0xFF554141);
+  static const Color backgroundColor = Color(0xFFFFF9F4);
 
   bool get _isOwnProfile => widget.username == widget.currentUsername;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _animationController.forward();
     _loadProfile();
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -167,9 +184,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(_isOwnProfile ? 'Aking Profile' : '@${widget.username}'),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: primaryYellow,
+        foregroundColor: textColor,
+        elevation: 0,
       ),
       body: _buildBody(),
     );
@@ -177,7 +197,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                color: primaryYellow,
+                strokeWidth: 4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Kinukuha ang profile...',
+              style: TextStyle(
+                fontSize: 16,
+                color: textColor.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     if (_error != null) {
@@ -185,16 +227,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+            Icon(Icons.error_outline, size: 64, color: primaryYellow),
             const SizedBox(height: 16),
             Text(
               'May error sa pagkuha ng profile',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(
+                fontSize: 14,
+                color: textColor.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -202,6 +247,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: _loadProfile,
               icon: const Icon(Icons.refresh),
               label: const Text('Subukan Muli'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryYellow,
+                foregroundColor: textColor,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
             ),
           ],
         ),
@@ -214,6 +267,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadProfile,
+      color: primaryYellow,
+      backgroundColor: Colors.white,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -238,11 +293,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.post_add, size: 64, color: Colors.grey),
+                    Icon(Icons.post_add, size: 64, color: primaryYellow),
                     SizedBox(height: 16),
                     Text(
                       'Walang mga post pa',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: TextStyle(fontSize: 16, color: textColor),
                     ),
                   ],
                 ),
@@ -282,33 +337,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 600),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 30 * (1 - value)),
+            child: child,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.blue[200],
-            child: Text(
-              _user!.username.isNotEmpty ? _user!.username[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Avatar
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: child,
+                );
+              },
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: primaryYellow,
+                child: Text(
+                  _user!.username.isNotEmpty ? _user!.username[0].toUpperCase() : 'U',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
               ),
             ),
-          ),
           const SizedBox(height: 16),
 
           // Name (pangalan)
@@ -318,6 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 4),
@@ -328,7 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             '@${_user!.username}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: textColor.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -338,7 +416,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _user!.email,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: textColor.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 16),
@@ -365,20 +443,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: primaryYellow,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryYellow.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.article, color: Colors.blue[600], size: 20),
+                Icon(Icons.article, color: textColor, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   '$_postCount na post',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue[600],
+                    color: textColor,
                   ),
                 ),
               ],
@@ -396,8 +481,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: const Icon(Icons.edit),
                   label: const Text('Mag-edit'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
-                    foregroundColor: Colors.white,
+                    backgroundColor: primaryYellow,
+                    foregroundColor: textColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -407,13 +496,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: const Text('Lumabas'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red),
+                    side: const BorderSide(color: Colors.red, width: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
             ),
           ],
         ],
+      ),
       ),
     );
   }
