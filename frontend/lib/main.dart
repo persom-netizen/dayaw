@@ -9,6 +9,7 @@ import 'screens/introduction_screen.dart';
 import 'providers/post_provider.dart';
 import 'providers/font_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/onboarding_provider.dart';
 import 'config/theme.dart';
 
 void main() async {
@@ -21,20 +22,27 @@ void main() async {
   final themeProvider = ThemeProvider();
   await themeProvider.loadPreferences();
 
+  // Create and initialize OnboardingProvider
+  final onboardingProvider = OnboardingProvider();
+  await onboardingProvider.loadPreferences();
+
   runApp(MyApp(
     fontProvider: fontProvider,
     themeProvider: themeProvider,
+    onboardingProvider: onboardingProvider,
   ));
 }
 
 class MyApp extends StatelessWidget {
   final FontProvider fontProvider;
   final ThemeProvider themeProvider;
+  final OnboardingProvider onboardingProvider;
 
   const MyApp({
     super.key,
     required this.fontProvider,
     required this.themeProvider,
+    required this.onboardingProvider,
   });
 
   @override
@@ -44,15 +52,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider.value(value: fontProvider),
         ChangeNotifierProvider.value(value: themeProvider),
+        ChangeNotifierProvider.value(value: onboardingProvider),
       ],
-      child: Consumer2<FontProvider, ThemeProvider>(
-        builder: (context, fontProvider, themeProvider, child) {
+      child: Consumer3<FontProvider, ThemeProvider, OnboardingProvider>(
+        builder: (context, fontProvider, themeProvider, onboardingProvider, child) {
+          // Determine which home screen to show based on onboarding completion
+          final Widget homeScreen = onboardingProvider.hasCompletedOnboarding
+              ? const MainPage()
+              : IntroductionScreen(onboardingProvider: onboardingProvider);
+
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme(fontProvider),
             darkTheme: AppTheme.darkTheme(fontProvider),
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: const IntroductionScreen(),
+            home: homeScreen,
             routes: {
               '/main': (context) => const MainPage(),
               '/home': (context) => const HomePage(username: ''),

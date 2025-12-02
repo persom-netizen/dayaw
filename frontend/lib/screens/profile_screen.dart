@@ -5,6 +5,7 @@ import '../models/post_model.dart';
 import '../services/user_service.dart';
 import '../widgets/feed_post_card.dart';
 import '../providers/theme_provider.dart';
+import '../main.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -169,8 +170,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigate back to main/login page, clearing all routes
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              // Navigate to MainPage (Login/SignUp options), clearing all routes
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const MainPage()),
+                (route) => false,
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
