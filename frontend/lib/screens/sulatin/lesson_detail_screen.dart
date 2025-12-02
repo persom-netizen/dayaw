@@ -6,6 +6,11 @@ import 'matching_game_screen.dart';
 import 'quiz_screen.dart';
 import '../baybayin/kabanata_0.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+const Color _backgroundColor = Color(0xFFFFF9F4);
+
 class LessonDetailScreen extends StatefulWidget {
   final Lesson lesson;
 
@@ -47,20 +52,28 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     // Show loading while redirecting for flipcard
     if (widget.lesson.type == 'flipcard') {
       return Scaffold(
+        backgroundColor: _backgroundColor,
         appBar: AppBar(
           title: Text(widget.lesson.title),
-          backgroundColor: Colors.teal[600],
+          backgroundColor: _primaryYellow,
+          foregroundColor: _textColor,
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: _primaryYellow,
+          ),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         title: Text(widget.lesson.title),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: _primaryYellow,
+        foregroundColor: _textColor,
+        elevation: 2,
+        shadowColor: _primaryYellow.withValues(alpha: 0.5),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -97,6 +110,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         Card(
           elevation: 4,
+          shadowColor: _primaryYellow.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -104,10 +118,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             padding: const EdgeInsets.all(20),
             child: Text(
               widget.lesson.content,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 height: 1.8,
-                color: Colors.black87,
+                color: _textColor,
               ),
             ),
           ),
@@ -116,18 +130,20 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ElevatedButton(
           onPressed: () => Navigator.pop(context),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[600],
+            backgroundColor: _primaryYellow,
+            foregroundColor: _textColor,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 4,
+            shadowColor: _primaryYellow.withValues(alpha: 0.5),
           ),
           child: const Text(
             'Ipagpatuloy',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
           ),
         ),
@@ -144,6 +160,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         children: [
           Card(
             elevation: 4,
+            shadowColor: _primaryYellow.withValues(alpha: 0.3),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -151,18 +168,25 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.quiz,
-                    size: 64,
-                    color: Colors.green[400],
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _primaryYellow.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.quiz,
+                      size: 48,
+                      color: _textColor,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     widget.lesson.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: _textColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -170,14 +194,14 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: _primaryYellow.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Subukin ang iyong kaalaman sa Baybayin!',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: _textColor,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -207,18 +231,20 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
+              backgroundColor: _primaryYellow,
+              foregroundColor: _textColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+              elevation: 4,
+              shadowColor: _primaryYellow.withValues(alpha: 0.5),
             ),
             child: const Text(
               'Magsimula ng Pagsusulit',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
           ),
@@ -227,7 +253,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              side: BorderSide(color: Colors.blue[600]!, width: 2),
+              side: BorderSide(color: _primaryYellow, width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -237,7 +263,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue[600],
+                color: _textColor,
               ),
             ),
           ),
@@ -251,6 +277,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         Card(
           elevation: 4,
+          shadowColor: _primaryYellow.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -258,10 +285,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             padding: const EdgeInsets.all(20),
             child: Text(
               widget.lesson.content,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: _textColor,
               ),
             ),
           ),
@@ -288,17 +315,32 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text(
-                        isCorrect ? 'Tama!' : 'Mali',
-                        style: TextStyle(
-                          color: isCorrect ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      backgroundColor: _backgroundColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Row(
+                        children: [
+                          Icon(
+                            isCorrect ? Icons.check_circle : Icons.cancel,
+                            color: isCorrect ? Colors.green : Colors.red,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isCorrect ? 'Tama!' : 'Mali',
+                            style: TextStyle(
+                              color: isCorrect ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       content: Text(
                         isCorrect
                             ? 'Mahusay! Tama ang iyong sagot.'
                             : 'Subukan muli ang pagbabasa ng aralin.',
+                        style: TextStyle(color: _textColor),
                       ),
                       actions: [
                         TextButton(
@@ -308,7 +350,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                               Navigator.pop(context);
                             }
                           },
-                          child: Text(isCorrect ? 'Ipagpatuloy' : 'OK'),
+                          child: Text(
+                            isCorrect ? 'Ipagpatuloy' : 'OK',
+                            style: TextStyle(color: _textColor),
+                          ),
                         ),
                       ],
                     ),
@@ -316,18 +361,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 }
               : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[600],
+            backgroundColor: _primaryYellow,
+            foregroundColor: _textColor,
+            disabledBackgroundColor: Colors.grey[300],
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 4,
+            shadowColor: _primaryYellow.withValues(alpha: 0.5),
           ),
           child: const Text(
             'I-submit ang Sagot',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
           ),
         ),
@@ -341,6 +389,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         Card(
           elevation: 4,
+          shadowColor: _primaryYellow.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -348,18 +397,25 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                Icon(
-                  Icons.extension,
-                  size: 64,
-                  color: Colors.orange[400],
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _primaryYellow.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.extension,
+                    size: 48,
+                    color: _textColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   widget.lesson.content,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: _textColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -367,14 +423,14 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.orange[50],
+                    color: _primaryYellow.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Itugma ang mga katinig sa kanilang tamang kombinasyon sa patinig.',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: _textColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -401,18 +457,20 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange[600],
+            backgroundColor: _primaryYellow,
+            foregroundColor: _textColor,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 4,
+            shadowColor: _primaryYellow.withValues(alpha: 0.5),
           ),
           child: const Text(
             'Magsimula ng Laro',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
           ),
         ),
@@ -421,7 +479,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           onPressed: () => Navigator.pop(context),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            side: BorderSide(color: Colors.blue[600]!, width: 2),
+            side: BorderSide(color: _primaryYellow, width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -431,7 +489,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.blue[600],
+              color: _textColor,
             ),
           ),
         ),
@@ -466,6 +524,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       children: [
         Card(
           elevation: 4,
+          shadowColor: _primaryYellow.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -473,28 +532,35 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                Icon(
-                  Icons.edit,
-                  size: 64,
-                  color: Colors.purple[400],
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _primaryYellow.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    size: 48,
+                    color: _textColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   widget.lesson.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: _textColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   widget.lesson.content,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     height: 1.8,
-                    color: Colors.black87,
+                    color: _textColor,
                   ),
                 ),
               ],
@@ -520,18 +586,20 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple[600],
+            backgroundColor: _primaryYellow,
+            foregroundColor: _textColor,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 4,
+            shadowColor: _primaryYellow.withValues(alpha: 0.5),
           ),
           child: const Text(
             'Magsimula ng Tracing',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
           ),
         ),
@@ -540,7 +608,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           onPressed: () => Navigator.pop(context),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            side: BorderSide(color: Colors.blue[600]!, width: 2),
+            side: BorderSide(color: _primaryYellow, width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -550,7 +618,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.blue[600],
+              color: _textColor,
             ),
           ),
         ),

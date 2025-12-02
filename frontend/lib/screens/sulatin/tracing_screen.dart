@@ -3,6 +3,11 @@ import 'package:flutter/services.dart';
 import '../../widgets/stroke_painter.dart';
 import '../../services/stroke_processor.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+const Color _backgroundColor = Color(0xFFFFF9F4);
+
 class TracingScreen extends StatefulWidget {
   final int lessonId;
   final String expectedCharacter;
@@ -142,7 +147,7 @@ class _TracingScreenState extends State<TracingScreen> {
       titleIcon = Icons.check_circle;
     } else if (_lastAccuracyScore >= 41) {
       title = 'Maganda!';
-      titleColor = Colors.blue;
+      titleColor = _primaryYellow;
       titleIcon = Icons.check_circle;
     } else if (_lastAccuracyScore >= 21) {
       title = 'Mabuti!';
@@ -158,6 +163,10 @@ class _TracingScreenState extends State<TracingScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        backgroundColor: _backgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Row(
           children: [
             Icon(titleIcon, color: titleColor, size: 32),
@@ -176,14 +185,14 @@ class _TracingScreenState extends State<TracingScreen> {
           children: [
             Text(
               _lastFeedback,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: _textColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.purple[50],
+                color: _primaryYellow.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -198,7 +207,7 @@ class _TracingScreenState extends State<TracingScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple[600],
+                          color: _textColor,
                         ),
                       ),
                     ],
@@ -209,15 +218,15 @@ class _TracingScreenState extends State<TracingScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.purple[600],
+                      color: _textColor,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Kabuuang Puntos: $_score',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black54,
+                      color: _textColor.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -231,7 +240,7 @@ class _TracingScreenState extends State<TracingScreen> {
               Navigator.pop(context); // Close dialog
               _clearCanvas();
             },
-            child: const Text('Subukan Muli'),
+            child: Text('Subukan Muli', style: TextStyle(color: _textColor)),
           ),
           TextButton(
             onPressed: () {
@@ -243,7 +252,7 @@ class _TracingScreenState extends State<TracingScreen> {
                 'attempts': _attempts,
               }); // Return to lesson detail
             },
-            child: const Text('Ipagpatuloy'),
+            child: Text('Ipagpatuloy', style: TextStyle(color: _textColor)),
           ),
         ],
       ),
@@ -253,9 +262,13 @@ class _TracingScreenState extends State<TracingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         title: Text(widget.lessonTitle),
-        backgroundColor: Colors.purple[600],
+        backgroundColor: _primaryYellow,
+        foregroundColor: _textColor,
+        elevation: 2,
+        shadowColor: _primaryYellow.withValues(alpha: 0.5),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -268,6 +281,13 @@ class _TracingScreenState extends State<TracingScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -276,7 +296,7 @@ class _TracingScreenState extends State<TracingScreen> {
                     Text(
                       '$_score',
                       style: TextStyle(
-                        color: Colors.purple[600],
+                        color: _textColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -295,6 +315,7 @@ class _TracingScreenState extends State<TracingScreen> {
             // Character to trace
             Card(
               elevation: 4,
+              shadowColor: _primaryYellow.withValues(alpha: 0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -302,21 +323,21 @@ class _TracingScreenState extends State<TracingScreen> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Isulat ang sumusunod na karakter:',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: _textColor,
                       ),
                     ),
                     const SizedBox(height: 16),
                     // Show Baybayin character
                     Text(
                       _baybayinCharacter,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 80,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: _textColor,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -327,7 +348,7 @@ class _TracingScreenState extends State<TracingScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.purple[50],
+                        color: _primaryYellow.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -335,7 +356,7 @@ class _TracingScreenState extends State<TracingScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.purple[600],
+                          color: _textColor,
                         ),
                       ),
                     ),
@@ -349,19 +370,19 @@ class _TracingScreenState extends State<TracingScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.purple[50],
+                color: _primaryYellow.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.purple[600]),
+                  Icon(Icons.info_outline, color: _textColor),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Gumuhit gamit ang iyong daliri o mouse sa ibaba',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black87,
+                        color: _textColor,
                       ),
                     ),
                   ),
@@ -373,6 +394,7 @@ class _TracingScreenState extends State<TracingScreen> {
             // Drawing canvas
             Card(
               elevation: 4,
+              shadowColor: _primaryYellow.withValues(alpha: 0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -381,7 +403,7 @@ class _TracingScreenState extends State<TracingScreen> {
                 child: DrawingCanvas(
                   onStrokesChanged: _onStrokesChanged,
                   initialStrokes: _strokes,
-                  strokeColor: Colors.black,
+                  strokeColor: _textColor,
                   strokeWidth: 12.0,
                   height: 350,
                 ),
@@ -398,9 +420,10 @@ class _TracingScreenState extends State<TracingScreen> {
                     icon: const Icon(Icons.clear),
                     label: const Text('Burahin'),
                     style: OutlinedButton.styleFrom(
+                      foregroundColor: _textColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: BorderSide(
-                        color: Colors.purple[600]!,
+                        color: _primaryYellow,
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
@@ -415,23 +438,25 @@ class _TracingScreenState extends State<TracingScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isSubmitting ? null : _submitDrawing,
                     icon: _isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                              valueColor: AlwaysStoppedAnimation(_textColor),
                             ),
                           )
                         : const Icon(Icons.check),
                     label: Text(_isSubmitting ? 'Sinusuri...' : 'I-submit'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple[600],
-                      foregroundColor: Colors.white,
+                      backgroundColor: _primaryYellow,
+                      foregroundColor: _textColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      elevation: 4,
+                      shadowColor: _primaryYellow.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -444,7 +469,7 @@ class _TracingScreenState extends State<TracingScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: _primaryYellow.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -470,15 +495,15 @@ class _TracingScreenState extends State<TracingScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.purple[600],
+            color: _textColor,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: Colors.black54,
+            color: _textColor.withValues(alpha: 0.7),
           ),
         ),
       ],

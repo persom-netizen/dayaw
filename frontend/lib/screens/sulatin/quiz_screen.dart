@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+const Color _backgroundColor = Color(0xFFFFF9F4);
+
 class QuizScreen extends StatefulWidget {
   final int lessonId;
   final String lessonTitle;
@@ -137,43 +142,61 @@ class _QuizScreenState extends State<QuizScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              isCorrect ? Icons.check_circle : Icons.cancel,
-              color: isCorrect ? Colors.green : Colors.red,
-              size: 32,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              isCorrect ? 'Tama!' : 'Mali',
-              style: TextStyle(
+      builder: (context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.elasticOut,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: child,
+          );
+        },
+        child: AlertDialog(
+          backgroundColor: _backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                isCorrect ? Icons.check_circle : Icons.cancel,
                 color: isCorrect ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                isCorrect ? 'Tama!' : 'Mali',
+                style: TextStyle(
+                  color: isCorrect ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            isCorrect
+                ? 'Mahusay! Tama ang iyong sagot.'
+                : 'Subukan muli ang pagbabasa ng aralin.',
+            style: TextStyle(fontSize: 16, color: _textColor),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                if (_isLastQuestion) {
+                  _showFinalScore();
+                } else {
+                  _nextQuestion();
+                }
+              },
+              child: Text(
+                _isLastQuestion ? 'Tingnan ang Iskor' : 'Sunod',
+                style: TextStyle(color: _textColor),
               ),
             ),
           ],
         ),
-        content: Text(
-          isCorrect
-              ? 'Mahusay! Tama ang iyong sagot.'
-              : 'Subukan muli ang pagbabasa ng aralin.',
-          style: const TextStyle(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              if (_isLastQuestion) {
-                _showFinalScore();
-              } else {
-                _nextQuestion();
-              }
-            },
-            child: Text(_isLastQuestion ? 'Tingnan ang Iskor' : 'Sunod'),
-          ),
-        ],
       ),
     );
   }
@@ -202,92 +225,107 @@ class _QuizScreenState extends State<QuizScreen> {
     } else if (percentage >= 60) {
       message = 'Mabuti! May alam ka na tungkol sa Baybayin.';
       icon = Icons.thumb_up;
-      color = Colors.green;
+      color = _primaryYellow;
     } else {
       message = 'Kailangan mo pang mag-aral ng higit pa tungkol sa Baybayin.';
       icon = Icons.school;
-      color = Colors.blue;
+      color = _primaryYellow;
     }
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(width: 12),
-            const Text(
-              'Natapos ang Quiz!',
-              style: TextStyle(fontWeight: FontWeight.bold),
+      builder: (context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.elasticOut,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: child,
+          );
+        },
+        child: AlertDialog(
+          backgroundColor: _backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(width: 12),
+              Text(
+                'Natapos ang Quiz!',
+                style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                message,
+                style: TextStyle(fontSize: 16, color: _textColor),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _primaryYellow.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '$_score / $maxScore',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$percentage%',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tama: ${_score ~/ _pointsPerCorrectAnswer} sa $totalQuestions',
+                      style: TextStyle(fontSize: 14, color: _textColor.withValues(alpha: 0.7)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _restartQuiz();
+              },
+              child: Text('Subukan Muli', style: TextStyle(color: _textColor)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context, {
+                  'completed': true,
+                  'score': _score,
+                  'maxScore': maxScore,
+                  'percentage': percentage,
+                });
+              },
+              child: Text('Ipagpatuloy', style: TextStyle(color: _textColor)),
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              message,
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '$_score / $maxScore',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$percentage%',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tama: ${_score ~/ _pointsPerCorrectAnswer} sa $totalQuestions',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _restartQuiz();
-            },
-            child: const Text('Subukan Muli'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, {
-                'completed': true,
-                'score': _score,
-                'maxScore': maxScore,
-                'percentage': percentage,
-              });
-            },
-            child: const Text('Ipagpatuloy'),
-          ),
-        ],
       ),
     );
   }
@@ -304,9 +342,13 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         title: Text(widget.lessonTitle),
-        backgroundColor: Colors.green[600],
+        backgroundColor: _primaryYellow,
+        foregroundColor: _textColor,
+        elevation: 2,
+        shadowColor: _primaryYellow.withValues(alpha: 0.5),
       ),
       body: Column(
         children: [
@@ -314,9 +356,9 @@ class _QuizScreenState extends State<QuizScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: _primaryYellow.withValues(alpha: 0.15),
               border: Border(
-                bottom: BorderSide(color: Colors.green[200]!, width: 2),
+                bottom: BorderSide(color: _primaryYellow.withValues(alpha: 0.3), width: 2),
               ),
             ),
             child: Column(
@@ -326,9 +368,10 @@ class _QuizScreenState extends State<QuizScreen> {
                   children: [
                     Text(
                       'Tanong ${_currentQuestionIndex + 1} ng ${_quizQuestions.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: _textColor,
                       ),
                     ),
                     Container(
@@ -337,8 +380,15 @@ class _QuizScreenState extends State<QuizScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green[600],
+                        color: _primaryYellow,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryYellow.withValues(alpha: 0.4),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -346,8 +396,8 @@ class _QuizScreenState extends State<QuizScreen> {
                           const SizedBox(width: 4),
                           Text(
                             '$_score',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: _textColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -359,8 +409,8 @@ class _QuizScreenState extends State<QuizScreen> {
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: (_currentQuestionIndex + 1) / _quizQuestions.length,
-                  backgroundColor: Colors.green[100],
-                  valueColor: AlwaysStoppedAnimation(Colors.green[600]),
+                  backgroundColor: _primaryYellow.withValues(alpha: 0.2),
+                  valueColor: AlwaysStoppedAnimation(_primaryYellow),
                 ),
               ],
             ),
@@ -376,6 +426,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   // Question card
                   Card(
                     elevation: 4,
+                    shadowColor: _primaryYellow.withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -383,10 +434,11 @@ class _QuizScreenState extends State<QuizScreen> {
                       padding: const EdgeInsets.all(20),
                       child: Text(
                         _currentQuestion['question'],
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           height: 1.5,
+                          color: _textColor,
                         ),
                       ),
                     ),
@@ -428,12 +480,15 @@ class _QuizScreenState extends State<QuizScreen> {
                             ? _submitAnswer
                             : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[600],
-                      foregroundColor: Colors.white,
+                      backgroundColor: _primaryYellow,
+                      foregroundColor: _textColor,
+                      disabledBackgroundColor: Colors.grey[300],
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      elevation: 4,
+                      shadowColor: _primaryYellow.withValues(alpha: 0.5),
                     ),
                     child: const Text(
                       'I-submit ang Sagot',
@@ -472,18 +527,28 @@ class _QuizScreenState extends State<QuizScreen> {
       borderColor = Colors.red[600]!;
       leadingIcon = Icon(Icons.cancel, color: Colors.red[600]);
     } else if (isSelected) {
-      backgroundColor = Colors.green[50]!;
-      borderColor = Colors.green[600]!;
+      backgroundColor = _primaryYellow.withValues(alpha: 0.2);
+      borderColor = _primaryYellow;
     }
 
     return GestureDetector(
       onTap: _hasAnswered ? null : onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor, width: 2),
+          boxShadow: isSelected && !_hasAnswered
+              ? [
+                  BoxShadow(
+                    color: _primaryYellow.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -496,17 +561,17 @@ class _QuizScreenState extends State<QuizScreen> {
                 height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? Colors.green[600] : Colors.transparent,
+                  color: isSelected ? _primaryYellow : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? Colors.green[600]! : Colors.grey[400]!,
+                    color: isSelected ? _primaryYellow : Colors.grey[400]!,
                     width: 2,
                   ),
                 ),
                 child: isSelected
-                    ? const Icon(
+                    ? Icon(
                         Icons.check,
                         size: 16,
-                        color: Colors.white,
+                        color: _textColor,
                       )
                     : null,
               ),
@@ -517,7 +582,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 option,
                 style: TextStyle(
                   fontSize: 15,
-                  color: showIncorrect ? Colors.red[900] : Colors.black87,
+                  color: showIncorrect ? Colors.red[900] : _textColor,
                   fontWeight: (isSelected || showCorrect || showIncorrect)
                       ? FontWeight.w600
                       : FontWeight.normal,

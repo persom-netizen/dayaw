@@ -13,14 +13,37 @@ class SulatinScreen extends StatefulWidget {
   State<SulatinScreen> createState() => _SulatinScreenState();
 }
 
-class _SulatinScreenState extends State<SulatinScreen> {
+class _SulatinScreenState extends State<SulatinScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedChapterIndex = 0;
   late List<Chapter> _chapters;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  // Design color constants - unified yellow theme
+  static const Color primaryYellow = Color(0xFFFFDF00);
+  static const Color textColor = Color(0xFF554141);
+  static const Color backgroundColor = Color(0xFFFFF9F4);
 
   @override
   void initState() {
     super.initState();
     _chapters = SulatinCurriculum.getAllChapters();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 
   void _selectChapter(int index) {
@@ -55,70 +78,97 @@ class _SulatinScreenState extends State<SulatinScreen> {
     return Consumer<FontProvider>(
       builder: (context, fontProvider, child) {
         return Scaffold(
-          body: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.blue[50],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sulatin',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: fontProvider.titleSize,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
+          backgroundColor: backgroundColor,
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                // Header with yellow theme
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: primaryYellow.withValues(alpha: 0.15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryYellow.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Matuto ng Baybayin',
-                      style: GoogleFonts.inter(
-                        fontSize: fontProvider.descriptionSize,
-                        color: Colors.blue[700],
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sulatin',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: fontProvider.titleSize,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Matuto ng Baybayin',
+                        style: GoogleFonts.inter(
+                          fontSize: fontProvider.descriptionSize,
+                          color: textColor.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Horizontal Chapter Tabs
-              Container(
-                height: 60,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _chapters.length,
-                  itemBuilder: (context, index) {
-                    return ChapterTab(
-                      chapter: _chapters[index],
-                      isSelected: index == _selectedChapterIndex,
-                      onTap: () => _selectChapter(index),
-                    );
-                  },
+                // Horizontal Chapter Tabs
+                Container(
+                  height: 60,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _chapters.length,
+                    itemBuilder: (context, index) {
+                      return ChapterTab(
+                        chapter: _chapters[index],
+                        isSelected: index == _selectedChapterIndex,
+                        onTap: () => _selectChapter(index),
+                      );
+                    },
+                  ),
                 ),
-              ),
 
-              // Lessons List
-              Expanded(
-                child: selectedChapter.isComingSoon
-                    ? _buildComingSoonView(fontProvider)
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: selectedChapter.lessons.length,
-                        itemBuilder: (context, index) {
-                          final lesson = selectedChapter.lessons[index];
-                          return LessonCard(
-                            lesson: lesson,
-                            onTap: () => _openLesson(lesson),
-                          );
-                        },
-                      ),
-              ),
-            ],
+                // Lessons List
+                Expanded(
+                  child: selectedChapter.isComingSoon
+                      ? _buildComingSoonView(fontProvider)
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: selectedChapter.lessons.length,
+                          itemBuilder: (context, index) {
+                            final lesson = selectedChapter.lessons[index];
+                            return TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0.0, end: 1.0),
+                              duration: Duration(milliseconds: 200 + (index * 100)),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, child) {
+                                return Transform.translate(
+                                  offset: Offset(0, 20 * (1 - value)),
+                                  child: Opacity(
+                                    opacity: value,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: LessonCard(
+                                lesson: lesson,
+                                onTap: () => _openLesson(lesson),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -130,10 +180,17 @@ class _SulatinScreenState extends State<SulatinScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.lock_outline,
-            size: 80,
-            color: Colors.grey[400],
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: primaryYellow.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_outline,
+              size: 64,
+              color: primaryYellow,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -141,7 +198,7 @@ class _SulatinScreenState extends State<SulatinScreen> {
             style: GoogleFonts.playfairDisplay(
               fontSize: fontProvider.header1Size,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: textColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -149,7 +206,7 @@ class _SulatinScreenState extends State<SulatinScreen> {
             'Ang kabanatang ito ay hindi pa available',
             style: GoogleFonts.inter(
               fontSize: fontProvider.header4Size,
-              color: Colors.grey[600],
+              color: textColor.withValues(alpha: 0.6),
             ),
           ),
         ],

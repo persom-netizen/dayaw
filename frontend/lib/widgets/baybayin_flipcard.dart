@@ -2,6 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/baybayin_letter.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+const Color _backgroundColor = Color(0xFFFFF9F4);
+
 /// A reusable flipcard widget for displaying Baybayin letters
 /// Shows romanized letter on front, Baybayin character on back
 class BaybayinFlipcard extends StatefulWidget {
@@ -95,14 +100,12 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
 
   /// Build the front side of the card (Romanized letter)
   Widget _buildFront() {
-    final isVowel = widget.letter.type == 'vowel';
-    final primaryColor = isVowel ? Colors.blue : Colors.purple;
-
     return Card(
       elevation: 8,
+      shadowColor: _primaryYellow.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: primaryColor[300]!, width: 3),
+        side: BorderSide(color: _primaryYellow, width: 3),
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -111,9 +114,9 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              primaryColor[50]!,
+              _primaryYellow.withValues(alpha: 0.15),
               Colors.white,
-              primaryColor[50]!,
+              _primaryYellow.withValues(alpha: 0.15),
             ],
           ),
         ),
@@ -124,15 +127,15 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: primaryColor[100],
+                color: _primaryYellow.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                isVowel ? 'Patinig' : 'Katinig',
+                widget.letter.type == 'vowel' ? 'Patinig' : 'Katinig',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: primaryColor[800],
+                  color: _textColor,
                 ),
               ),
             ),
@@ -143,10 +146,10 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
               style: TextStyle(
                 fontSize: 100,
                 fontWeight: FontWeight.bold,
-                color: primaryColor[700],
+                color: _textColor,
                 shadows: [
                   Shadow(
-                    color: primaryColor[200]!,
+                    color: _primaryYellow.withValues(alpha: 0.5),
                     offset: const Offset(2, 2),
                     blurRadius: 4,
                   ),
@@ -158,13 +161,13 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.touch_app, size: 18, color: Colors.grey[500]),
+                Icon(Icons.touch_app, size: 18, color: _textColor.withValues(alpha: 0.5)),
                 const SizedBox(width: 8),
                 Text(
                   'I-tap para makita ang Baybayin',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: _textColor.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -177,14 +180,12 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
 
   /// Build the back side of the card (Baybayin character)
   Widget _buildBack() {
-    final isVowel = widget.letter.type == 'vowel';
-    final primaryColor = isVowel ? Colors.blue : Colors.purple;
-
     return Card(
       elevation: 8,
+      shadowColor: _primaryYellow.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: primaryColor[600]!, width: 3),
+        side: BorderSide(color: _primaryYellow, width: 3),
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -193,9 +194,9 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              primaryColor[600]!,
-              primaryColor[400]!,
-              primaryColor[600]!,
+              _primaryYellow,
+              _primaryYellow.withValues(alpha: 0.8),
+              _primaryYellow,
             ],
           ),
         ),
@@ -206,15 +207,15 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 widget.letter.description ?? '',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: _textColor,
                 ),
               ),
             ),
@@ -222,11 +223,11 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             // Baybayin character
             Text(
               widget.letter.baybayin,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 120,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
+                color: _textColor,
+                shadows: const [
                   Shadow(
                     color: Colors.black26,
                     offset: Offset(2, 2),
@@ -242,13 +243,20 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Text(
                 widget.letter.romanized,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: primaryColor[700],
+                  color: _textColor,
                 ),
               ),
             ),
@@ -257,13 +265,13 @@ class _BaybayinFlipcardState extends State<BaybayinFlipcard>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.touch_app, size: 18, color: Colors.white70),
+                Icon(Icons.touch_app, size: 18, color: _textColor.withValues(alpha: 0.7)),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'I-tap para bumalik',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white70,
+                    color: _textColor.withValues(alpha: 0.8),
                   ),
                 ),
               ],

@@ -3,6 +3,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+const Color _backgroundColor = Color(0xFFFFF9F4);
+
 class MatchingGameScreen extends StatefulWidget {
   final int lessonId;
   final String lessonTitle;
@@ -180,95 +185,110 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.emoji_events, color: Colors.amber[700], size: 32),
-            const SizedBox(width: 12),
-            const Text(
-              'Natapos mo!',
-              style: TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+      builder: (context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.elasticOut,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: child,
+          );
+        },
+        child: AlertDialog(
+          backgroundColor: _backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.emoji_events, color: Colors.amber[700], size: 32),
+              const SizedBox(width: 12),
+              Text(
+                'Natapos mo!',
+                style: TextStyle(
+                  color: _textColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Mahusay! Natapos mo ang laro!',
+                style: TextStyle(fontSize: 16, color: _textColor),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _primaryYellow.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Iskor:', style: TextStyle(color: _textColor)),
+                        Text(
+                          '$_score puntos',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Mga pagsubok:', style: TextStyle(color: _textColor)),
+                        Text(
+                          '$_attempts',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Oras:', style: TextStyle(color: _textColor)),
+                        Text(
+                          '${minutes}m ${seconds}s',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _resetGame();
+              },
+              child: Text('Maglaro Muli', style: TextStyle(color: _textColor)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context, {
+                  'completed': true,
+                  'score': _score,
+                  'attempts': _attempts,
+                  'time': _elapsedSeconds,
+                });
+              },
+              child: Text('Ipagpatuloy', style: TextStyle(color: _textColor)),
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Mahusay! Natapos mo ang laro!',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Iskor:'),
-                      Text(
-                        '$_score puntos',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Mga pagsubok:'),
-                      Text(
-                        '$_attempts',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Oras:'),
-                      Text(
-                        '${minutes}m ${seconds}s',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _resetGame();
-            },
-            child: const Text('Maglaro Muli'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, {
-                'completed': true,
-                'score': _score,
-                'attempts': _attempts,
-                'time': _elapsedSeconds,
-              });
-            },
-            child: const Text('Ipagpatuloy'),
-          ),
-        ],
       ),
     );
   }
@@ -296,9 +316,13 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         title: Text(widget.lessonTitle),
-        backgroundColor: Colors.orange[600],
+        backgroundColor: _primaryYellow,
+        foregroundColor: _textColor,
+        elevation: 2,
+        shadowColor: _primaryYellow.withValues(alpha: 0.5),
       ),
       body: Column(
         children: [
@@ -306,9 +330,9 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
+              color: _primaryYellow.withValues(alpha: 0.15),
               border: Border(
-                bottom: BorderSide(color: Colors.orange[200]!, width: 2),
+                bottom: BorderSide(color: _primaryYellow.withValues(alpha: 0.3), width: 2),
               ),
             ),
             child: Row(
@@ -326,16 +350,17 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
             padding: const EdgeInsets.all(16),
             child: Card(
               elevation: 2,
+              shadowColor: _primaryYellow.withValues(alpha: 0.3),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.orange[600]),
+                    Icon(Icons.info_outline, color: _textColor),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Itugma ang katinig sa tamang kombinasyon',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 14, color: _textColor),
                       ),
                     ),
                   ],
@@ -370,18 +395,18 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
   Widget _buildStatItem(IconData icon, String label, String value) {
     return Column(
       children: [
-        Icon(icon, color: Colors.orange[700]),
+        Icon(icon, color: _textColor),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _textColor),
         ),
         Text(
           value,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.orange[900],
+            color: _textColor,
           ),
         ),
       ],
@@ -423,15 +448,17 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
   Widget _buildCardBack(bool isMatched) {
     return Container(
       decoration: BoxDecoration(
-        color: isMatched ? Colors.green[100] : Colors.orange[300],
+        color: isMatched ? Colors.green[100] : _primaryYellow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isMatched ? Colors.green : Colors.orange[700]!,
+          color: isMatched ? Colors.green : _primaryYellow,
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: isMatched 
+                ? Colors.green.withValues(alpha: 0.3)
+                : _primaryYellow.withValues(alpha: 0.4),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -441,31 +468,29 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
         child: Icon(
           isMatched ? Icons.check_circle : Icons.extension,
           size: 40,
-          color: isMatched ? Colors.green[700] : Colors.white,
+          color: isMatched ? Colors.green[700] : _textColor,
         ),
       ),
     );
   }
 
   Widget _buildCardFront(GameCard card, bool isMatched) {
-    final color = card.type == CardType.katinig
-        ? Colors.blue[100]
-        : Colors.purple[100];
-    final borderColor = card.type == CardType.katinig
-        ? Colors.blue[700]
-        : Colors.purple[700];
+    final color = _primaryYellow.withValues(alpha: 0.2);
+    final borderColor = _primaryYellow;
 
     return Container(
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isMatched ? Colors.green : borderColor!,
+          color: isMatched ? Colors.green : borderColor,
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: isMatched 
+                ? Colors.green.withValues(alpha: 0.3)
+                : _primaryYellow.withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -479,7 +504,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: borderColor,
+              color: _textColor,
             ),
           ),
           const SizedBox(height: 4),
@@ -487,7 +512,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen>
             card.type == CardType.katinig ? 'Katinig' : 'Kombinasyon',
             style: TextStyle(
               fontSize: 10,
-              color: borderColor,
+              color: _textColor.withValues(alpha: 0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
