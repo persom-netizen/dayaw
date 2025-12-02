@@ -115,7 +115,7 @@ class _SignUpPageState extends State<SignUpPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/rehistro.png'),
+            image: AssetImage('assets/login.gif'),
             fit: BoxFit.cover,
           ),
         ),
@@ -124,7 +124,14 @@ class _SignUpPageState extends State<SignUpPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                const SizedBox(height: 350),
+                const SizedBox(height: 40),
+                // Logo at the top
+                Image.asset(
+                  'assets/logo_blue.png',
+                  height: 120,
+                  width: 120,
+                ),
+                const SizedBox(height: 20),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(30),
                   child: BackdropFilter(
@@ -240,7 +247,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     )
                                   : const Text(
-                                      'MAGREHISTRO',
+                                      'SIGE',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -248,6 +255,107 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                             ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Social register divider
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: brownColor.withOpacity(0.5),
+                                  thickness: 1,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'O',
+                                  style: TextStyle(
+                                    color: brownColor.withOpacity(0.7),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: brownColor.withOpacity(0.5),
+                                  thickness: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Social register buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Google register button
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    // TODO: Implement Google signup
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Google signup coming soon!',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: brownColor,
+                                    side: BorderSide(
+                                      color: brownColor.withOpacity(0.5),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.login, size: 20),
+                                  label: const Text(
+                                    'Google',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Facebook register button
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    // TODO: Implement Facebook signup
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Facebook signup coming soon!',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: brownColor,
+                                    side: BorderSide(
+                                      color: brownColor.withOpacity(0.5),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.facebook, size: 20),
+                                  label: const Text(
+                                    'Facebook',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           Row(

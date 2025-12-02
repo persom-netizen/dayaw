@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/pasukin.png'),
+            image: AssetImage('assets/login.gif'),
             fit: BoxFit.cover,
           ),
         ),
@@ -110,7 +110,14 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                const SizedBox(height: 400),
+                const SizedBox(height: 60),
+                // Logo at the top
+                Image.asset(
+                  'assets/logo_blue.png',
+                  height: 120,
+                  width: 120,
+                ),
+                const SizedBox(height: 40),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(30),
                   child: BackdropFilter(
@@ -213,6 +220,132 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ),
                             ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Forgot password link
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () {
+                                // TODO: Implement forgot password functionality
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Forgot password feature coming soon!',
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Nakalimutan ang password?',
+                                style: TextStyle(
+                                  color: brownColor,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Social login divider
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: brownColor.withOpacity(0.5),
+                                  thickness: 1,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'O',
+                                  style: TextStyle(
+                                    color: brownColor.withOpacity(0.7),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: brownColor.withOpacity(0.5),
+                                  thickness: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Social login buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Google login button
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    // TODO: Implement Google login
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Google login coming soon!',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: brownColor,
+                                    side: BorderSide(
+                                      color: brownColor.withOpacity(0.5),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.login, size: 20),
+                                  label: const Text(
+                                    'Google',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Facebook login button
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    // TODO: Implement Facebook login
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Facebook login coming soon!',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: brownColor,
+                                    side: BorderSide(
+                                      color: brownColor.withOpacity(0.5),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.facebook, size: 20),
+                                  label: const Text(
+                                    'Facebook',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -33,6 +33,8 @@ flutter:
     - assets/pasukin.png
     - assets/rehistro.png
     - assets/logo_yellow.png
+    - assets/logo_blue.png
+    - assets/login.gif
     - assets/page1.gif
     - assets/page2.gif
     - assets/page3.gif
