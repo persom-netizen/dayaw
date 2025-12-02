@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../login.dart';
+import '../providers/onboarding_provider.dart';
 
 /// Introduction/Onboarding Screen for DAYAW App
 /// Displays 4 pages introducing the app in Filipino language
 /// Features smooth transitions, animations, and gradient text
 class IntroductionScreen extends StatefulWidget {
-  const IntroductionScreen({super.key});
+  final OnboardingProvider onboardingProvider;
+
+  const IntroductionScreen({super.key, required this.onboardingProvider});
 
   @override
   State<IntroductionScreen> createState() => _IntroductionScreenState();
@@ -110,10 +113,30 @@ class _IntroductionScreenState extends State<IntroductionScreen>
         curve: Curves.easeInOut,
       );
     } else {
-      // Navigate to login page on final page
+      _completeOnboarding();
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    // Mark onboarding as complete on final page
+    await widget.onboardingProvider.markOnboardingComplete();
+    
+    // Navigate to login page
+    if (mounted) {
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
+    }
+  }
+
+  Future<void> _skipOnboarding() async {
+    // Mark onboarding as complete when skipping
+    await widget.onboardingProvider.markOnboardingComplete();
+    
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
     }
   }
 
@@ -159,11 +182,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                   // Skip button (only show before last page)
                   if (_currentPage < _pages.length - 1)
                     TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
+                      onPressed: _skipOnboarding,
                       style: TextButton.styleFrom(
                         foregroundColor: textColor.withOpacity(0.7),
                       ),

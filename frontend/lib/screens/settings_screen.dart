@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/font_preference.dart';
+import '../pages/main_page.dart';
 
 /// Settings Page
 /// Displays user settings and app preferences
@@ -54,9 +55,11 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/', (route) => false);
+              // Navigate to MainPage (Login/SignUp options), clearing all routes
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const MainPage()),
+                (route) => false,
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
