@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../login.dart';
 
 /// Introduction/Onboarding Screen for DAYAW App
@@ -145,9 +146,9 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                   style: TextButton.styleFrom(
                     foregroundColor: textColor,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Balikan',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -211,7 +212,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
                     ),
                     child: Text(
                       _currentPage == _pages.length - 1 ? 'Magsimula' : 'Sunod',
-                      style: const TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -281,12 +282,11 @@ class _IntroductionScreenState extends State<IntroductionScreen>
               child: Text(
                 page.title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'PlayfairDisplay',
+                style: GoogleFonts.playfairDisplay(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  shadows: [
+                  shadows: const [
                     Shadow(
                       color: Colors.black,
                       blurRadius: 8,
@@ -302,7 +302,7 @@ class _IntroductionScreenState extends State<IntroductionScreen>
             Text(
               page.subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16,
                 color: textColor,
                 height: 1.5,
