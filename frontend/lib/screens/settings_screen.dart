@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/font_preference.dart';
-import '../main.dart';
+import '../pages/main_page.dart';
 
 /// Settings Page
 /// Displays user settings and app preferences

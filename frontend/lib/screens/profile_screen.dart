@@ -5,7 +5,7 @@ import '../models/post_model.dart';
 import '../services/user_service.dart';
 import '../widgets/feed_post_card.dart';
 import '../providers/theme_provider.dart';
-import '../main.dart';
+import '../pages/main_page.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
