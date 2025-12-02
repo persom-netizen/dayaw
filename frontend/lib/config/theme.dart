@@ -11,26 +11,44 @@ class AppTheme {
   /// Font size offset for intermediate text sizes
   static const double _fontSizeOffset = 2.0;
 
+  // Light mode colors
+  static const Color lightBackground = Color(0xFFFFF9F4);
+  static const Color lightTextColor = Color(0xFF554141);
+  static const Color primaryYellow = Color(0xFFFFDF00);
+
+  // Dark mode colors
+  static const Color darkBackground = Color(0xFF1F1F1F);
+  static const Color darkCardBackground = Color(0xFF2A2A2A);
+  static const Color darkTextColor = Color(0xFFFFFFFF);
+  static const Color darkSecondaryText = Color(0xFFBDBDBD);
+  static const Color darkBorder = Color(0xFF404040);
+
   /// Create a light theme with font size preferences applied
   static ThemeData lightTheme(FontProvider fontProvider) {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: lightBackground,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: primaryYellow,
         brightness: Brightness.light,
+        primary: primaryYellow,
+        surface: Colors.white,
       ),
       textTheme: _buildTextTheme(fontProvider, Brightness.light),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: fontProvider.header1Size,
+        backgroundColor: lightBackground,
+        foregroundColor: lightTextColor,
+        elevation: 0,
+        titleTextStyle: GoogleFonts.playfairDisplay(
+          fontSize: fontProvider.titleSize,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: lightTextColor,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: primaryYellow,
+          foregroundColor: lightTextColor,
           textStyle: GoogleFonts.inter(
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.bold,
@@ -39,24 +57,45 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: lightTextColor,
           textStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
-        hintStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: GoogleFonts.inter(
+          fontSize: fontProvider.descriptionSize,
+          color: lightTextColor,
+        ),
+        hintStyle: GoogleFonts.inter(
+          fontSize: fontProvider.descriptionSize,
+          color: lightTextColor.withValues(alpha: 0.5),
+        ),
       ),
       listTileTheme: ListTileThemeData(
         titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.descriptionSize,
-          color: Colors.black87,
+          color: lightTextColor,
         ),
         subtitleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header4Size,
-          color: Colors.grey[600],
+          color: lightTextColor.withValues(alpha: 0.6),
         ),
       ),
-      cardTheme: const CardThemeData(elevation: 2, margin: EdgeInsets.all(8)),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 2,
+        margin: const EdgeInsets.all(8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: primaryYellow, width: 2),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: primaryYellow.withValues(alpha: 0.5),
+        thickness: 1,
+      ),
     );
   }
 
@@ -64,22 +103,28 @@ class AppTheme {
   static ThemeData darkTheme(FontProvider fontProvider) {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: darkBackground,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: primaryYellow,
         brightness: Brightness.dark,
+        primary: primaryYellow,
+        surface: darkCardBackground,
       ),
       textTheme: _buildTextTheme(fontProvider, Brightness.dark),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.blue[800],
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.inter(
-          fontSize: fontProvider.header1Size,
+        backgroundColor: darkBackground,
+        foregroundColor: darkTextColor,
+        elevation: 0,
+        titleTextStyle: GoogleFonts.playfairDisplay(
+          fontSize: fontProvider.titleSize,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: darkTextColor,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: primaryYellow,
+          foregroundColor: lightTextColor,
           textStyle: GoogleFonts.inter(
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.bold,
@@ -88,24 +133,45 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: darkTextColor,
           textStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        labelStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
-        hintStyle: GoogleFonts.inter(fontSize: fontProvider.descriptionSize),
+        filled: true,
+        fillColor: darkCardBackground,
+        labelStyle: GoogleFonts.inter(
+          fontSize: fontProvider.descriptionSize,
+          color: darkTextColor,
+        ),
+        hintStyle: GoogleFonts.inter(
+          fontSize: fontProvider.descriptionSize,
+          color: darkSecondaryText,
+        ),
       ),
       listTileTheme: ListTileThemeData(
         titleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.descriptionSize,
-          color: Colors.white70,
+          color: darkTextColor,
         ),
         subtitleTextStyle: GoogleFonts.inter(
           fontSize: fontProvider.header4Size,
-          color: Colors.grey[400],
+          color: darkSecondaryText,
         ),
       ),
-      cardTheme: const CardThemeData(elevation: 2, margin: EdgeInsets.all(8)),
+      cardTheme: CardThemeData(
+        color: darkCardBackground,
+        elevation: 2,
+        margin: const EdgeInsets.all(8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: primaryYellow, width: 2),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: primaryYellow.withValues(alpha: 0.5),
+        thickness: 1,
+      ),
     );
   }
 
@@ -116,8 +182,8 @@ class AppTheme {
     Brightness brightness,
   ) {
     final Color textColor = brightness == Brightness.light
-        ? Colors.black87
-        : Colors.white;
+        ? lightTextColor
+        : darkTextColor;
 
     return TextTheme(
       // Display styles (Titles group) - Playfair Display

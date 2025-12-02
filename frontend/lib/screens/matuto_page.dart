@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
+import '../providers/theme_provider.dart';
 import '../services/api_service.dart';
 import '../widgets/salita_card_flip.dart';
 import '../widgets/alaala_card.dart';
@@ -101,10 +102,13 @@ class _MatutoPageState extends State<MatutoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FontProvider>(
-      builder: (context, fontProvider, child) {
+    return Consumer2<FontProvider, ThemeProvider>(
+      builder: (context, fontProvider, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        
         return Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: bgColor,
           body: SafeArea(
             child: RefreshIndicator(
               onRefresh: _loadData,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/font_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/font_preference.dart';
 
 /// Settings Page
@@ -16,7 +17,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
   late AnimationController _animationController;
   
   // Design color constants
@@ -109,223 +109,256 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Consumer<FontProvider>(
-        builder: (context, fontProvider, child) {
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 600),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, -20 * (1 - value)),
-                        child: child,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+        final textColorThemed = isDark ? Colors.white : textColor;
+        
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: Consumer<FontProvider>(
+            builder: (context, fontProvider, child) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 600),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, -20 * (1 - value)),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: primaryYellow,
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryYellow.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Setting',
+                              style: TextStyle(
+                                fontSize: fontProvider.titleSize,
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Mga Kagustuhan',
+                              style: TextStyle(
+                                fontSize: fontProvider.descriptionSize,
+                                color: textColor.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: primaryYellow,
-                      boxShadow: [
-                        BoxShadow(
-                          color: primaryYellow.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Setting',
-                          style: TextStyle(
-                            fontSize: fontProvider.titleSize,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Mga Kagustuhan',
-                          style: TextStyle(
-                            fontSize: fontProvider.descriptionSize,
-                            color: textColor.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 16),
-                _buildAnimatedSection(
-                  delay: 100,
-                  child: _buildSectionHeader('Username', fontProvider),
-                ),
-                _buildAnimatedSection(
-                  delay: 150,
-                  child: _buildSettingsTile(
-                    icon: Icons.person_outline,
-                    title: 'Username',
-                    subtitle: widget.username,
-                    fontProvider: fontProvider,
-                  ),
-                ),
-                const Divider(),
-                _buildAnimatedSection(
-                  delay: 200,
-                  child: _buildSectionHeader('Mga Nais', fontProvider),
-                ),
-                _buildAnimatedSection(
-                  delay: 250,
-                  child: _buildFontSizePreference(fontProvider),
-                ),
-                const Divider(),
-                _buildAnimatedSection(
-                  delay: 300,
-                  child: _buildSectionHeader('Mga Kagustuhan', fontProvider),
-                ),
-                _buildAnimatedSection(
-                  delay: 350,
-                  child: SwitchListTile(
-                    secondary: Icon(
-                      Icons.notifications_outlined,
-                      color: primaryYellow,
+                    _buildAnimatedSection(
+                      delay: 100,
+                      child: _buildSectionHeader('Username', fontProvider, textColorThemed),
                     ),
-                    title: Text(
-                      'Mga Notification',
-                      style: TextStyle(
-                        fontSize: fontProvider.descriptionSize,
-                        color: textColor,
+                    _buildAnimatedSection(
+                      delay: 150,
+                      child: _buildSettingsTile(
+                        icon: Icons.person_outline,
+                        title: 'Username',
+                        subtitle: widget.username,
+                        fontProvider: fontProvider,
+                        textColorThemed: textColorThemed,
                       ),
                     ),
-                    subtitle: Text(
-                      'Tumanggap ng mga abiso',
-                      style: TextStyle(
-                        fontSize: fontProvider.header4Size,
-                        color: textColor.withValues(alpha: 0.6),
-                      ),
+                    const Divider(),
+                    _buildAnimatedSection(
+                      delay: 200,
+                      child: _buildSectionHeader('Mga Nais', fontProvider, textColorThemed),
                     ),
-                    value: _notificationsEnabled,
-                    activeColor: primaryYellow,
-                    onChanged: (value) {
-                      setState(() => _notificationsEnabled = value);
-                    },
-                  ),
-                ),
-                _buildAnimatedSection(
-                  delay: 400,
-                  child: SwitchListTile(
-                    secondary: Icon(
-                      Icons.dark_mode_outlined,
-                      color: primaryYellow,
+                    _buildAnimatedSection(
+                      delay: 250,
+                      child: _buildFontSizePreference(fontProvider, isDark, cardColor, textColorThemed),
                     ),
-                    title: Text(
-                      'Dark Mode',
-                      style: TextStyle(
-                        fontSize: fontProvider.descriptionSize,
-                        color: textColor,
-                      ),
+                    const Divider(),
+                    _buildAnimatedSection(
+                      delay: 300,
+                      child: _buildSectionHeader('Mga Kagustuhan', fontProvider, textColorThemed),
                     ),
-                    subtitle: Text(
-                      'Gamitin ang madilim na tema',
-                      style: TextStyle(
-                        fontSize: fontProvider.header4Size,
-                        color: textColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    value: _darkModeEnabled,
-                    activeColor: primaryYellow,
-                    onChanged: (value) {
-                      setState(() => _darkModeEnabled = value);
-                    },
-                  ),
-                ),
-                const Divider(),
-                _buildAnimatedSection(
-                  delay: 450,
-                  child: _buildSectionHeader('Tungkol sa App', fontProvider),
-                ),
-                _buildAnimatedSection(
-                  delay: 500,
-                  child: _buildSettingsTile(
-                    icon: Icons.info_outline,
-                    title: 'Version',
-                    subtitle: '1.0.0',
-                    fontProvider: fontProvider,
-                  ),
-                ),
-                _buildAnimatedSection(
-                  delay: 550,
-                  child: _buildSettingsTile(
-                    icon: Icons.description_outlined,
-                    title: 'Mga Tuntunin ng Serbisyo',
-                    fontProvider: fontProvider,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Mga Tuntunin ng Serbisyo - Coming Soon'),
+                    _buildAnimatedSection(
+                      delay: 350,
+                      child: SwitchListTile(
+                        secondary: Icon(
+                          Icons.notifications_outlined,
+                          color: primaryYellow,
                         ),
-                      );
-                    },
-                  ),
-                ),
-                _buildAnimatedSection(
-                  delay: 600,
-                  child: _buildSettingsTile(
-                    icon: Icons.privacy_tip_outlined,
-                    title: 'Patakaran sa Privacy',
-                    fontProvider: fontProvider,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Patakaran sa Privacy - Coming Soon'),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const Divider(),
-                _buildAnimatedSection(
-                  delay: 650,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _logout,
-                        icon: const Icon(Icons.logout),
-                        label: Text(
-                          'Lumabas',
+                        title: Text(
+                          'Mga Notification',
                           style: TextStyle(
                             fontSize: fontProvider.descriptionSize,
+                            color: textColorThemed,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        subtitle: Text(
+                          'Tumanggap ng mga abiso',
+                          style: TextStyle(
+                            fontSize: fontProvider.header4Size,
+                            color: textColorThemed.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        value: _notificationsEnabled,
+                        activeColor: primaryYellow,
+                        onChanged: (value) {
+                          setState(() => _notificationsEnabled = value);
+                        },
+                      ),
+                    ),
+                    _buildAnimatedSection(
+                      delay: 400,
+                      child: SwitchListTile(
+                        secondary: Icon(
+                          isDark 
+                              ? Icons.dark_mode 
+                              : Icons.dark_mode_outlined,
+                          color: primaryYellow,
+                        ),
+                        title: Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            fontSize: fontProvider.descriptionSize,
+                            color: textColorThemed,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Gamitin ang madilim na tema',
+                          style: TextStyle(
+                            fontSize: fontProvider.header4Size,
+                            color: textColorThemed.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        value: isDark,
+                        activeColor: primaryYellow,
+                        onChanged: (value) async {
+                          await themeProvider.setDarkMode(value);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  value 
+                                      ? 'Dark mode na-enable' 
+                                      : 'Light mode na-enable',
+                                  style: TextStyle(color: textColor),
+                                ),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: primaryYellow,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    const Divider(),
+                    _buildAnimatedSection(
+                      delay: 450,
+                      child: _buildSectionHeader('Tungkol sa App', fontProvider, textColorThemed),
+                    ),
+                    _buildAnimatedSection(
+                      delay: 500,
+                      child: _buildSettingsTile(
+                        icon: Icons.info_outline,
+                        title: 'Version',
+                        subtitle: '1.0.0',
+                        fontProvider: fontProvider,
+                        textColorThemed: textColorThemed,
+                      ),
+                    ),
+                    _buildAnimatedSection(
+                      delay: 550,
+                      child: _buildSettingsTile(
+                        icon: Icons.description_outlined,
+                        title: 'Mga Tuntunin ng Serbisyo',
+                        fontProvider: fontProvider,
+                        textColorThemed: textColorThemed,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Mga Tuntunin ng Serbisyo - Coming Soon'),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    _buildAnimatedSection(
+                      delay: 600,
+                      child: _buildSettingsTile(
+                        icon: Icons.privacy_tip_outlined,
+                        title: 'Patakaran sa Privacy',
+                        fontProvider: fontProvider,
+                        textColorThemed: textColorThemed,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Patakaran sa Privacy - Coming Soon'),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const Divider(),
+                    _buildAnimatedSection(
+                      delay: 650,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _logout,
+                            icon: const Icon(Icons.logout),
+                            label: Text(
+                              'Lumabas',
+                              style: TextStyle(
+                                fontSize: fontProvider.descriptionSize,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -346,7 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     );
   }
   
-  Widget _buildSectionHeader(String title, FontProvider fontProvider) {
+  Widget _buildSectionHeader(String title, FontProvider fontProvider, Color textColorThemed) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
@@ -354,7 +387,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
         style: TextStyle(
           fontSize: fontProvider.header4Size,
           fontWeight: FontWeight.bold,
-          color: textColor,
+          color: textColorThemed,
         ),
       ),
     );
@@ -366,6 +399,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     String? subtitle,
     VoidCallback? onTap,
     required FontProvider fontProvider,
+    required Color textColorThemed,
   }) {
     return ListTile(
       leading: Icon(icon, color: primaryYellow),
@@ -373,7 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
         title,
         style: TextStyle(
           fontSize: fontProvider.descriptionSize,
-          color: textColor,
+          color: textColorThemed,
         ),
       ),
       subtitle: subtitle != null
@@ -381,16 +415,21 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               subtitle,
               style: TextStyle(
                 fontSize: fontProvider.header4Size,
-                color: textColor.withValues(alpha: 0.6),
+                color: textColorThemed.withValues(alpha: 0.6),
               ),
             )
           : null,
-      trailing: onTap != null ? Icon(Icons.chevron_right, color: textColor) : null,
+      trailing: onTap != null ? Icon(Icons.chevron_right, color: textColorThemed) : null,
       onTap: onTap,
     );
   }
 
-  Widget _buildFontSizePreference(FontProvider fontProvider) {
+  Widget _buildFontSizePreference(
+    FontProvider fontProvider,
+    bool isDark,
+    Color cardColor,
+    Color textColorThemed,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -403,14 +442,14 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
               'Laki ng Titik',
               style: TextStyle(
                 fontSize: fontProvider.descriptionSize,
-                color: textColor,
+                color: textColorThemed,
               ),
             ),
             subtitle: Text(
               'Ayusin ang laki ng mga titik para sa mas madaling pagbasa',
               style: TextStyle(
                 fontSize: fontProvider.header4Size,
-                color: textColor.withValues(alpha: 0.6),
+                color: textColorThemed.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -418,9 +457,16 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           _FontSizeSlider(
             fontProvider: fontProvider,
             onFontSizeChanged: _showFontSizeConfirmation,
+            isDark: isDark,
+            cardColor: cardColor,
           ),
           const SizedBox(height: 16),
-          _FontSizePreview(fontProvider: fontProvider),
+          _FontSizePreview(
+            fontProvider: fontProvider,
+            isDark: isDark,
+            cardColor: cardColor,
+            textColorThemed: textColorThemed,
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -431,10 +477,14 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
 class _FontSizeSlider extends StatelessWidget {
   final FontProvider fontProvider;
   final Function(FontProvider, FontSizeLevel) onFontSizeChanged;
+  final bool isDark;
+  final Color cardColor;
 
   const _FontSizeSlider({
     required this.fontProvider,
     required this.onFontSizeChanged,
+    required this.isDark,
+    required this.cardColor,
   });
 
   @override
@@ -442,7 +492,7 @@ class _FontSizeSlider extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: isDark ? cardColor : Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -537,17 +587,27 @@ class _FontSizeSlider extends StatelessWidget {
 
 class _FontSizePreview extends StatelessWidget {
   final FontProvider fontProvider;
+  final bool isDark;
+  final Color cardColor;
+  final Color textColorThemed;
 
-  const _FontSizePreview({required this.fontProvider});
+  const _FontSizePreview({
+    required this.fontProvider,
+    required this.isDark,
+    required this.cardColor,
+    required this.textColorThemed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? const Color(0xFF404040) : Colors.grey[300]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withAlpha(25),
@@ -561,14 +621,18 @@ class _FontSizePreview extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.preview, size: 16, color: Colors.grey[600]),
+              Icon(
+                Icons.preview,
+                size: 16,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
               const SizedBox(width: 8),
               Text(
                 'Preview ng Laki ng Titik',
                 style: TextStyle(
                   fontSize: fontProvider.header4Size,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
                 ),
               ),
             ],
@@ -580,6 +644,7 @@ class _FontSizePreview extends StatelessWidget {
             fontSize: fontProvider.titleSize,
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
+            textColorThemed: textColorThemed,
           ),
           const SizedBox(height: 12),
           _buildPreviewRow(
@@ -588,6 +653,7 @@ class _FontSizePreview extends StatelessWidget {
             fontSize: fontProvider.header1Size,
             fontWeight: FontWeight.bold,
             fontProvider: fontProvider,
+            textColorThemed: textColorThemed,
           ),
           const SizedBox(height: 12),
           _buildPreviewRow(
@@ -597,6 +663,7 @@ class _FontSizePreview extends StatelessWidget {
             fontSize: fontProvider.descriptionSize,
             fontWeight: FontWeight.normal,
             fontProvider: fontProvider,
+            textColorThemed: textColorThemed,
           ),
           const SizedBox(height: 12),
           _buildPreviewRow(
@@ -604,8 +671,9 @@ class _FontSizePreview extends StatelessWidget {
             sampleText: 'Maliit na detalye at helper text',
             fontSize: fontProvider.header4Size,
             fontWeight: FontWeight.normal,
-            color: Colors.grey[600],
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
             fontProvider: fontProvider,
+            textColorThemed: textColorThemed,
           ),
         ],
       ),
@@ -618,6 +686,7 @@ class _FontSizePreview extends StatelessWidget {
     required double fontSize,
     required FontWeight fontWeight,
     required FontProvider fontProvider,
+    required Color textColorThemed,
     Color? color,
   }) {
     return Column(
@@ -637,14 +706,14 @@ class _FontSizePreview extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: isDark ? const Color(0xFF404040) : Colors.grey[200],
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 '${fontSize.toInt()}px',
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.grey[700],
+                  color: isDark ? Colors.grey[400] : Colors.grey[700],
                   fontFamily: 'monospace',
                 ),
               ),
@@ -657,7 +726,7 @@ class _FontSizePreview extends StatelessWidget {
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: fontWeight,
-            color: color ?? Colors.black87,
+            color: color ?? textColorThemed,
           ),
           child: Text(sampleText),
         ),

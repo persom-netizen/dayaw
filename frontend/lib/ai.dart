@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/font_provider.dart';
+import 'providers/theme_provider.dart';
 import 'services/api_service.dart';
 
 class AiPage extends StatefulWidget {
@@ -162,10 +163,15 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FontProvider>(
-      builder: (context, fontProvider, child) {
+    return Consumer2<FontProvider, ThemeProvider>(
+      builder: (context, fontProvider, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+        final textColorThemed = isDark ? Colors.white : textColor;
+        
         return Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: bgColor,
           body: Column(
             children: [
               // Messages List
@@ -184,7 +190,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             Text(
                               'Walang mensahe pa',
                               style: GoogleFonts.inter(
-                                color: textColor,
+                                color: textColorThemed,
                                 fontSize: fontProvider.descriptionSize,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -193,7 +199,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             Text(
                               'Magsimula ng pag-usap sa Juan',
                               style: GoogleFonts.inter(
-                                color: textColor.withValues(alpha: 0.6),
+                                color: textColorThemed.withValues(alpha: 0.6),
                                 fontSize: fontProvider.header4Size,
                               ),
                             ),
@@ -239,7 +245,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                   decoration: BoxDecoration(
                                     color: isUser
                                         ? primaryYellow
-                                        : Colors.white,
+                                        : cardColor,
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
                                       BoxShadow(
@@ -257,7 +263,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                       Text(
                                         msg['message'] ?? '',
                                         style: GoogleFonts.inter(
-                                          color: textColor,
+                                          color: isUser ? textColor : textColorThemed,
                                           fontSize: fontProvider.descriptionSize,
                                         ),
                                       ),
@@ -267,7 +273,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                                           child: Text(
                                             'Long press to delete',
                                             style: GoogleFonts.inter(
-                                              color: textColor.withValues(alpha: 0.5),
+                                              color: textColorThemed.withValues(alpha: 0.5),
                                               fontSize: fontProvider.header4Size,
                                               fontStyle: FontStyle.italic,
                                             ),
@@ -297,7 +303,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
@@ -322,7 +328,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             Text(
                               'Juan is typing...',
                               style: GoogleFonts.inter(
-                                color: textColor.withValues(alpha: 0.6),
+                                color: textColorThemed.withValues(alpha: 0.6),
                                 fontSize: 13,
                               ),
                             ),
@@ -337,7 +343,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardColor,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -354,12 +360,12 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                         enabled: !_isLoading,
                         style: GoogleFonts.inter(
                           fontSize: fontProvider.descriptionSize,
-                          color: textColor,
+                          color: textColorThemed,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Magsulat ng mensahe...',
                           hintStyle: GoogleFonts.inter(
-                            color: textColor.withValues(alpha: 0.4),
+                            color: textColorThemed.withValues(alpha: 0.4),
                             fontSize: fontProvider.descriptionSize,
                           ),
                           border: OutlineInputBorder(
@@ -380,7 +386,7 @@ class _AiPageState extends State<AiPage> with SingleTickerProviderStateMixin {
                             ),
                           ),
                           filled: true,
-                          fillColor: backgroundColor,
+                          fillColor: bgColor,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,

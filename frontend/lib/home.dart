@@ -8,6 +8,7 @@ import 'screens/settings_screen.dart';
 import 'screens/profile_screen.dart';
 import 'widgets/bottom_navigation.dart';
 import 'providers/font_provider.dart';
+import 'providers/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -61,11 +62,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FontProvider>(
-      builder: (context, fontProvider, child) {
+    return Consumer2<FontProvider, ThemeProvider>(
+      builder: (context, fontProvider, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        final appBarBgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        final textColorThemed = isDark ? Colors.white : textColor;
+        
         return Scaffold(
-          backgroundColor: backgroundColor,
-          appBar: _buildModernAppBar(fontProvider),
+          backgroundColor: bgColor,
+          appBar: _buildModernAppBar(fontProvider, isDark, appBarBgColor, textColorThemed),
           body: _pages[_selectedIndex],
           bottomNavigationBar: CustomBottomNavigation(
             currentIndex: _selectedIndex,
@@ -76,9 +82,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  PreferredSizeWidget _buildModernAppBar(FontProvider fontProvider) {
+  PreferredSizeWidget _buildModernAppBar(
+    FontProvider fontProvider,
+    bool isDark,
+    Color appBarBgColor,
+    Color textColorThemed,
+  ) {
     return AppBar(
-      backgroundColor: backgroundColor,
+      backgroundColor: appBarBgColor,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
@@ -104,9 +115,9 @@ class _HomePageState extends State<HomePage> {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: primaryYellow,
-                    child: const Icon(
+                    child: Icon(
                       Icons.home_rounded,
-                      color: Colors.white,
+                      color: isDark ? textColor : Colors.white,
                       size: 24,
                     ),
                   );
@@ -120,7 +131,7 @@ class _HomePageState extends State<HomePage> {
             style: GoogleFonts.playfairDisplay(
               fontSize: fontProvider.titleSize,
               fontWeight: FontWeight.bold,
-              color: textColor,
+              color: textColorThemed,
               letterSpacing: 0.5,
             ),
           ),
