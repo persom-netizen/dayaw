@@ -348,7 +348,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       vertical: 12,
                                     ),
                                   ),
-                                  icon: const Icon(Icons.facebook, size: 20),
+                                  icon: const Icon(Icons.group, size: 20),
                                   label: const Text(
                                     'Facebook',
                                     style: TextStyle(fontSize: 14),
