@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'home.dart';
+import 'sign_up.dart';
 import 'config/api_config.dart';
 
 class LoginPage extends StatefulWidget {
@@ -342,6 +343,33 @@ class _LoginPageState extends State<LoginPage> {
                                   label: const Text(
                                     'Facebook',
                                     style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Wala pang acc?  ',
+                                style: TextStyle(color: brownColor),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SignUpPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Rehistro',
+                                  style: TextStyle(
+                                    color: goldColor,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
