@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/sulatin_models.dart';
 
+// Design color constants - unified yellow theme
+const Color _primaryYellow = Color(0xFFFFDF00);
+const Color _textColor = Color(0xFF554141);
+
 /// Widget for chapter tab selection
 class ChapterTab extends StatelessWidget {
   final Chapter chapter;
@@ -18,16 +22,26 @@ class ChapterTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[600] : Colors.grey[200],
+          color: isSelected ? _primaryYellow : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.blue[800]! : Colors.grey[400]!,
+            color: isSelected ? _primaryYellow : Colors.grey[300]!,
             width: 2,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: _primaryYellow.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -38,13 +52,13 @@ class ChapterTab extends StatelessWidget {
                 child: Icon(
                   Icons.lock,
                   size: 16,
-                  color: isSelected ? Colors.white : Colors.grey[600],
+                  color: isSelected ? _textColor : Colors.grey[600],
                 ),
               ),
             Text(
               chapter.title,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
+                color: isSelected ? _textColor : Colors.black87,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 14,
               ),
@@ -88,20 +102,8 @@ class LessonCard extends StatelessWidget {
     if (lesson.isLocked) {
       return Colors.grey;
     }
-    switch (lesson.type) {
-      case 'text':
-        return Colors.blue;
-      case 'multiple_choice':
-        return Colors.green;
-      case 'matching':
-        return Colors.orange;
-      case 'tracing':
-        return Colors.purple;
-      case 'flipcard':
-        return Colors.teal;
-      default:
-        return Colors.blue;
-    }
+    // Use yellow as primary with slight variations based on type
+    return _primaryYellow;
   }
 
   @override
@@ -122,12 +124,21 @@ class LessonCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _getLessonColor().withOpacity(0.1),
+                  color: _getLessonColor().withValues(alpha: lesson.isLocked ? 0.1 : 0.2),
                   borderRadius: BorderRadius.circular(10),
+                  boxShadow: lesson.isLocked
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: _primaryYellow.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                 ),
                 child: Icon(
                   lesson.isLocked ? Icons.lock : _getLessonIcon(),
-                  color: _getLessonColor(),
+                  color: lesson.isLocked ? Colors.grey : _textColor,
                   size: 28,
                 ),
               ),
@@ -143,7 +154,7 @@ class LessonCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: lesson.isLocked
                             ? Colors.grey[600]
-                            : Colors.black87,
+                            : _textColor,
                       ),
                     ),
                     if (lesson.isLocked) ...[
@@ -162,7 +173,7 @@ class LessonCard extends StatelessWidget {
               ),
               Icon(
                 lesson.isLocked ? Icons.lock_outline : Icons.arrow_forward_ios,
-                color: lesson.isLocked ? Colors.grey[400] : Colors.grey[600],
+                color: lesson.isLocked ? Colors.grey[400] : _primaryYellow,
                 size: 20,
               ),
             ],
@@ -190,16 +201,26 @@ class QuizOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[100] : Colors.grey[100],
+          color: isSelected ? _primaryYellow.withValues(alpha: 0.2) : Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.blue[600]! : Colors.grey[300]!,
+            color: isSelected ? _primaryYellow : Colors.grey[300]!,
             width: 2,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: _primaryYellow.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -208,9 +229,9 @@ class QuizOption extends StatelessWidget {
               height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? Colors.blue[600] : Colors.transparent,
+                color: isSelected ? _primaryYellow : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? Colors.blue[600]! : Colors.grey[400]!,
+                  color: isSelected ? _primaryYellow : Colors.grey[400]!,
                   width: 2,
                 ),
               ),
@@ -218,7 +239,7 @@ class QuizOption extends StatelessWidget {
                   ? const Icon(
                       Icons.check,
                       size: 16,
-                      color: Colors.white,
+                      color: _textColor,
                     )
                   : null,
             ),
@@ -228,7 +249,7 @@ class QuizOption extends StatelessWidget {
                 option,
                 style: TextStyle(
                   fontSize: 15,
-                  color: isSelected ? Colors.blue[900] : Colors.black87,
+                  color: isSelected ? _textColor : Colors.black87,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
