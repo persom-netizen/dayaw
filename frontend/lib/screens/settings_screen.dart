@@ -263,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                                   value 
                                       ? 'Dark mode na-enable' 
                                       : 'Light mode na-enable',
-                                  style: const TextStyle(color: textColor),
+                                  style: TextStyle(color: textColor),
                                 ),
                                 duration: const Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
