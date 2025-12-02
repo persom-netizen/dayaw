@@ -31,27 +31,31 @@ class OnboardingProvider with ChangeNotifier {
 
   /// Mark onboarding as complete and save to storage
   Future<void> markOnboardingComplete() async {
-    _hasCompletedOnboarding = true;
-    notifyListeners();
-
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_onboardingCompleteKey, true);
+      
+      // Only update in-memory state after successful save
+      _hasCompletedOnboarding = true;
+      notifyListeners();
     } catch (e) {
       debugPrint('[OnboardingProvider] Error saving preference: $e');
+      // Don't update state if save failed
     }
   }
 
   /// Reset onboarding state (useful for testing)
   Future<void> resetOnboarding() async {
-    _hasCompletedOnboarding = false;
-    notifyListeners();
-
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_onboardingCompleteKey, false);
+      
+      // Only update in-memory state after successful save
+      _hasCompletedOnboarding = false;
+      notifyListeners();
     } catch (e) {
       debugPrint('[OnboardingProvider] Error resetting preference: $e');
+      // Don't update state if save failed
     }
   }
 }

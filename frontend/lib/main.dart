@@ -56,10 +56,22 @@ class MyApp extends StatelessWidget {
       child: Consumer3<FontProvider, ThemeProvider, OnboardingProvider>(
         builder: (context, fontProvider, themeProvider, onboardingProvider, child) {
           // Determine which home screen to show based on onboarding completion
-          // Only show MainPage if preferences are loaded and onboarding is complete
-          final Widget homeScreen = onboardingProvider.isLoaded && onboardingProvider.hasCompletedOnboarding
-              ? const MainPage()
-              : IntroductionScreen(onboardingProvider: onboardingProvider);
+          Widget homeScreen;
+          
+          if (!onboardingProvider.isLoaded) {
+            // Show loading screen while preferences are loading
+            homeScreen = const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (onboardingProvider.hasCompletedOnboarding) {
+            // User has completed onboarding, show main page
+            homeScreen = const MainPage();
+          } else {
+            // User has not completed onboarding, show introduction screen
+            homeScreen = IntroductionScreen(onboardingProvider: onboardingProvider);
+          }
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
