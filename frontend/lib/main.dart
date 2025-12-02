@@ -7,22 +7,34 @@ import 'screens/bahay_page.dart';
 import 'screens/create_post_screen.dart';
 import 'providers/post_provider.dart';
 import 'providers/font_provider.dart';
+import 'providers/theme_provider.dart';
 import 'config/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Create and initialize FontProvider
+  // Create and initialize FontProvider and ThemeProvider
   final fontProvider = FontProvider();
   await fontProvider.loadPreferences();
 
-  runApp(MyApp(fontProvider: fontProvider));
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadPreferences();
+
+  runApp(MyApp(
+    fontProvider: fontProvider,
+    themeProvider: themeProvider,
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final FontProvider fontProvider;
+  final ThemeProvider themeProvider;
 
-  const MyApp({super.key, required this.fontProvider});
+  const MyApp({
+    super.key,
+    required this.fontProvider,
+    required this.themeProvider,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +42,15 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider.value(value: fontProvider),
+        ChangeNotifierProvider.value(value: themeProvider),
       ],
-      child: Consumer<FontProvider>(
-        builder: (context, fontProvider, child) {
+      child: Consumer2<FontProvider, ThemeProvider>(
+        builder: (context, fontProvider, themeProvider, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme(fontProvider),
             darkTheme: AppTheme.darkTheme(fontProvider),
-            themeMode: ThemeMode.light,
+            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: const MainPage(),
             routes: {
               '/home': (context) => const HomePage(username: ''),

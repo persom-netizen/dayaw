@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../models/post_model.dart';
 import '../services/user_service.dart';
 import '../widgets/feed_post_card.dart';
+import '../providers/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String username;
@@ -183,19 +185,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(_isOwnProfile ? 'Aking Profile' : '@${widget.username}'),
-        backgroundColor: primaryYellow,
-        foregroundColor: textColor,
-        elevation: 0,
-      ),
-      body: _buildBody(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        final textColorThemed = isDark ? Colors.white : textColor;
+        
+        return Scaffold(
+          backgroundColor: bgColor,
+          appBar: AppBar(
+            title: Text(_isOwnProfile ? 'Aking Profile' : '@${widget.username}'),
+            backgroundColor: primaryYellow,
+            foregroundColor: textColor,
+            elevation: 0,
+          ),
+          body: _buildBody(isDark, bgColor, textColorThemed),
+        );
+      },
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(bool isDark, Color bgColor, Color textColorThemed) {
     if (_isLoading) {
       return Center(
         child: Column(
@@ -214,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               'Kinukuha ang profile...',
               style: TextStyle(
                 fontSize: 16,
-                color: textColor.withValues(alpha: 0.7),
+                color: textColorThemed.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -231,14 +241,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             const SizedBox(height: 16),
             Text(
               'May error sa pagkuha ng profile',
-              style: TextStyle(fontSize: 18, color: textColor),
+              style: TextStyle(fontSize: 18, color: textColorThemed),
             ),
             const SizedBox(height: 8),
             Text(
               _error!,
               style: TextStyle(
                 fontSize: 14,
-                color: textColor.withValues(alpha: 0.6),
+                color: textColorThemed.withValues(alpha: 0.6),
               ),
               textAlign: TextAlign.center,
             ),
@@ -268,36 +278,37 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     return RefreshIndicator(
       onRefresh: _loadProfile,
       color: primaryYellow,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: _buildProfileHeader(),
+            child: _buildProfileHeader(isDark, textColorThemed),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
                 'Mga Post ($_postCount)',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: textColorThemed,
                 ),
               ),
             ),
           ),
           if (_posts.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.post_add, size: 64, color: primaryYellow),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'Walang mga post pa',
-                      style: TextStyle(fontSize: 16, color: textColor),
+                      style: TextStyle(fontSize: 16, color: textColorThemed),
                     ),
                   ],
                 ),
@@ -336,7 +347,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(bool isDark, Color textColorThemed) {
+    final cardColor = isDark ? const Color(0xFF2A2A2A) : Colors.white;
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -349,165 +361,275 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Avatar
-            TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 800),
-              tween: Tween(begin: 0.0, end: 1.0),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: child,
-                );
-              },
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: primaryYellow,
-                child: Text(
-                  _user!.username.isNotEmpty ? _user!.username[0].toUpperCase() : 'U',
-                  style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-
-          // Name (pangalan)
-          if (_user!.pangalan.isNotEmpty) ...[
-            Text(
-              _user!.pangalan,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-          ],
-
-          // Username (palayaw)
-          Text(
-            '@${_user!.username}',
-            style: TextStyle(
-              fontSize: 16,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Email
-          Text(
-            _user!.email,
-            style: TextStyle(
-              fontSize: 14,
-              color: textColor.withValues(alpha: 0.5),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Bio (mongkahe)
-          if (_user!.mongkahe.isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _user!.mongkahe,
-                style: const TextStyle(fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Post count
+      child: Column(
+        children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: primaryYellow,
-              borderRadius: BorderRadius.circular(20),
+              color: cardColor,
               boxShadow: [
                 BoxShadow(
-                  color: primaryYellow.withValues(alpha: 0.3),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
               children: [
-                Icon(Icons.article, color: textColor, size: 20),
-                const SizedBox(width: 8),
+                // Avatar
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 800),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: child,
+                    );
+                  },
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: primaryYellow,
+                    child: Text(
+                      _user!.username.isNotEmpty ? _user!.username[0].toUpperCase() : 'U',
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Name (pangalan)
+                if (_user!.pangalan.isNotEmpty) ...[
+                  Text(
+                    _user!.pangalan,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: textColorThemed,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+
+                // Username (palayaw)
                 Text(
-                  '$_postCount na post',
-                  style: const TextStyle(
+                  '@${_user!.username}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: textColorThemed.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Email
+                Text(
+                  _user!.email,
+                  style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+                    color: textColorThemed.withValues(alpha: 0.5),
                   ),
                 ),
               ],
+            ),
+          ),
+          
+          // Yellow divider with drop shadow (matching Bahay style)
+          Container(
+            height: 3,
+            decoration: BoxDecoration(
+              color: primaryYellow,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryYellow.withValues(alpha: 0.4),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+
+          // Bio (mongkahe) - Rounded card with yellow border
+          if (_user!.mongkahe.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 700),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(20 * (1 - value), 0),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: primaryYellow, width: 2.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryYellow.withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline, color: primaryYellow, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Mongkahe (Bio)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: textColorThemed,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _user!.mongkahe,
+                        style: TextStyle(fontSize: 14, color: textColorThemed),
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Post count - Rounded card with yellow border
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(20 * (1 - value), 0),
+                    child: child,
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: primaryYellow, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryYellow.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: primaryYellow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.article, color: textColor, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$_postCount',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: textColorThemed,
+                          ),
+                        ),
+                        Text(
+                          'Mga Post',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textColorThemed.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
 
           // Edit and Logout buttons (only for own profile)
           if (_isOwnProfile) ...[
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _showEditProfileDialog,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Mag-edit'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryYellow,
-                    foregroundColor: textColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _showEditProfileDialog,
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Mag-edit'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryYellow,
+                        foregroundColor: textColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: _logout,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Lumabas'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red, width: 2),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _logout,
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Lumabas'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red, width: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
+          const SizedBox(height: 8),
         ],
-      ),
       ),
     );
   }

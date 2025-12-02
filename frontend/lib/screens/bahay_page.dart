@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/post_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/post_card.dart';
 import '../models/post_model.dart';
 import 'create_post_screen.dart';
@@ -74,10 +75,15 @@ class _BahayPageState extends State<BahayPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Consumer<PostProvider>(
-        builder: (context, postProvider, child) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.isDarkMode;
+        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+        
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: Consumer<PostProvider>(
+            builder: (context, postProvider, child) {
           if (postProvider.isLoading && postProvider.posts.isEmpty) {
             return _buildLoadingState();
           }
@@ -86,49 +92,49 @@ class _BahayPageState extends State<BahayPage>
             return _buildErrorState(postProvider);
           }
 
-          if (postProvider.posts.isEmpty) {
-            return _buildEmptyState();
-          }
+              if (postProvider.posts.isEmpty) {
+                return _buildEmptyState();
+              }
 
-          return RefreshIndicator(
-            onRefresh: () => postProvider.loadPosts(username: widget.username),
-            color: primaryYellow,
-            backgroundColor: Colors.white,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 8, bottom: 100),
-              itemCount: postProvider.posts.length,
-              itemBuilder: (context, index) {
-                final post = postProvider.posts[index];
-                return PostCard(
-                  post: post,
-                  showDeleteButton: post.username == widget.username,
-                  onUserTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProfileScreen(
-                          username: post.username,
-                          currentUsername: widget.username,
-                        ),
-                      ),
+              return RefreshIndicator(
+                onRefresh: () => postProvider.loadPosts(username: widget.username),
+                color: primaryYellow,
+                backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 100),
+                  itemCount: postProvider.posts.length,
+                  itemBuilder: (context, index) {
+                    final post = postProvider.posts[index];
+                    return PostCard(
+                      post: post,
+                      showDeleteButton: post.username == widget.username,
+                      onUserTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProfileScreen(
+                              username: post.username,
+                              currentUsername: widget.username,
+                            ),
+                          ),
+                        );
+                      },
+                      onLike: post.id != null
+                          ? () => _handleLike(postProvider, post)
+                          : null,
+                      onComment: post.id != null
+                          ? () => _showCommentsSheet(post)
+                          : null,
+                      onDeleteTap: post.username == widget.username && post.id != null
+                          ? () => _handleDelete(postProvider, post)
+                          : null,
                     );
                   },
-                  onLike: post.id != null
-                      ? () => _handleLike(postProvider, post)
-                      : null,
-                  onComment: post.id != null
-                      ? () => _showCommentsSheet(post)
-                      : null,
-                  onDeleteTap: post.username == widget.username && post.id != null
-                      ? () => _handleDelete(postProvider, post)
-                      : null,
-                );
-              },
-            ),
-          );
-        },
-      ),
-      floatingActionButton: ScaleTransition(
+                ),
+              );
+            },
+          ),
+          floatingActionButton: ScaleTransition(
         scale: CurvedAnimation(
           parent: _fabController,
           curve: Curves.elasticOut,
@@ -153,8 +159,9 @@ class _BahayPageState extends State<BahayPage>
             color: textColor,
             size: 28,
           ),
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
