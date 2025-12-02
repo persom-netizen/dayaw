@@ -208,7 +208,9 @@ class _PostCardState extends State<PostCard> {
                       child: Row(
                         children: [
                           Icon(
-                            widget.post.isLiked ? Icons.star : Icons.star_outline,
+                            widget.post.isLiked
+                                ? Icons.star
+                                : Icons.star_outline,
                             color: primaryYellow,
                             size: 20,
                           ),
@@ -249,10 +251,7 @@ class _PostCardState extends State<PostCard> {
               ),
               // Divider
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
                 child: Divider(
                   color: primaryYellow.withValues(alpha: 0.5),
                   thickness: 1,

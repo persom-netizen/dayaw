@@ -160,7 +160,7 @@ class _BahayPageState extends State<BahayPage>
             size: 28,
           ),
           ),
-        );
+        ),
       },
     );
   }
