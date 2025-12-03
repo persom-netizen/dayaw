@@ -23,13 +23,15 @@ void main() {
 
     test('baseUrl should be a complete URL', () {
       final url = ApiConfig.baseUrl;
-      // Should contain either localhost, an IP address, or a domain
-      final hasValidHost = url.contains('localhost') ||
-          RegExp(r'\d+\.\d+\.\d+\.\d+').hasMatch(url) ||
-          url.contains('.dev') ||
-          url.contains('.com');
-      expect(hasValidHost, isTrue,
-          reason: 'URL should contain a valid host (localhost, IP, or domain)');
+      // Should contain either localhost, a valid IP address, or a domain name
+      final hasLocalhost = url.contains('localhost');
+      final hasValidIp = RegExp(
+              r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)')
+          .hasMatch(url);
+      final hasDomain = RegExp(r'[a-zA-Z0-9-]+\.[a-zA-Z]{2,}').hasMatch(url);
+      
+      expect(hasLocalhost || hasValidIp || hasDomain, isTrue,
+          reason: 'URL should contain a valid host (localhost, valid IP address, or domain name)');
     });
   });
 }
