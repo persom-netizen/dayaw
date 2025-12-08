@@ -89,7 +89,11 @@ class ApiConfig {
   // URL VALIDATION AND NORMALIZATION
   // ============================================================================
   
-  /// Regex for removing non-printable characters
+  /// Regex for removing non-printable characters:
+  /// - \x00-\x1F: Control characters (null, tab, newline, etc.)
+  /// - \x7F-\x9F: Additional control characters (DEL, etc.)
+  /// - \u200B-\u200D: Zero-width spaces (ZWSP, ZWNJ, ZWJ)
+  /// - \uFEFF: Zero-width no-break space (BOM)
   static final RegExp _nonPrintableCharsRegex = RegExp(r'[\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]');
   
   /// Regex for removing whitespace
@@ -156,6 +160,15 @@ class ApiConfig {
     return normalized;
   }
   
+  /// Returns the fallback URL based on the current platform.
+  /// Returns localhost for web builds, device IP for mobile builds.
+  static String _getFallbackUrl() {
+    if (kIsWeb) {
+      return 'http://localhost:$_port';
+    }
+    return 'http://$_deviceIp:$_port';
+  }
+  
   // ============================================================================
   // BASE URL GETTER
   // ============================================================================
@@ -179,11 +192,8 @@ class ApiConfig {
       if (sanitized != null) {
         return sanitized;
       }
-      // Fallback to localhost/device IP if production URL is invalid
-      if (kIsWeb) {
-        return 'http://localhost:$_port';
-      }
-      return 'http://$_deviceIp:$_port';
+      // Fallback if production URL is invalid
+      return _getFallbackUrl();
     }
     
     // Use ngrok tunnel for public internet access (RECOMMENDED FOR MOBILE APK)
@@ -192,11 +202,8 @@ class ApiConfig {
       if (sanitized != null) {
         return sanitized;
       }
-      // Fallback to localhost/device IP if ngrok URL is invalid
-      if (kIsWeb) {
-        return 'http://localhost:$_port';
-      }
-      return 'http://$_deviceIp:$_port';
+      // Fallback if ngrok URL is invalid
+      return _getFallbackUrl();
     }
     
     // Always use localhost when running on web (Chrome)
