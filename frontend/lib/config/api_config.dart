@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 
 /// API Configuration for managing base URLs across different environments.
 /// 
@@ -89,6 +89,12 @@ class ApiConfig {
   // URL VALIDATION AND NORMALIZATION
   // ============================================================================
   
+  /// Regex for removing non-printable characters
+  static final RegExp _nonPrintableCharsRegex = RegExp(r'[\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]');
+  
+  /// Regex for removing whitespace
+  static final RegExp _whitespaceRegex = RegExp(r'\s+');
+  
   /// Normalizes a URL by trimming whitespace and removing non-printable characters.
   /// 
   /// This prevents FormatException when URLs are copied with accidental spaces,
@@ -101,10 +107,10 @@ class ApiConfig {
     
     // Remove all non-printable characters (control characters, zero-width spaces, etc.)
     // Keep only printable ASCII and common URL characters
-    cleaned = cleaned.replaceAll(RegExp(r'[\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]'), '');
+    cleaned = cleaned.replaceAll(_nonPrintableCharsRegex, '');
     
     // Remove any remaining whitespace within the URL
-    cleaned = cleaned.replaceAll(RegExp(r'\s+'), '');
+    cleaned = cleaned.replaceAll(_whitespaceRegex, '');
     
     return cleaned.isEmpty ? null : cleaned;
   }
