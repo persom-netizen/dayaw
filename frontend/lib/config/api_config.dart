@@ -118,9 +118,8 @@ class ApiConfig {
   /// Validates if a URL string is properly formed with a valid scheme.
   /// 
   /// Returns true if the URL:
-  /// - Starts with http:// or https://
   /// - Can be successfully parsed by Uri.tryParse
-  /// - Has a valid scheme
+  /// - Has a valid http or https scheme
   /// 
   /// Returns false otherwise.
   static bool _isValidUrl(String? url) {
@@ -130,16 +129,11 @@ class ApiConfig {
     final normalized = _normalizeUrl(url);
     if (normalized == null) return false;
     
-    // Check if starts with valid scheme
-    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
-      return false;
-    }
-    
-    // Try to parse as URI
+    // Try to parse as URI and verify scheme
     final uri = Uri.tryParse(normalized);
     if (uri == null) return false;
     
-    // Verify scheme is http or https
+    // Verify scheme is http or https (rejects missing scheme, ftp, etc.)
     return uri.scheme == 'http' || uri.scheme == 'https';
   }
   
