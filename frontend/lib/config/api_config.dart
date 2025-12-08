@@ -114,6 +114,7 @@ class ApiConfig {
     cleaned = cleaned.replaceAll(_nonPrintableCharsRegex, '');
     
     // Remove any remaining whitespace within the URL
+    // Note: Only removes raw whitespace (space, tab, newline), not encoded %20
     cleaned = cleaned.replaceAll(_whitespaceRegex, '');
     
     return cleaned.isEmpty ? null : cleaned;
