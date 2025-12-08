@@ -5,6 +5,15 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 /// This class provides a centralized way to configure the API base URL
 /// for different running environments (ngrok, localhost, device IP, production).
 /// 
+/// **IMPORTANT**: When pasting ngrok or production URLs, ensure there are NO:
+/// - Leading or trailing spaces
+/// - Line breaks or tabs
+/// - Zero-width or invisible characters
+/// - Missing http:// or https:// scheme
+/// 
+/// The configuration includes automatic URL sanitization and validation to prevent
+/// FormatException errors when URLs contain whitespace or invalid characters.
+/// 
 /// Usage:
 /// - For ngrok tunnel: Set [_useNgrok] = true and paste ngrok URL in [_ngrokUrl]
 /// - For Chrome (web) debugging: Uses localhost automatically
@@ -37,9 +46,12 @@ class ApiConfig {
   /// 2. Sign up at https://dashboard.ngrok.com/signup
   /// 3. Get authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
   /// 4. Run: ngrok config add-authtoken YOUR_AUTH_TOKEN
-  /// 5. Run: ngrok http 5000
+  /// 5. Run: ngrok http 5000  (⚠️ IMPORTANT: Use port 5000, not port 80!)
   /// 6. Copy the URL that looks like: https://xxxxxxxxxx.ngrok-free.dev
   /// 7. Paste it below (replace the example URL)
+  /// 
+  /// ⚠️ CRITICAL: After pasting, verify there are NO spaces before or after the URL!
+  /// Spaces or invisible characters will cause "FormatException: Scheme not starting with alphabetic character"
   /// 
   /// EXAMPLE: https://polyatomic-kinesically-wynell.ngrok-free.dev
   static const String _ngrokUrl = 'https://polyatomic-kinesically-wynell.ngrok-free.dev';
@@ -55,7 +67,101 @@ class ApiConfig {
   /// Production backend URL (for deployed apps on cloud servers)
   /// Examples: Heroku, Render, AWS, Google Cloud, Azure, DigitalOcean, etc.
   /// Update this when you deploy your Flask backend to production
+  /// 
+  /// ⚠️ IMPORTANT: Ensure this URL has NO spaces and includes https://
   static const String _productionUrl = 'https://your-production-api.com';
+  
+  // ============================================================================
+  // WARNING CONSTANTS
+  // ============================================================================
+  
+  /// Warning message shown when ngrok URL is invalid
+  static const String _invalidNgrokWarning = 
+      '⚠️ WARNING: Invalid ngrok URL configuration detected! '
+      'Falling back to localhost. Check _ngrokUrl for spaces or invalid characters.';
+  
+  /// Warning message shown when production URL is invalid
+  static const String _invalidProductionWarning = 
+      '⚠️ WARNING: Invalid production URL configuration detected! '
+      'Falling back to safe default. Check _productionUrl for spaces or invalid characters.';
+  
+  // ============================================================================
+  // URL VALIDATION AND NORMALIZATION
+  // ============================================================================
+  
+  /// Normalizes a URL by trimming whitespace and removing non-printable characters.
+  /// 
+  /// This prevents FormatException when URLs are copied with accidental spaces,
+  /// line breaks, tabs, or zero-width characters.
+  /// 
+  /// Returns the cleaned URL string, or null if the input is empty after cleaning.
+  static String? _normalizeUrl(String url) {
+    // Trim leading/trailing whitespace
+    String cleaned = url.trim();
+    
+    // Remove all non-printable characters (control characters, zero-width spaces, etc.)
+    // Keep only printable ASCII and common URL characters
+    cleaned = cleaned.replaceAll(RegExp(r'[\x00-\x1F\x7F-\x9F\u200B-\u200D\uFEFF]'), '');
+    
+    // Remove any remaining whitespace within the URL
+    cleaned = cleaned.replaceAll(RegExp(r'\s+'), '');
+    
+    return cleaned.isEmpty ? null : cleaned;
+  }
+  
+  /// Validates if a URL string is properly formed with a valid scheme.
+  /// 
+  /// Returns true if the URL:
+  /// - Starts with http:// or https://
+  /// - Can be successfully parsed by Uri.tryParse
+  /// - Has a valid scheme
+  /// 
+  /// Returns false otherwise.
+  static bool _isValidUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    
+    // Normalize first to handle any whitespace
+    final normalized = _normalizeUrl(url);
+    if (normalized == null) return false;
+    
+    // Check if starts with valid scheme
+    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+      return false;
+    }
+    
+    // Try to parse as URI
+    final uri = Uri.tryParse(normalized);
+    if (uri == null) return false;
+    
+    // Verify scheme is http or https
+    return uri.scheme == 'http' || uri.scheme == 'https';
+  }
+  
+  /// Returns a sanitized version of the ngrok URL.
+  /// If invalid, returns null and logs warning.
+  static String? get _sanitizedNgrokUrl {
+    final normalized = _normalizeUrl(_ngrokUrl);
+    if (normalized == null || !_isValidUrl(normalized)) {
+      if (kDebugMode) {
+        print(_invalidNgrokWarning);
+      }
+      return null;
+    }
+    return normalized;
+  }
+  
+  /// Returns a sanitized version of the production URL.
+  /// If invalid, returns null and logs warning.
+  static String? get _sanitizedProductionUrl {
+    final normalized = _normalizeUrl(_productionUrl);
+    if (normalized == null || !_isValidUrl(normalized)) {
+      if (kDebugMode) {
+        print(_invalidProductionWarning);
+      }
+      return null;
+    }
+    return normalized;
+  }
   
   // ============================================================================
   // BASE URL GETTER
@@ -64,19 +170,40 @@ class ApiConfig {
   /// Returns the appropriate base URL based on the running environment. 
   /// 
   /// Priority order:
-  /// 1. If [_useProduction] = true: Returns production URL
-  /// 2. If [_useNgrok] = true: Returns ngrok public URL (BEST FOR MOBILE APK)
+  /// 1. If [_useProduction] = true: Returns sanitized production URL (or fallback)
+  /// 2. If [_useNgrok] = true: Returns sanitized ngrok URL (or fallback)
   /// 3. If [_useLocalhost] = true or running on web (kIsWeb): Returns localhost URL
   /// 4. Otherwise: Returns device IP URL (for local network testing)
+  /// 
+  /// **Fallback behavior:**
+  /// - If production URL is invalid: Falls back to localhost or device IP
+  /// - If ngrok URL is invalid: Falls back to localhost or device IP
+  /// - Warnings are printed in debug mode when fallbacks occur
   static String get baseUrl {
     // Use production backend
     if (_useProduction) {
-      return _productionUrl;
+      final sanitized = _sanitizedProductionUrl;
+      if (sanitized != null) {
+        return sanitized;
+      }
+      // Fallback to localhost/device IP if production URL is invalid
+      if (kIsWeb) {
+        return 'http://localhost:$_port';
+      }
+      return 'http://$_deviceIp:$_port';
     }
     
     // Use ngrok tunnel for public internet access (RECOMMENDED FOR MOBILE APK)
     if (_useNgrok) {
-      return _ngrokUrl;
+      final sanitized = _sanitizedNgrokUrl;
+      if (sanitized != null) {
+        return sanitized;
+      }
+      // Fallback to localhost/device IP if ngrok URL is invalid
+      if (kIsWeb) {
+        return 'http://localhost:$_port';
+      }
+      return 'http://$_deviceIp:$_port';
     }
     
     // Always use localhost when running on web (Chrome)
