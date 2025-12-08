@@ -115,22 +115,15 @@ class ApiConfig {
     return cleaned.isEmpty ? null : cleaned;
   }
   
-  /// Validates if a URL string is properly formed with a valid scheme.
+  /// Validates if a normalized URL string is properly formed with a valid scheme.
   /// 
-  /// Returns true if the URL:
-  /// - Can be successfully parsed by Uri.tryParse
-  /// - Has a valid http or https scheme
-  /// 
-  /// Returns false otherwise.
-  static bool _isValidUrl(String? url) {
-    if (url == null || url.isEmpty) return false;
-    
-    // Normalize first to handle any whitespace
-    final normalized = _normalizeUrl(url);
-    if (normalized == null) return false;
+  /// Assumes the URL is already normalized (no need to call _normalizeUrl again).
+  /// Returns true if the URL can be parsed and has http/https scheme.
+  static bool _isValidUrl(String normalizedUrl) {
+    if (normalizedUrl.isEmpty) return false;
     
     // Try to parse as URI and verify scheme
-    final uri = Uri.tryParse(normalized);
+    final uri = Uri.tryParse(normalizedUrl);
     if (uri == null) return false;
     
     // Verify scheme is http or https (rejects missing scheme, ftp, etc.)
