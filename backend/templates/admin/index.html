@@ -1,0 +1,37 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+<div class="container-fluid">
+    <div class="jumbotron" style="background-color: #f8f9fa; border-radius: 15px; padding: 2rem;">
+        <h1 class="display-4">Kamusta, Admin! </h1>
+        <p class="lead">Welcome to the Dayaw Control Center.</p>
+        <hr class="my-4">
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Community Posts</h5>
+                        <p class="card-text">Manage all user-generated content here.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Alaala (Trivia)</h5>
+                        <p class="card-text">Update the 24-hour trivia rotation.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Salita (Word)</h5>
+                        <p class="card-text">Edit the Tagalog word of the day.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

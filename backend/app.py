@@ -5,6 +5,8 @@ from flask_cors import CORS
 from sqlalchemy import text
 from datetime import datetime, timezone, timedelta
 from werkzeug.utils import secure_filename
+from flask import Flask
+import admin_config # Import your new file
 import hashlib
 import sys
 import os
@@ -59,6 +61,7 @@ db = SQLAlchemy(app)
 # ===================================================
 # MODELS
 # ===================================================
+
 
 class SignUp(db.Model):
     __tablename__ = "sign_up"
@@ -1083,6 +1086,8 @@ def create_sulatin_tables_via_sql():
         conn.execute(sa_text(sulatin_attempts_sql))
     finally:
         conn.close()
+        
+admin_config.setup_admin(app, db, models=__import__(__name__))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
@@ -1103,6 +1108,8 @@ if __name__ == "__main__":
             print("DB tables created. Exiting (init-db).")
         # Exit so the process does not continue to run the server
         sys.exit(0)
+        
+       
 
     # Normal run: start the Flask server
     app.run(host='0.0.0.0', port=5000, debug=True)
