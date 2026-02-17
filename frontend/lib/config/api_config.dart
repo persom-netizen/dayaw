@@ -27,7 +27,7 @@ class ApiConfig {
   /// Set to true to use ngrok tunnel for public internet access (RECOMMENDED FOR MOBILE APK TESTING)
   /// Paste your ngrok URL in [_ngrokUrl] below
   /// Generate with: ngrok http 5000
-  static const bool _useNgrok = true;
+  static const bool _useNgrok = false;
   
   /// Set to true to use localhost (only works for web/Chrome debugging)
   static const bool _useLocalhost = false;
@@ -59,7 +59,7 @@ class ApiConfig {
   /// The IP address of your development machine on the local network
   /// Update this to your machine's IP when debugging on a real device
   /// Find your IP: Windows (ipconfig), Mac/Linux (ifconfig)
-  static const String _deviceIp = '192.168.100.168';
+  static const String _deviceIp = '192.168.254.107';
   
   /// The port number for the backend API server (Flask)
   static const String _port = '5000';

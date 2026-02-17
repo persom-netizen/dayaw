@@ -298,7 +298,7 @@ The backend must have these endpoints operational:
 
 ### Environment Configuration
 No environment changes needed. Uses existing:
-- `baseUrl = 'http://192.168.100.168:5000'` in `sulatin_api.dart`
+- `baseUrl = 'http://192.168.254.107:5000'` in `sulatin_api.dart`
 - Update for production deployment
 
 ## 🎯 Success Metrics

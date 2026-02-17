@@ -17,7 +17,6 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy import create_engine, text as sa_text
 
-from backend import DATABASE_URI    # safe import (backend.__init__ does not import app)
 from baybayin_model import predict_from_data_uri, predict_from_strokes, prepare_from_stroke_json
 
 sulatin_bp = Blueprint("sulatin_bp", __name__, url_prefix="/api/sulatin")
@@ -26,10 +25,12 @@ sulatin_bp = Blueprint("sulatin_bp", __name__, url_prefix="/api/sulatin")
 # DB engine (used for simple persistence)
 # -------------------------
 _engine = None
+
 def get_engine():
     global _engine
     if _engine is None:
-        _engine = create_engine(DATABASE_URI, future=True)
+        uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+        _engine = create_engine(uri, future=True)
     return _engine
 
 # -------------------------

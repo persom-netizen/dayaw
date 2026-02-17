@@ -20,6 +20,12 @@ dependencies:
   path_provider: ^2.1.0    # ✅ NEW - For file path handling
   google_fonts: ^6.1.0     # ✅ NEW - For Playfair Display and Inter fonts
   smooth_page_indicator: ^1.1.0  # ✅ NEW - For onboarding page indicators
+  tflite_v2: ^1.0.0
+  camera: ^0.11.3+1
+  permission_handler: ^12.0.1
+  path: ^1.8.3
+  tflite_flutter: ^0.10.1
+  flutter_vision: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -40,6 +46,8 @@ flutter:
     - assets/page2.gif
     - assets/page3.gif
     - assets/page4.gif
+    - assets/model.tflite
+    - assets/label.txt
 
   fonts:
     - family: Fortalesia

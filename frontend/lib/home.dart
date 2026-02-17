@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'ai.dart';
+
+// Imports ng iyong mga pages
+import 'analisa.dart';
 import 'screens/bahay_page.dart';
 import 'screens/matuto_page.dart';
 import 'screens/settings_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/camera_detector_page.dart'; // Siguraduhing ginawa mo itong file na ito
 import 'widgets/bottom_navigation.dart';
+
+// Imports ng mga providers
 import 'providers/font_provider.dart';
 import 'providers/theme_provider.dart';
 
@@ -21,7 +26,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  // Design color constants
   static const Color primaryYellow = Color(0xFFFFDF00);
   static const Color textColor = Color(0xFF554141);
   static const Color backgroundColor = Color(0xFFFFF9F4);
@@ -32,10 +36,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      BahayPage(username: widget.username), // 0 - Bahay
-      MatutoPage(username: widget.username), // 1 - Matuto (unified page)
-      AiPage(username: widget.username), // 2 - Juan (AI Chatbot)
-      SettingsScreen(username: widget.username), // 3 - Setting
+      BahayPage(username: widget.username),       // Index 0
+      MatutoPage(username: widget.username),      // Index 1
+      AnalisaPage(username: widget.username),     // Index 2 (Profile/Stats view)
+      SettingsScreen(username: widget.username),   // Index 3
     ];
   }
 
@@ -45,18 +49,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Eto ang function na magbubukas ng mismong Camera Detector screen
+  void _onCameraAction() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CameraDetectorPage(),
+      ),
+    );
+  }
+
   String _getPageTitle() {
     switch (_selectedIndex) {
-      case 0:
-        return 'Bahay';
-      case 1:
-        return 'Matuto';
-      case 2:
-        return 'Juan';
-      case 3:
-        return 'Setting';
-      default:
-        return 'Dayaw';
+      case 0: return 'Bahay';
+      case 1: return 'Matuto';
+      case 2: return 'Analisa';
+      case 3: return 'Setting';
+      default: return 'Dayaw';
     }
   }
 
@@ -66,111 +75,90 @@ class _HomePageState extends State<HomePage> {
       builder: (context, fontProvider, themeProvider, child) {
         final isDark = themeProvider.isDarkMode;
         final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
-        final appBarBgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
         final textColorThemed = isDark ? Colors.white : textColor;
         
         return Scaffold(
           backgroundColor: bgColor,
-          appBar: _buildModernAppBar(fontProvider, isDark, appBarBgColor, textColorThemed),
-          body: _pages[_selectedIndex],
+          appBar: _buildModernAppBar(fontProvider, isDark, bgColor, textColorThemed),
+          // IndexedStack para hindi mag-reset ang state ng bawat tab
+          body: IndexedStack(
+            index: _selectedIndex,
+            children: _pages,
+          ),
           bottomNavigationBar: CustomBottomNavigation(
             currentIndex: _selectedIndex,
             onTap: _onNavBarTapped,
+            onCameraTap: _onCameraAction, // Bubuksan ang CameraDetectorPage
           ),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildModernAppBar(
-    FontProvider fontProvider,
-    bool isDark,
-    Color appBarBgColor,
-    Color textColorThemed,
-  ) {
+  PreferredSizeWidget _buildModernAppBar(FontProvider font, bool isDark, Color bg, Color txt) {
     return AppBar(
-      backgroundColor: appBarBgColor,
+      backgroundColor: bg,
       elevation: 0,
       automaticallyImplyLeading: false,
       title: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryYellow.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/logo_yellow.png',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: primaryYellow,
-                    child: Icon(
-                      Icons.home_rounded,
-                      color: isDark ? textColor : Colors.white,
-                      size: 24,
-                    ),
-                  );
-                },
-              ),
+            child: Image.asset(
+              'assets/logo_yellow.png', 
+              width: 35, 
+              height: 35, 
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.star, color: primaryYellow),
             ),
           ),
           const SizedBox(width: 12),
           Text(
             _getPageTitle(),
             style: GoogleFonts.playfairDisplay(
-              fontSize: fontProvider.titleSize,
+              fontSize: font.titleSize,
               fontWeight: FontWeight.bold,
-              color: textColorThemed,
-              letterSpacing: 0.5,
+              color: txt,
             ),
           ),
         ],
       ),
       actions: [
         GestureDetector(
-          onTap: () {
-            // Navigate to user profile
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileScreen(
-                  username: widget.username,
-                  currentUsername: widget.username,
-                ),
+          onTap: () => Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (_) => ProfileScreen(
+                username: widget.username, 
+                currentUsername: widget.username
               ),
-            );
-          },
+            ),
+          ),
           child: Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: primaryYellow,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: primaryYellow.withValues(alpha: 0.4),
-                  blurRadius: 8,
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
                   offset: const Offset(0, 2),
-                ),
+                )
               ],
             ),
-            child: Text(
-              '@${widget.username}',
-              style: GoogleFonts.inter(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: fontProvider.descriptionSize,
+            child: Center(
+              child: Text(
+                '@${widget.username}', 
+                style: GoogleFonts.inter(
+                  color: textColor, 
+                  fontWeight: FontWeight.bold, 
+                  fontSize: font.descriptionSize * 0.9
+                ),
               ),
             ),
           ),

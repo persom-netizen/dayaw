@@ -7,7 +7,9 @@ plugins {
 android {
     namespace = "com.example.dayaw_frontend"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    
+    // REPLACE the flutter.ndkVersion line with the one below:
+    ndkVersion = "27.0.12077973" 
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -19,12 +21,15 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.dayaw_frontend"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
+    applicationId = "com.example.dayaw_frontend"
+    
+    // Replace 'flutter.minSdkVersion' with 26
+    minSdk = 26 
+    
+    targetSdk = flutter.targetSdkVersion
+    versionCode = flutter.versionCode
+    versionName = flutter.versionName
+}
 
     buildTypes {
         release {

@@ -71,7 +71,7 @@ The main feed displays posts in chronological order with the following informati
 #### Bottom Navigation Bar
 The app uses a bottom navigation bar with 5 sections:
 1. **Bahay** (Home) - Community feed 🏠
-2. **Juan** - AI chat assistant 💬
+2. **Analisa** - AI chat assistant 💬 **removed**
 3. **Salita** - Word of the day 📖
 4. **Alaala** - Filipino trivia 💡
 5. **Sulatin** - Baybayin writing practice ✍️

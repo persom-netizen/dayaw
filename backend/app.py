@@ -8,7 +8,10 @@ from werkzeug.utils import secure_filename
 import hashlib
 import sys
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import random
+import base64
 
 # Timezone setup for Asia/Manila (UTC+8)
 MANILA_TZ = timezone(timedelta(hours=8))
@@ -31,8 +34,6 @@ def utc_to_manila(utc_dt):
 # ensure backend folder on sys.path so local modules can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Use Gemini client (Google Generative AI)
-from gemini_client import ask_gemini
 
 app = Flask(__name__)
 app.secret_key = "raindayaw"
@@ -355,57 +356,6 @@ def db_ping():
 # ----------------------
 # CHAT ROUTES (now using Gemini)
 # ----------------------
-@app.route("/api/ask", methods=["POST"])
-def ask_gemini_endpoint():
-    """Send a question to Gemini (Google Generative AI) and save conversation history."""
-    try:
-        data = request.get_json() or {}
-        question = data.get("question")
-        username = data.get("username", "anonymous")
-
-        if not question:
-            return jsonify({"error": "Question is required"}), 400
-
-        # call Gemini wrapper
-        answer = ask_gemini(question)
-
-        # Save to chat history
-        chat_entry = ChatHistory(
-            username=username,
-            user_message=question,
-            ai_response=answer,
-            created_at=datetime.utcnow()
-        )
-        db.session.add(chat_entry)
-        db.session.commit()
-
-        return jsonify({
-            "success": True,
-            "question": question,
-            "answer": answer,
-            "chat_id": chat_entry.id,
-            "timestamp": chat_entry.created_at.isoformat()
-        }), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/gemini-status", methods=["GET"])
-def gemini_status():
-    """
-    Returns simple diagnostics about the Gemini client and environment.
-    Useful to check whether GOOGLE_API_KEY is seen by the Flask process.
-    """
-    from gemini_client import _configure_client  # runtime import to use inner helper
-    configured, reason = _configure_client()
-    return jsonify({
-        "gemini_sdk_installed": True if 'google' in globals() or configured else (False),
-        "configured": configured,
-        "reason": reason,
-        "GOOGLE_API_KEY_present": bool(os.getenv("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
-    }), 200
-
 
 @app.route("/api/chat-history", methods=["GET"])
 def get_chat_history():
@@ -684,6 +634,28 @@ def delete_post(post_id):
         db.session.rollback()
         print(f"[ERROR] Error deleting post {post_id}: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
+# ===================================================
+# APP CAMERA SCANNER
+# ===================================================
+
+# Add this route near your other API routes
+@app.route("/api/scan", methods=["POST"])
+def scan_baybayin():
+    try:
+        data = request.get_json()
+        if not data or 'image' not in data:
+            return jsonify({"success": False, "message": "No image data"}), 400
+
+        # This is a placeholder for your recognition logic
+        # For now, we return a success message so the app stops "loading"
+        return jsonify({
+            "success": True, 
+            "result": "Detected: 'A'", 
+            "confidence": 0.95
+        }), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 # ===================================================
@@ -1036,7 +1008,7 @@ def upload_image():
         file.save(filepath)
         
         # Return image URL
-        image_url = f"http://192.168.100.168:5000/uploads/{filename}"
+        image_url = f"http://192.168.254.107:5000/uploads/{filename}"
         
         print(f"[SUCCESS] Image uploaded: {filename}")
         
@@ -1133,4 +1105,4 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # Normal run: start the Flask server
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
