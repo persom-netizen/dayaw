@@ -1,10 +1,8 @@
-import 'package:dayaw_frontend/screens/camera_detector_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-// Import all your files
-import 'analisa.dart'; 
+// Your existing imports
 import 'screens/bahay_page.dart';
 import 'screens/matuto_page.dart';
 import 'screens/settings_screen.dart';
@@ -13,6 +11,8 @@ import 'screens/create_post_screen.dart';
 import 'screens/introduction_screen.dart';
 import 'pages/main_page.dart';
 import 'widgets/bottom_navigation.dart';
+import 'screens/analisa_page.dart';
+import 'screens/tipaan_page.dart';
 
 // Providers
 import 'providers/post_provider.dart';
@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
           if (!onboarding.isLoaded) {
             homeScreen = const Scaffold(body: Center(child: CircularProgressIndicator()));
           } else if (onboarding.hasCompletedOnboarding) {
-            homeScreen = const HomePage(username: 'User'); // Load HomePage directly
+            homeScreen = const HomePage(username: 'User'); 
           } else {
             homeScreen = IntroductionScreen(onboardingProvider: onboarding);
           }
@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// --- HOME PAGE LOGIC ---
+// --- HOME PAGE LOGIC (Updated for 5 Tabs) ---
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -114,11 +114,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    // Order matches the Bottom Navigation Bar Icons
     _pages = [
       BahayPage(username: widget.username),       // Index 0
-      MatutoPage(username: widget.username),      // Index 1
-      AnalisaPage(username: widget.username),     // Index 2 (DITO ANG CAMERA)
-      SettingsScreen(username: widget.username),   // Index 3
+      AnalisaPage(username: widget.username),     // Index 1 (Camera)
+      TipaanPage(username: widget.username),      // Index 2 (Maintenance)
+      MatutoPage(username: widget.username),      // Index 3
+      SettingsScreen(username: widget.username),  // Index 4
     ];
   }
 
@@ -128,26 +130,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Solution for the onCameraTap error:
-  // ✅ NEW CODE (Correct)
-// Handle the floating middle camera button
-  void _onCameraAction() {
-    // We use Navigator.push so the camera opens ABOVE the home page
-    // and doesn't change your bottom navigation selection.
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CameraDetectorPage(), 
-      ),
-    );
-  }
-
   String _getPageTitle() {
     switch (_selectedIndex) {
       case 0: return 'Bahay';
-      case 1: return 'Matuto';
-      case 2: return 'Analisa';
-      case 3: return 'Setting';
+      case 1: return 'Analisa';
+      case 2: return 'Tipaan';
+      case 3: return 'Matuto';
+      case 4: return 'Setting';
       default: return 'Dayaw';
     }
   }
@@ -170,7 +159,6 @@ class _HomePageState extends State<HomePage> {
           bottomNavigationBar: CustomBottomNavigation(
             currentIndex: _selectedIndex,
             onTap: _onNavBarTapped,
-            onCameraTap: _onCameraAction, // Callback provided here
           ),
         );
       },

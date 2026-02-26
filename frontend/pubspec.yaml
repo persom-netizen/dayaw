@@ -26,6 +26,7 @@ dependencies:
   path: ^1.8.3
   tflite_flutter: ^0.10.1
   flutter_vision: ^2.0.0
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +49,12 @@ flutter:
     - assets/page4.gif
     - assets/model.tflite
     - assets/label.txt
+    - assets/BAHAY.png
+    - assets/ANALISA.png
+    - assets/PROFILE.png
+    - assets/SULATIN.png
+    - assets/TIPAAN.png
+    
 
   fonts:
     - family: Fortalesia

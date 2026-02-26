@@ -59,7 +59,7 @@ class ApiConfig {
   /// The IP address of your development machine on the local network
   /// Update this to your machine's IP when debugging on a real device
   /// Find your IP: Windows (ipconfig), Mac/Linux (ifconfig)
-  static const String _deviceIp = '192.168.254.107';
+  static const String _deviceIp = '192.168.254.101';
   
   /// The port number for the backend API server (Flask)
   static const String _port = '5000';

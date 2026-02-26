@@ -5,58 +5,60 @@ from flask_cors import CORS
 from sqlalchemy import text
 from datetime import datetime, timezone, timedelta
 from werkzeug.utils import secure_filename
-from flask import Flask
-import admin_config # Import your new file
+from flask_mail import Mail
+import admin_config
 import hashlib
 import sys
 import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import random
 import base64
 
-# Timezone setup for Asia/Manila (UTC+8)
-MANILA_TZ = timezone(timedelta(hours=8))
-
-# Epoch date for rotation calculations
-ROTATION_EPOCH_DATE = datetime(2000, 1, 1).date()
-
-def get_manila_time():
-    """Get current time in Manila timezone (UTC+8)"""
-    return datetime.now(MANILA_TZ)
-
-def utc_to_manila(utc_dt):
-    """Convert UTC datetime to Manila timezone"""
-    if utc_dt is None:
-        return None
-    if utc_dt.tzinfo is None:
-        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
-    return utc_dt.astimezone(MANILA_TZ)
-
-# ensure backend folder on sys.path so local modules can be imported
+# --- 1. Environment & Path Setup ---
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-
+# --- 2. Initialize App ---
 app = Flask(__name__)
-app.secret_key = "raindayaw"
 CORS(app)
 
-# ✅ MySQL connection
+# --- 3. Configurations ---
+app.secret_key = "raindayaw"
+app.config['SECRET_KEY'] = 'DAYAW_FIXED_SECRET_KEY_2026'
+
+# Mail Config
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'cuekimdit.daylan@gmail.com'
+app.config['MAIL_PASSWORD'] = 'qfob glgp qddn fcrt'
+
+# DB Config
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+mysqlconnector://root:@localhost/dayaw"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ✅ File Upload Configuration
+# File Upload Config
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
-
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-db = SQLAlchemy(app)
+# --- 4. Initialize Extensions (CRITICAL ORDER) ---
+db = SQLAlchemy(app)  # Connect DB to App FIRST
+mail = Mail(app)      # Connect Mail to App
+
+# --- 5. Register Blueprint (AFTER Extensions are ready) ---
+from auth import auth_bp
+app.register_blueprint(auth_bp)
+
+def utc_to_manila(utc_dt):
+    # Manila is UTC+8
+    return utc_dt + timedelta(hours=8)
+
+# ===================================================
+# MODELS (These stay exactly where they were)
+# ===================================================
 
 # ===================================================
 # MODELS
@@ -1011,7 +1013,7 @@ def upload_image():
         file.save(filepath)
         
         # Return image URL
-        image_url = f"http://192.168.254.107:5000/uploads/{filename}"
+        image_url = f"http://192.168.254.101:5000/uploads/{filename}"
         
         print(f"[SUCCESS] Image uploaded: {filename}")
         

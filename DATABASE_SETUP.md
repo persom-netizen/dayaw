@@ -11,7 +11,7 @@
 ```sql
 CREATE DATABASE IF NOT EXISTS dayaw CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
-
+F
 ### 2. Initialize Tables
 Run the Flask app with the `--init-db` flag to create all necessary tables:
 
