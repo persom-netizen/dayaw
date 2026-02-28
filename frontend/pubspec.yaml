@@ -54,6 +54,7 @@ flutter:
     - assets/PROFILE.png
     - assets/SULATIN.png
     - assets/TIPAAN.png
+    - assets/dayawlogo.png
     
 
   fonts:

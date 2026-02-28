@@ -1,0 +1,130 @@
+
+
+CREATE TABLE `sign_up` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `confirm_password` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `login` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `alaala` (
+  `id` int(11) NOT NULL,
+  `salita` varchar(255) NOT NULL,
+  `depinisyon` text NOT NULL,
+  `bigkas` varchar(255) DEFAULT NULL,
+  `etimolohiya` text DEFAULT NULL,
+  `gamit` text DEFAULT NULL,
+  `kontekstong_kultural` text DEFAULT NULL,
+  `petsa` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `salita` (
+  `id` int(11) NOT NULL,
+  `salita` varchar(255) NOT NULL,
+  `depinisyon` text NOT NULL,
+  `bigkas` varchar(255) DEFAULT NULL,
+  `etimolohiya` text DEFAULT NULL,
+  `gamit` text DEFAULT NULL,
+  `kontekstong_kultural` text DEFAULT NULL,
+  `source` varchar(50) DEFAULT 'local',
+  `created_at` datetime DEFAULT current_timestamp(),
+  `is_active` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chat_history` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `user_message` longtext NOT NULL,
+  `ai_response` longtext NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `chat_threads` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    profile_image VARCHAR(500),
+    title VARCHAR(255),
+    content TEXT NOT NULL,
+    image_url VARCHAR(500),
+    likes_count INT DEFAULT 0 NOT NULL,
+    comments_count INT DEFAULT 0 NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_posts_likes_count (likes_count),
+    INDEX idx_posts_comments_count (comments_count),
+    INDEX idx_posts_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS sulatin_samples (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(100) NOT NULL,
+    source VARCHAR(50) DEFAULT 'user',
+    stroke_json JSON NULL,
+    image_path VARCHAR(255) NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+   
+CREATE TABLE IF NOT EXISTS sulatin_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(80),
+    expected VARCHAR(100),
+    predicted VARCHAR(100),
+    confidence VARCHAR(50),
+    correct TINYINT(1) DEFAULT 0,
+    stroke_json JSON NULL,
+    image_path VARCHAR(255) NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+NOT IN OUR DATABASE TABLE
+
+CREATE TABLE handwriting_analyses (
+    analysis_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    image_path VARCHAR(255) NOT NULL,       -- URL/Path to the stored image
+    script_type ENUM('Baybayin', 'Other') DEFAULT 'Baybayin',
+    
+    -- Formative Assessment Metrics (0.00 to 1.00 or 0-100)
+    stroke_score DECIMAL(5,2),             -- Assessment of "stroke form"
+    alignment_score DECIMAL(5,2),          -- Assessment of "alignment"
+    structure_score DECIMAL(5,2),          -- Assessment of "general structure"
+    
+    feedback_text TEXT,                    -- Formative feedback message
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX (user_id)                         -- For faster profile loading
+);
+
+CREATE TABLE practice_sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    prompt_text TEXT NOT NULL,             -- The Filipino passage given to user
+    
+    -- Quantitative Performance Metrics
+    accuracy_rate DECIMAL(5,2),            -- Percentage of correct characters
+    recall_score DECIMAL(5,2),             -- Used for your Chapter 1.3 objectives
+    f1_score DECIMAL(5,2),                 -- Used for your Chapter 1.3 objectives
+    
+    time_spent_seconds INT,                -- How long the user took
+    input_method ENUM('Keyboard', 'Writing Interface') NOT NULL,
+    
+    evaluation_summary TEXT,               -- System's overall performance feedback
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX (user_id)
+);

@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // IMPORTANT
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'home.dart';
 import 'sign_up.dart';
 import 'config/api_config.dart';
 import 'forgot_password.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,7 +23,6 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
-  // Google Sign In instance
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
   
   bool _obscurePassword = true;
@@ -29,43 +31,51 @@ class _LoginPageState extends State<LoginPage> {
   static const Color brownColor = Color.fromARGB(255, 71, 61, 29);
   static const Color goldColor = Color(0xFFD4AF37);
 
-  // --- Handlers ---
-
-  Future<void> _handleGoogleSignIn() async {
-  try {
-    setState(() => _isLoading = true);
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    
-    if (googleUser != null) {
-      // Send the Google info to your Flask backend
-      final response = await http.post(
-        Uri.parse("${ApiConfig.baseUrl}/api/google-login"), // Target the new route
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "email": googleUser.email,
-          "displayName": googleUser.displayName,
-        }),
-      );
-
-      final res = jsonDecode(response.body);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomePage(username: res["username"])),
-        );
-      } else {
-        _showErrorSnackBar(res["message"] ?? "Google Login failed on server");
-      }
-    }
-  } catch (error) {
-    _showErrorSnackBar("Google Sign-In Error: $error");
-  } finally {
-    setState(() => _isLoading = false);
+  // --- LOGIC: SAVING THE SESSION ---
+  Future<void> _saveSession(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
   }
-}
 
+  // --- HANDLER: GOOGLE SIGN IN ---
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      setState(() => _isLoading = true);
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser != null) {
+        final response = await http.post(
+          Uri.parse("${ApiConfig.baseUrl}/api/google-login"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({
+            "email": googleUser.email,
+            "displayName": googleUser.displayName,
+          }),
+        );
+
+        final res = jsonDecode(response.body);
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          String username = res["username"];
+          await _saveSession(username); // Save to local storage
+
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HomePage(username: username)),
+          );
+        } else {
+          _showErrorSnackBar(res["message"] ?? "Google Login failed");
+        }
+      }
+    } catch (error) {
+      _showErrorSnackBar("Google Sign-In Error: $error");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // --- HANDLER: MANUAL LOGIN ---
   Future<void> _login() async {
     if (_isLoading) return;
 
@@ -92,18 +102,19 @@ class _LoginPageState extends State<LoginPage> {
       final res = jsonDecode(response.body);
 
       if (response.statusCode == 200 && res["success"] == true) {
+        String username = res["username"];
+        await _saveSession(username); // Save to local storage
+
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => HomePage(username: res["username"]),
-          ),
+          MaterialPageRoute(builder: (_) => HomePage(username: username)),
         );
       } else {
         _showErrorSnackBar(res["message"] ?? "Mali ang impormasyon");
       }
     } catch (e) {
-      _showErrorSnackBar("Network error: Hindi makakonekta sa server");
+      _showErrorSnackBar("Network error: Check your connection");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -115,13 +126,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // --- UI Components ---
+  // --- UI COMPONENTS (KEEPING YOUR DESIGN) ---
 
   InputDecoration _buildInputDecoration(String label, {Widget? suffixIcon}) {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: brownColor, fontWeight: FontWeight.w500),
-      hintStyle: TextStyle(color: brownColor.withOpacity(0.6)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: brownColor, width: 1.5),
@@ -143,10 +153,7 @@ class _LoginPageState extends State<LoginPage> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/bg.gif'),
-            fit: BoxFit.cover,
-          ),
+          image: DecorationImage(image: AssetImage('assets/bg.gif'), fit: BoxFit.cover),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -161,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                     child: Container(
-                      width: double.infinity,
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.10),
@@ -169,42 +175,20 @@ class _LoginPageState extends State<LoginPage> {
                         border: Border.all(color: goldColor, width: 2.5),
                       ),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Pasukin',
-                            style: TextStyle(
-                              fontFamily: 'Fortalesia',
-                              fontSize: 40,
-                              color: brownColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          const Text('Pasukin', style: TextStyle(fontFamily: 'Fortalesia', fontSize: 40, color: brownColor, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 24),
-                          TextField(
-                            controller: _usernameController,
-                            style: const TextStyle(color: brownColor),
-                            decoration: _buildInputDecoration('Username'),
-                          ),
+                          TextField(controller: _usernameController, decoration: _buildInputDecoration('Username')),
                           const SizedBox(height: 14),
-                          TextField(
-                            controller: _emailController,
-                            style: const TextStyle(color: brownColor),
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: _buildInputDecoration('Email'),
-                          ),
+                          TextField(controller: _emailController, decoration: _buildInputDecoration('Email')),
                           const SizedBox(height: 14),
                           TextField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            style: const TextStyle(color: brownColor),
                             decoration: _buildInputDecoration(
                               'Password',
                               suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                  color: brownColor,
-                                ),
+                                icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, color: brownColor),
                                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                               ),
                             ),
@@ -219,38 +203,20 @@ class _LoginPageState extends State<LoginPage> {
                                 backgroundColor: goldColor,
                                 foregroundColor: brownColor,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                elevation: 4,
                               ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text('SIGE', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                              child: _isLoading 
+                                ? const CircularProgressIndicator(color: brownColor) 
+                                : const Text('SIGE', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordPage())),
-                            child: const Text('Nakalimutan ang password?', style: TextStyle(color: brownColor, decoration: TextDecoration.underline)),
                           ),
                           const SizedBox(height: 16),
                           _buildDivider(),
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              Expanded(
-                                child: _socialButton(
-                                  label: 'Google',
-                                  icon: Icons.login,
-                                  onPressed: _handleGoogleSignIn,
-                                ),
-                              ),
+                              Expanded(child: _socialButton(label: 'Google', icon: Icons.login, onPressed: _handleGoogleSignIn)),
                               const SizedBox(width: 12),
-                              Expanded(
-                                child: _socialButton(
-                                  label: 'Facebook',
-                                  icon: Icons.group,
-                                  onPressed: () => _showErrorSnackBar("Facebook coming soon!"),
-                                ),
-                              ),
+                              Expanded(child: _socialButton(label: 'Facebook', icon: Icons.group, onPressed: () {})),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -271,7 +237,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -280,30 +245,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: brownColor.withOpacity(0.5))),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('O', style: TextStyle(color: brownColor.withOpacity(0.7))),
-        ),
-        Expanded(child: Divider(color: brownColor.withOpacity(0.5))),
-      ],
-    );
-  }
-
+  // --- Helper Widgets ---
+  Widget _buildDivider() => Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("O")), Expanded(child: Divider())]);
+  
   Widget _socialButton({required String label, required IconData icon, required VoidCallback onPressed}) {
     return OutlinedButton.icon(
       onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: brownColor,
-        side: BorderSide(color: brownColor.withOpacity(0.5)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
+      style: OutlinedButton.styleFrom(foregroundColor: brownColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontSize: 14)),
+      label: Text(label),
     );
   }
 

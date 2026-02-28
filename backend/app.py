@@ -1,4 +1,3 @@
-# backend/app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -65,25 +64,16 @@ def utc_to_manila(utc_dt):
 # ===================================================
 
 
-class SignUp(db.Model):
-    __tablename__ = "sign_up"
+class User(db.Model):
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    confirm_password = db.Column(db.String(255), nullable=False)
     pangalan = db.Column(db.String(100), nullable=True)  # Full name
-    mongkahe = db.Column(db.Text, nullable=True)  # Bio
-
-
-class Login(db.Model):
-    __tablename__ = "login"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    pangalan = db.Column(db.String(100), nullable=True)  # Full name
-    mongkahe = db.Column(db.Text, nullable=True)  # Bio
+    mongkahe = db.Column(db.Text, nullable=True)       # Bio/Monologue
+    profile_image = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Alaala(db.Model):
@@ -219,6 +209,8 @@ def signup():
         email = data.get("email")
         password = data.get("password")
         confirm_password = data.get("confirm_password")
+        pangalan = data.get("pangalan", "") # Optional field
+        mongkahe = data.get("mongkahe", "") # Optional field
 
         if not all([username, email, password, confirm_password]):
             return jsonify({"success": False, "message": "All fields are required!"}), 400
@@ -226,14 +218,23 @@ def signup():
         if password != confirm_password:
             return jsonify({"success": False, "message": "Passwords do not match!"}), 400
 
-        existing_user = SignUp.query.filter_by(email=email).first()
+        # Check in the unified User table
+        existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
         if existing_user:
-            return jsonify({"success": False, "message": "Email already registered!"}), 400
+            return jsonify({"success": False, "message": "Username or Email already registered!"}), 400
 
         hashed_password = hash_password(password)
-        new_user = SignUp(username=username, email=email, password=hashed_password, confirm_password=hashed_password)
+        
+        # Save to ONLY the User table
+        new_user = User(
+            username=username, 
+            email=email, 
+            password=hashed_password,
+            pangalan=pangalan,
+            mongkahe=mongkahe
+        )
+        
         db.session.add(new_user)
-        db.session.add(Login(username=username, email=email, password=hashed_password))
         db.session.commit()
 
         return jsonify({"success": True, "message": "User registered successfully!", "username": username}), 200
@@ -250,14 +251,17 @@ def login():
         email = data.get("email")
         password = data.get("password")
 
-        if not all([username, email, password]):
-            return jsonify({"success": False, "message": "All fields are required!"}), 400
-
         hashed_password = hash_password(password)
-        user = Login.query.filter_by(username=username, email=email, password=hashed_password).first()
+        
+        # Verify against the User table
+        user = User.query.filter_by(username=username, email=email, password=hashed_password).first()
 
         if user:
-            return jsonify({"success": True, "username": user.username}), 200
+            return jsonify({
+                "success": True, 
+                "username": user.username,
+                "pangalan": user.pangalan or ""
+            }), 200
         else:
             return jsonify({"success": False, "message": "Invalid credentials"}), 401
     except Exception as e:
@@ -269,14 +273,14 @@ def login():
 # ----------------------
 @app.route("/api/users/<username>", methods=["GET"])
 def get_user_profile(username):
-    """Get user profile info and their posts."""
+    """Get user profile info and their posts from the unified User table."""
     try:
-        # Find user in login table
-        user = Login.query.filter_by(username=username).first()
+        # Step 1: Search ONLY the User table
+        user = User.query.filter_by(username=username).first()
         if not user:
             return jsonify({"success": False, "message": "User not found"}), 404
         
-        # Get user's posts
+        # Step 2: Get user's posts
         posts = Post.query.filter_by(username=username).order_by(Post.created_at.desc()).all()
         posts_list = [{
             "id": p.id,
@@ -302,31 +306,23 @@ def get_user_profile(username):
             "post_count": len(posts_list)
         }), 200
     except Exception as e:
-        print(f"[ERROR] Error getting user profile: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 
 @app.route("/api/users/<username>/profile", methods=["PUT"])
 def update_user_profile(username):
-    """Update user profile (pangalan and mongkahe)."""
+    """Update user profile (pangalan and mongkahe) in the unified User table."""
     try:
         data = request.get_json() or {}
-        pangalan = data.get("pangalan", "").strip()
-        mongkahe = data.get("mongkahe", "").strip()
         
-        # Update in login table
-        user_login = Login.query.filter_by(username=username).first()
-        if not user_login:
+        # Step 1: Find user in the unified table
+        user = User.query.filter_by(username=username).first()
+        if not user:
             return jsonify({"success": False, "message": "User not found"}), 404
         
-        user_login.pangalan = pangalan
-        user_login.mongkahe = mongkahe
-        
-        # Also update in sign_up table if exists
-        user_signup = SignUp.query.filter_by(username=username).first()
-        if user_signup:
-            user_signup.pangalan = pangalan
-            user_signup.mongkahe = mongkahe
+        # Step 2: Update the fields
+        user.pangalan = data.get("pangalan", user.pangalan).strip()
+        user.mongkahe = data.get("mongkahe", user.mongkahe).strip()
         
         db.session.commit()
         
@@ -334,15 +330,14 @@ def update_user_profile(username):
             "success": True,
             "message": "Profile updated successfully",
             "user": {
-                "username": user_login.username,
-                "email": user_login.email,
-                "pangalan": user_login.pangalan or "",
-                "mongkahe": user_login.mongkahe or "",
+                "username": user.username,
+                "email": user.email,
+                "pangalan": user.pangalan,
+                "mongkahe": user.mongkahe
             }
         }), 200
     except Exception as e:
         db.session.rollback()
-        print(f"[ERROR] Error updating user profile: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 

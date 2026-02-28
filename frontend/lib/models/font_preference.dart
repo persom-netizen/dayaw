@@ -1,5 +1,6 @@
 /// Font Preference Model
 /// Defines font size levels and corresponding pixel sizes for different text types
+library;
 
 /// Font size level (1-5)
 /// Level 1: Smallest (for younger users)

@@ -226,7 +226,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                           ),
                         ),
                         value: _notificationsEnabled,
-                        activeColor: primaryYellow,
+                        activeThumbColor: primaryYellow,
                         onChanged: (value) {
                           setState(() => _notificationsEnabled = value);
                         },
@@ -256,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                           ),
                         ),
                         value: isDark,
-                        activeColor: primaryYellow,
+                        activeThumbColor: primaryYellow,
                         onChanged: (value) async {
                           await themeProvider.setDarkMode(value);
                           if (mounted) {

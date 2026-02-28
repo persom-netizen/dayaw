@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Your existing imports
 import 'screens/bahay_page.dart';
@@ -9,10 +10,12 @@ import 'screens/settings_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/create_post_screen.dart';
 import 'screens/introduction_screen.dart';
-import 'pages/main_page.dart';
+import 'pages/main_page.dart';  
 import 'widgets/bottom_navigation.dart';
 import 'screens/analisa_page.dart';
 import 'screens/tipaan_page.dart';
+import 'home.dart';
+
 
 // Providers
 import 'providers/post_provider.dart';
@@ -24,6 +27,7 @@ import 'config/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load Preferences
   final fontProvider = FontProvider();
   await fontProvider.loadPreferences();
 
@@ -33,10 +37,15 @@ void main() async {
   final onboardingProvider = OnboardingProvider();
   await onboardingProvider.loadPreferences();
 
+  // Check for Saved Session
+  final prefs = await SharedPreferences.getInstance();
+  final String? savedUsername = prefs.getString('username');
+
   runApp(MyApp(
     fontProvider: fontProvider,
     themeProvider: themeProvider,
     onboardingProvider: onboardingProvider,
+    savedUsername: savedUsername,
   ));
 }
 
@@ -44,12 +53,14 @@ class MyApp extends StatelessWidget {
   final FontProvider fontProvider;
   final ThemeProvider themeProvider;
   final OnboardingProvider onboardingProvider;
+  final String? savedUsername;
 
   const MyApp({
     super.key,
     required this.fontProvider,
     required this.themeProvider,
     required this.onboardingProvider,
+    this.savedUsername,
   });
 
   @override
@@ -63,13 +74,20 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer3<FontProvider, ThemeProvider, OnboardingProvider>(
         builder: (context, font, theme, onboarding, child) {
+          
           Widget homeScreen;
           
+          // logic to decide which screen to show first
           if (!onboarding.isLoaded) {
             homeScreen = const Scaffold(body: Center(child: CircularProgressIndicator()));
+          } else if (savedUsername != null && savedUsername!.isNotEmpty) {
+            // User is already logged in
+            homeScreen = HomePage(username: savedUsername!);
           } else if (onboarding.hasCompletedOnboarding) {
-            homeScreen = const HomePage(username: 'User'); 
+            // Finished onboarding but needs to login/register (MainPage)
+            homeScreen = const MainPage(); 
           } else {
+            // First time opening the app
             homeScreen = IntroductionScreen(onboardingProvider: onboarding);
           }
 
@@ -81,9 +99,7 @@ class MyApp extends StatelessWidget {
             home: homeScreen,
             routes: {
               '/main': (context) => const MainPage(),
-              '/home': (context) => const HomePage(username: ''),
-              '/bahay': (context) => const BahayPage(username: ''),
-              '/create-post': (context) => const CreatePostScreen(username: ''),
+              '/create-post': (context) => CreatePostScreen(username: savedUsername ?? 'User'),
             },
           );
         },
@@ -92,103 +108,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// --- HOME PAGE LOGIC (Updated for 5 Tabs) ---
-
-class HomePage extends StatefulWidget {
-  final String username;
-  const HomePage({super.key, required this.username});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-
-  static const Color primaryYellow = Color(0xFFFFDF00);
-  static const Color textColor = Color(0xFF554141);
-  static const Color backgroundColor = Color(0xFFFFF9F4);
-
-  late List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    // Order matches the Bottom Navigation Bar Icons
-    _pages = [
-      BahayPage(username: widget.username),       // Index 0
-      AnalisaPage(username: widget.username),     // Index 1 (Camera)
-      TipaanPage(username: widget.username),      // Index 2 (Maintenance)
-      MatutoPage(username: widget.username),      // Index 3
-      SettingsScreen(username: widget.username),  // Index 4
-    ];
-  }
-
-  void _onNavBarTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  String _getPageTitle() {
-    switch (_selectedIndex) {
-      case 0: return 'Bahay';
-      case 1: return 'Analisa';
-      case 2: return 'Tipaan';
-      case 3: return 'Matuto';
-      case 4: return 'Setting';
-      default: return 'Dayaw';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer2<FontProvider, ThemeProvider>(
-      builder: (context, fontProvider, themeProvider, child) {
-        final isDark = themeProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
-        final textColorThemed = isDark ? Colors.white : textColor;
-        
-        return Scaffold(
-          backgroundColor: bgColor,
-          appBar: _buildModernAppBar(fontProvider, isDark, bgColor, textColorThemed),
-          body: IndexedStack(
-            index: _selectedIndex,
-            children: _pages,
-          ),
-          bottomNavigationBar: CustomBottomNavigation(
-            currentIndex: _selectedIndex,
-            onTap: _onNavBarTapped,
-          ),
-        );
-      },
-    );
-  }
-
-  PreferredSizeWidget _buildModernAppBar(FontProvider font, bool isDark, Color bg, Color txt) {
-    return AppBar(
-      backgroundColor: bg,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      title: Row(
-        children: [
-          Image.asset('assets/logo_yellow.png', width: 40, height: 40, 
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.star, color: primaryYellow)),
-          const SizedBox(width: 12),
-          Text(_getPageTitle(), style: GoogleFonts.playfairDisplay(fontSize: font.titleSize, fontWeight: FontWeight.bold, color: txt)),
-        ],
-      ),
-      actions: [
-        GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(username: widget.username, currentUsername: widget.username))),
-          child: Container(
-            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(color: primaryYellow, borderRadius: BorderRadius.circular(20)),
-            child: Center(child: Text('@${widget.username}', style: GoogleFonts.inter(color: textColor, fontWeight: FontWeight.bold))),
-          ),
-        ),
-      ],
-    );
-  }
-}

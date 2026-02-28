@@ -3,7 +3,6 @@ Flask-SQLAlchemy==3.1.1
 Flask-CORS==4.0.0
 mysql-connector-python==8.2.0
 python-dotenv==1.0.0
-google-generativeai==0.4.0
 
 # Machine learning + image utils - choose a TF version compatible with your Python.
 # For Python 3.12 use tensorflow 2.19.1 or newer stable release.

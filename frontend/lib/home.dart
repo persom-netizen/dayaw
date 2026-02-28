@@ -1,5 +1,3 @@
-// home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +7,7 @@ import 'screens/analisa_page.dart';
 import 'screens/tipaan_page.dart';  
 import 'screens/matuto_page.dart';
 import 'screens/settings_screen.dart';
+import 'screens/profile_screen.dart'; // Ensure this is imported for the chip
 import 'widgets/bottom_navigation.dart';
 import 'providers/font_provider.dart';
 import 'providers/theme_provider.dart';
@@ -28,28 +27,26 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Swapped the order here to match the Nav Bar
+    // Order matches your latest Home Dart: Bahay, Analisa, Matuto, Tipaan, Settings
     _pages = [
-      BahayPage(username: widget.username),      // Index 0
-      AnalisaPage(username: widget.username),    // Index 1
-      MatutoPage(username: widget.username),     // Index 2 (Now Matuto)
-      TipaanPage(username: widget.username),     // Index 3 (Now Tipaan)
-      SettingsScreen(username: widget.username), // Index 4
+      BahayPage(username: widget.username),
+      AnalisaPage(username: widget.username),
+      MatutoPage(username: widget.username), 
+      TipaanPage(username: widget.username), 
+      SettingsScreen(username: widget.username),
     ];
   }
 
   void _onNavBarTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
   String _getPageTitle() {
     switch (_selectedIndex) {
       case 0: return 'Bahay';
       case 1: return 'Analisa';
-      case 2: return 'Matuto'; // Updated to match Index 2
-      case 3: return 'Tipaan'; // Updated to match Index 3
+      case 2: return 'Matuto';
+      case 3: return 'Tipaan';
       case 4: return 'Setting';
       default: return 'Dayaw';
     }
@@ -69,14 +66,45 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: bgColor,
             elevation: 0,
             automaticallyImplyLeading: false,
-            title: Text(
-              _getPageTitle(),
-              style: GoogleFonts.playfairDisplay(
-                fontSize: font.titleSize,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
+            title: Row(
+              children: [
+                Image.asset('assets/logo_yellow.png', width: 35, height: 35, 
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.star, color: Colors.amber)),
+                const SizedBox(width: 10),
+                Text(
+                  _getPageTitle(),
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: font.titleSize,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+              ],
             ),
+            // --- THE UPPER USER NAV (RESTORING THIS) ---
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: ActionChip(
+                  backgroundColor: const Color(0xFFFFDF00),
+                  label: Text(
+                    '@${widget.username}', 
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold, 
+                      color: const Color(0xFF554141)
+                    )
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => ProfileScreen(
+                        username: widget.username, 
+                        currentUsername: widget.username
+                      )
+                    ));
+                  },
+                ),
+              ),
+            ],
           ),
           body: IndexedStack(
             index: _selectedIndex,
