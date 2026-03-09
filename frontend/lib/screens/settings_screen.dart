@@ -4,6 +4,7 @@ import '../providers/font_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/font_preference.dart';
 import '../pages/main_page.dart';
+import '../screens/profile_screen.dart';
 
 /// Settings Page
 /// Displays user settings and app preferences
@@ -176,20 +177,32 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                       ),
                     ),
                 const SizedBox(height: 16),
-                    _buildAnimatedSection(
-                      delay: 100,
-                      child: _buildSectionHeader('Username', fontProvider, textColorThemed),
-                    ),
-                    _buildAnimatedSection(
-                      delay: 150,
-                      child: _buildSettingsTile(
-                        icon: Icons.person_outline,
-                        title: 'Username',
-                        subtitle: widget.username,
-                        fontProvider: fontProvider,
-                        textColorThemed: textColorThemed,
-                      ),
-                    ),
+            
+_buildAnimatedSection(
+  delay: 100,
+  child: _buildSectionHeader('Account', fontProvider, textColorThemed),
+),
+_buildAnimatedSection(
+  delay: 150,
+  child: _buildSettingsTile(
+    icon: Icons.person_outline,
+    title: 'Profile',
+    subtitle: widget.username,
+    fontProvider: fontProvider,
+    textColorThemed: textColorThemed,
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfileScreen(
+            username: widget.username,
+            currentUsername: widget.username,
+          ),
+        ), 
+      );
+    },
+  ),
+),
                     const Divider(),
                     _buildAnimatedSection(
                       delay: 200,
@@ -290,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                       child: _buildSettingsTile(
                         icon: Icons.info_outline,
                         title: 'Version',
-                        subtitle: '1.0.0',
+                        subtitle: '1.0.5',
                         fontProvider: fontProvider,
                         textColorThemed: textColorThemed,
                       ),

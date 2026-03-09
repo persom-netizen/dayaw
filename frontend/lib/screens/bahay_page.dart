@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/theme_provider.dart';
@@ -72,100 +73,104 @@ class _BahayPageState extends State<BahayPage>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) {
-        final isDark = themeProvider.isDarkMode;
-        final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
+Widget build(BuildContext context) {
+  return Consumer<ThemeProvider>(
+    builder: (context, themeProvider, _) {
+      final isDark = themeProvider.isDarkMode;
+      final bgColor = isDark ? const Color(0xFF1F1F1F) : backgroundColor;
 
-        return Scaffold(
-          backgroundColor: bgColor,
-          body: Consumer<PostProvider>(
-            builder: (context, postProvider, child) {
-              if (postProvider.isLoading && postProvider.posts.isEmpty) {
-                return _buildLoadingState();
-              }
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: Consumer<PostProvider>(
+          builder: (context, postProvider, child) {
+            // LOGIC: Use filteredPosts instead of posts
+            final displayedPosts = postProvider.filteredPosts;
 
-              if (postProvider.error != null && postProvider.posts.isEmpty) {
-                return _buildErrorState(postProvider);
-              }
+            if (postProvider.isLoading && displayedPosts.isEmpty) {
+              return _buildLoadingState();
+            }
 
-              if (postProvider.posts.isEmpty) {
-                return _buildEmptyState();
-              }
+            if (postProvider.error != null && displayedPosts.isEmpty) {
+              return _buildErrorState(postProvider);
+            }
 
-              return RefreshIndicator(
-                onRefresh: () =>
-                    postProvider.loadPosts(username: widget.username),
-                color: primaryYellow,
-                backgroundColor: isDark
-                    ? const Color(0xFF2A2A2A)
-                    : Colors.white,
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 100),
-                  itemCount: postProvider.posts.length,
-                  itemBuilder: (context, index) {
-                    final post = postProvider.posts[index];
-                    return PostCard(
-                      post: post,
-                      showDeleteButton: post.username == widget.username,
-                      onUserTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProfileScreen(
-                              username: post.username,
-                              currentUsername: widget.username,
-                            ),
+            if (displayedPosts.isEmpty) {
+              return _buildEmptyState();
+            }
+
+            return RefreshIndicator(
+              onRefresh: () =>
+                  postProvider.loadPosts(username: widget.username),
+              color: primaryYellow,
+              backgroundColor: isDark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.white,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 100),
+                // LOGIC: Use the length of the filtered list
+                itemCount: displayedPosts.length,
+                itemBuilder: (context, index) {
+                  // LOGIC: Access the post from the filtered list
+                  final post = displayedPosts[index];
+                  return PostCard(
+                    post: post,
+                    showDeleteButton: post.username == widget.username,
+                    onUserTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProfileScreen(
+                            username: post.username,
+                            currentUsername: widget.username,
                           ),
-                        );
-                      },
-                      onLike: post.id != null
-                          ? () => _handleLike(postProvider, post)
-                          : null,
-                      onComment: post.id != null
-                          ? () => _showCommentsSheet(post)
-                          : null,
-                      onDeleteTap:
-                          post.username == widget.username && post.id != null
-                          ? () => _handleDelete(postProvider, post)
-                          : null,
-                    );
-                  },
+                        ),
+                      );
+                    },
+                    onLike: post.id != null
+                        ? () => _handleLike(postProvider, post)
+                        : null,
+                    onComment: post.id != null
+                        ? () => _showCommentsSheet(post)
+                        : null,
+                    onDeleteTap:
+                        post.username == widget.username && post.id != null
+                        ? () => _handleDelete(postProvider, post)
+                        : null,
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        floatingActionButton: ScaleTransition(
+          scale: CurvedAnimation(
+            parent: _fabController,
+            curve: Curves.elasticOut,
+          ),
+          child: FloatingActionButton(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CreatePostScreen(username: widget.username),
                 ),
               );
-            },
-          ),
-          floatingActionButton: ScaleTransition(
-            scale: CurvedAnimation(
-              parent: _fabController,
-              curve: Curves.elasticOut,
-            ),
-            child: FloatingActionButton(
-              onPressed: () async {
-                await Navigator.push(
+              if (mounted) {
+                Provider.of<PostProvider>(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => CreatePostScreen(username: widget.username),
-                  ),
-                );
-                if (mounted) {
-                  Provider.of<PostProvider>(
-                    context,
-                    listen: false,
-                  ).loadPosts(username: widget.username);
-                }
-              },
-              backgroundColor: primaryYellow,
-              elevation: 8,
-              child: const Icon(Icons.add_rounded, color: textColor, size: 28),
-            ),
+                  listen: false,
+                ).loadPosts(username: widget.username);
+              }
+            },
+            backgroundColor: primaryYellow,
+            elevation: 8,
+            child: const Icon(Icons.add_rounded, color: textColor, size: 28),
           ),
-        );
-      },
-    );
-  }
-
+        ),
+      );
+    },
+  );
+}
   Widget _buildLoadingState() {
     return Center(
       child: Column(

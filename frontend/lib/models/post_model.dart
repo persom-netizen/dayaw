@@ -1,6 +1,7 @@
 class Post {
   final int? id;
   final String username;
+  final String category; // 1. Added field
   final String? profileImage;
   final String? title;
   final String content;
@@ -13,6 +14,7 @@ class Post {
   Post({
     this.id,
     required this.username,
+    required this.category, // 2. Required in constructor
     this.profileImage,
     this.title,
     required this.content,
@@ -24,26 +26,30 @@ class Post {
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    final rawCategory = json['category'] ?? json['Category'] ?? 'unknown';
     return Post(
-      id: json['id'],
-      username: json['username'] ?? 'Anonymous',
-      profileImage: json['profile_image'],
-      title: json['title'],
-      content: json['content'] ?? '',
-      imageUrl: json['image_url'],
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at']).toLocal()
-          : DateTime.now(),
-      likesCount: json['likes_count'] ?? 0,
-      commentsCount: json['comments_count'] ?? 0,
-      isLiked: json['is_liked'] ?? false,
-    );
-  }
+    id: json['id'],
+    username: json['username'] ?? 'Anonymous',
+    // 2. Normalize to lowercase immediately
+    category: rawCategory.toString().toLowerCase().trim(), 
+    profileImage: json['profile_image'],
+    title: json['title'],
+    content: json['content'] ?? '',
+    imageUrl: json['image_url'],
+    createdAt: json['created_at'] != null
+        ? DateTime.parse(json['created_at']).toLocal()
+        : DateTime.now(),
+    likesCount: json['likes_count'] ?? 0,
+    commentsCount: json['comments_count'] ?? 0,
+    isLiked: json['is_liked'] ?? false,
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'username': username,
+      'category': category,
       'profile_image': profileImage,
       'title': title,
       'content': content,
@@ -58,6 +64,7 @@ class Post {
   Post copyWith({
     int? id,
     String? username,
+    String? category,
     String? profileImage,
     String? title,
     String? content,
@@ -70,6 +77,7 @@ class Post {
     return Post(
       id: id ?? this.id,
       username: username ?? this.username,
+      category: category ?? this.category,
       profileImage: profileImage ?? this.profileImage,
       title: title ?? this.title,
       content: content ?? this.content,
@@ -87,6 +95,7 @@ class Comment {
   final int id;
   final int postId;
   final String username;
+  final String? category;
   final String content;
   final DateTime createdAt;
   final List<CommentReply> replies;
@@ -95,6 +104,7 @@ class Comment {
     required this.id,
     required this.postId,
     required this.username,
+    required this.category,
     required this.content,
     required this.createdAt,
     List<CommentReply>? replies,
@@ -105,6 +115,7 @@ class Comment {
       id: json['id'],
       postId: json['post_id'],
       username: json['username'] ?? 'Anonymous',
+      category: json['category'] ?? 'Paskil', // Default to Paskil
       content: json['content'] ?? '',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at']).toLocal()
@@ -122,6 +133,7 @@ class Comment {
       'id': id,
       'post_id': postId,
       'username': username,
+      'category': category,
       'content': content,
       'created_at': createdAt.toIso8601String(),
       'replies': replies.map((r) => r.toJson()).toList(),

@@ -87,19 +87,17 @@ class PostService {
     String? title,
     required String content,
     String? imageUrl,
+    required String category, // 1. Add this to the signature
   }) async {
     try {
-      print("[INFO] Creating post for user: $username");
-
       final payload = {
         'username': username,
+        'category': category, // 2. Add to the JSON payload for Flask
         'title': title,
         'content': content,
         'image_url': imageUrl,
         'profile_image': null,
       };
-
-      print("[INFO] Payload: $payload");
 
       final response = await http.post(
         Uri.parse('$baseUrl/api/posts'),
@@ -107,22 +105,13 @@ class PostService {
         body: json.encode(payload),
       );
 
-      print("[INFO] Create post response: ${response.statusCode}");
-      print("[INFO] Response body: ${response.body}");
-
       if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
-        print("[SUCCESS] Post created with ID: ${responseData['id']}");
         return Post.fromJson(responseData);
       } else {
-        print("[ERROR] Failed to create post: ${response.statusCode}");
-        print("[ERROR] Response: ${response.body}");
-        throw Exception(
-          'Failed to create post: ${response.statusCode} - ${response.body}',
-        );
+        throw Exception('Failed to create post: ${response.statusCode}');
       }
     } catch (e) {
-      print("[ERROR] Exception creating post: $e");
       throw Exception('Error creating post: $e');
     }
   }

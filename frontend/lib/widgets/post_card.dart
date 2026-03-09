@@ -34,6 +34,22 @@ class _PostCardState extends State<PostCard> {
   static const Color textColor = Color(0xFF554141);
   static const Color backgroundColor = Color(0xFFFFF9F4);
 
+  /// Helper to get category-specific colors
+  /// Helper to get category-specific colors
+  Color _getCategoryColor(String category) {
+    // .toLowerCase() makes "Kard" become "kard", matching our case below
+    switch (category.toLowerCase().trim()) { 
+      case 'kard':
+        return Colors.blueAccent;
+      case 'paskil':
+        return Colors.orangeAccent;
+      default:
+        // If it's still yellow, it means the value coming from the DB 
+        // isn't "kard" or "paskil" at all.
+        return primaryYellow; 
+    }
+  }
+
   /// Get relative time string (e.g., "2 days ago", "3 hours ago")
   String _getRelativeTime() {
     final now = DateTime.now();
@@ -83,7 +99,7 @@ class _PostCardState extends State<PostCard> {
                       child: Container(
                         width: 40,
                         height: 40,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: primaryYellow,
                           shape: BoxShape.circle,
                         ),
@@ -123,13 +139,27 @@ class _PostCardState extends State<PostCard> {
                                 color: textColor.withValues(alpha: 0.5),
                               ),
                             ),
+                            // --- CATEGORY LABEL ADDED HERE ---
+                            if (widget.post.category.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(top: 2),
+    child: Text(
+      widget.post.category.toUpperCase(), // This keeps the UI looking clean
+      style: GoogleFonts.inter(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 1.1,
+        color: _getCategoryColor(widget.post.category), // This now returns Blue!
+      ),
+    ),
+  ),
                           ],
                         ),
                       ),
                     ),
                     if (widget.showDeleteButton)
                       IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.delete_outline,
                           color: primaryYellow,
                           size: 20,
@@ -172,9 +202,7 @@ class _PostCardState extends State<PostCard> {
                   padding: EdgeInsets.only(
                     left: 16,
                     right: 16,
-                    top:
-                        widget.post.title != null &&
-                            widget.post.title!.isNotEmpty
+                    top: widget.post.title != null && widget.post.title!.isNotEmpty
                         ? 8
                         : 0,
                     bottom: 12,
@@ -189,8 +217,7 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
               // Post Media
-              if (widget.post.imageUrl != null &&
-                  widget.post.imageUrl!.isNotEmpty)
+              if (widget.post.imageUrl != null && widget.post.imageUrl!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: PostMedia(imageUrl: widget.post.imageUrl, height: 200),
@@ -208,9 +235,7 @@ class _PostCardState extends State<PostCard> {
                       child: Row(
                         children: [
                           Icon(
-                            widget.post.isLiked
-                                ? Icons.star
-                                : Icons.star_outline,
+                            widget.post.isLiked ? Icons.star : Icons.star_outline,
                             color: primaryYellow,
                             size: 20,
                           ),
@@ -230,7 +255,7 @@ class _PostCardState extends State<PostCard> {
                       onTap: widget.onComment ?? widget.onCommentsTap,
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.chat_bubble_outline,
                             color: primaryYellow,
                             size: 20,

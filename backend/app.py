@@ -119,6 +119,7 @@ class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(50), nullable=False, default='Paskil')
     profile_image = db.Column(db.String(500))
     title = db.Column(db.String(500))  # Changed from 255 to 500 to match DB
     content = db.Column(db.Text, nullable=False)
@@ -517,7 +518,6 @@ def get_posts():
         username = request.args.get("username", "").strip()
         posts = Post.query.order_by(Post.created_at.desc()).all()
         
-        # Get user's likes if username provided
         user_likes = set()
         if username:
             likes = PostLike.query.filter_by(username=username).all()
@@ -526,6 +526,7 @@ def get_posts():
         posts_list = [{
             "id": p.id,
             "username": p.username,
+            "category": p.category, # <-- ADD THIS LINE
             "profile_image": p.profile_image,
             "title": p.title,
             "content": p.content,
@@ -543,18 +544,24 @@ def get_posts():
 
 @app.route("/api/posts", methods=["POST"])
 def create_post():
-    """Create a new post."""
+    """Create a new post with category support."""
     try:
         data = request.get_json()
         
-        # Validate required fields
+        # 1. Validate data exists
         if not data:
             print("[ERROR] No JSON data received")
             return jsonify({"error": "No data provided"}), 400
         
+        # 2. Extract and strip fields
         username = data.get("username", "").strip()
         content = data.get("content", "").strip()
+        title = data.get("title", "").strip() or None
         
+        # FIX: Ensure this variable name matches what we use in the Post() constructor
+        category = data.get("category", "Paskil").strip() 
+
+        # 3. Validation
         if not username:
             print("[ERROR] Username is required")
             return jsonify({"error": "Username is required"}), 400
@@ -563,27 +570,32 @@ def create_post():
             print("[ERROR] Content is required")
             return jsonify({"error": "Content is required"}), 400
         
-        print(f"[INFO] Creating post - Username: {username}, Content length: {len(content)}")
-        
-        # Create new post WITHOUT user_id
+        print(f"[INFO] Creating {category} post - User: {username}")
+
+        # 4. Create new post object
+        # Note: 'category=category' now correctly uses the variable from line 14
         new_post = Post(
             username=username,
+            category=category, 
             profile_image=data.get("profile_image"),
-            title=data.get("title", "").strip() or None,
+            title=title,
             content=content,
             image_url=data.get("image_url"),
             likes_count=0,
             comments_count=0
         )
         
+        # 5. Save to MySQL
         db.session.add(new_post)
         db.session.commit()
         
-        print(f"[SUCCESS] Post created with ID: {new_post.id}")
+        print(f"[SUCCESS] {category} created with ID: {new_post.id}")
         
+        # 6. Return response to Flutter
         return jsonify({
             "id": new_post.id,
             "username": new_post.username,
+            "category": new_post.category,
             "profile_image": new_post.profile_image,
             "title": new_post.title,
             "content": new_post.content,
@@ -592,11 +604,12 @@ def create_post():
             "comments_count": new_post.comments_count,
             "created_at": utc_to_manila(new_post.created_at).isoformat() if new_post.created_at else None
         }), 201
+
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Exception creating post: {str(e)}")
         import traceback
-        traceback.print_exc()  # Print full traceback for debugging
+        traceback.print_exc()
         return jsonify({"error": f"Failed to create post: {str(e)}"}), 500
     
 
