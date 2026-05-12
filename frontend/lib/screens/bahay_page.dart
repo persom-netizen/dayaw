@@ -95,7 +95,7 @@ Widget build(BuildContext context) {
             }
 
             if (displayedPosts.isEmpty) {
-              return _buildEmptyState();
+              return _buildEmptyState(postProvider);
             }
 
             return RefreshIndicator(
@@ -259,7 +259,9 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(PostProvider postProvider) {
+    final isFiltered = postProvider.currentFilter != PostFilter.all;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -280,7 +282,9 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 24),
             Text(
-              'Walang mga post pa',
+              isFiltered
+                  ? 'Walang post para sa ${postProvider.currentFilter.name.toUpperCase()}'
+                  : 'Walang mga post pa',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -289,12 +293,27 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 8),
             Text(
-              'Maging una sa paglikha ng post! ',
+              isFiltered
+                  ? 'Subukang pumili ng ibang filter o i-tap ang logo para makita ang lahat.'
+                  : 'Maging una sa paglikha ng post! ',
               style: TextStyle(
                 fontSize: 14,
                 color: textColor.withValues(alpha: 0.6),
               ),
+              textAlign: TextAlign.center,
             ),
+            if (isFiltered) ...[
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => postProvider.setFilter(PostFilter.all),
+                icon: const Icon(Icons.filter_alt_off_rounded),
+                label: const Text('Ipakita ang Lahat'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryYellow,
+                  foregroundColor: textColor,
+                ),
+              ),
+            ],
           ],
         ),
       ),

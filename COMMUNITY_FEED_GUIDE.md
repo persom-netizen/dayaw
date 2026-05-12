@@ -209,6 +209,18 @@ class Comment {
 3. Tap "Subukan Muli" (Try Again) button if error appears
 4. Restart the app if issues persist
 
+### Bahay Looks Empty / No Content Visible
+If Bahay appears to show nothing, check these first:
+1. **Category filter is active** (Paskil/Kard/Pod/Tunog) and there are no posts in that category.
+   - Tap the center Dayaw logo (Lahat) or the **Ipakita ang Lahat** button to reset filters.
+2. **No posts exist yet** in the backend database.
+   - Bahay will show the empty-state prompt to create the first post.
+3. **Backend/API is unreachable or misconfigured**.
+   - Bahay loads from `GET /api/posts` via `PostProvider -> PostService -> ApiConfig.baseUrl`.
+   - Verify the selected API URL in `frontend/lib/config/api_config.dart` (localhost/device IP/ngrok).
+4. **Logged-in username is missing/empty**.
+   - Like status and some actions rely on username; feed requests include `?username=...` when available.
+
 ### Can't Create Post
 1. Ensure content field is not empty
 2. Check character limits
