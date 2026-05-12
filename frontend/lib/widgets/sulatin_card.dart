@@ -36,8 +36,8 @@ class SulatinCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 140,
-        padding: const EdgeInsets.all(16),
+        width: 120,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isActive
               ? primaryYellow.withValues(alpha: 0.15)
@@ -59,35 +59,45 @@ class SulatinCard extends StatelessWidget {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Image or placeholder
             _buildImage(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             // Title
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: fontProvider.descriptionSize,
-                fontWeight: FontWeight.w600,
-                color: isActive ? textColor : Colors.grey,
+            Flexible(
+              child: Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: fontProvider.descriptionSize,
+                  fontWeight: FontWeight.w600,
+                  color: isActive ? textColor : Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
             ),
             // Coming soon indicator for inactive cards
             if (!isActive) ...[
-              const SizedBox(height: 4),
-              Text(
-                '(susunod na bersyon)',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
+              const SizedBox(height: 2),
+              Flexible(
+                child: Text(
+                  '(susunod na bersyon)',
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
             // Progress bar for active cards
             if (isActive && progress != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               _buildProgressBar(),
             ],
           ],
@@ -102,8 +112,8 @@ class SulatinCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Image.asset(
           imagePath!,
-          width: 60,
-          height: 60,
+          width: 50,
+          height: 50,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return _buildPlaceholderIcon();
@@ -116,8 +126,8 @@ class SulatinCard extends StatelessWidget {
 
   Widget _buildPlaceholderIcon() {
     return Container(
-      width: 60,
-      height: 60,
+      width: 50,
+      height: 50,
       decoration: BoxDecoration(
         color: isActive
             ? primaryYellow.withValues(alpha: 0.3)
@@ -127,14 +137,14 @@ class SulatinCard extends StatelessWidget {
       child: Icon(
         Icons.edit_rounded,
         color: isActive ? primaryYellow : Colors.grey,
-        size: 30,
+        size: 24,
       ),
     );
   }
 
   Widget _buildProgressBar() {
     return Container(
-      height: 4,
+      height: 3,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.grey.withValues(alpha: 0.2),
