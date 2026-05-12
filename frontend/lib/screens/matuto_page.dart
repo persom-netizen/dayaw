@@ -143,7 +143,6 @@ class _MatutoPageState extends State<MatutoPage> {
   Widget _buildDivider() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.only(top: 500),
       height: 2,
       decoration: BoxDecoration(
         color: primaryYellow,
